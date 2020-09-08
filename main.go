@@ -20,15 +20,11 @@ type app struct {
 }
 
 func main() {
-	/*
-		lire config ici, et créer les app en fonction de ce qu'il y a dans
-		le fichier, puis voir si elles sont up
-	*/
+	// no need to specify the config file extension as it is already in the name of the config file
 	viper.SetConfigName("config")
-	viper.AddConfigPath(".")    // optionally look for config in the working directory
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	viper.AddConfigPath(".")
+	if err := viper.ReadInConfig(); err != nil {
+		log.Errorf("Fatal error while reading config file: %s", err)
 	}
 
 	app1 := app{hostname: "localhost", scanRange: "reserved"} // remplacement du fichier de conf
