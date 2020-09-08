@@ -26,6 +26,8 @@ func main() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Errorf("Fatal error while reading config file: %s", err)
 	}
+	targetsList := viper.Get("targets")
+	fmt.Println(targetsList)
 
 	app1 := app{hostname: "localhost", scanRange: "reserved"} // remplacement du fichier de conf
 	if !app1.getStatus() {
