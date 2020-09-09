@@ -88,21 +88,6 @@ func (t *target) getStatus() bool {
 		return false
 	}
 	return true
-
-	// p := fastping.NewPinger()
-	// ra, err := net.ResolveIPAddr("ip4:icmp", t.IP)
-	// if err != nil {
-	// 	return false
-	// }
-	// p.AddIPAddr(ra)
-	// p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-	// 	log.Infof("%s RTT: %v\n", addr.String(), rtt)
-	// }
-	// if err = p.Run(); err != nil {
-	// 	// we can end up here if we do not run the program as sudo...
-	// 	return false
-	// }
-	// return true
 }
 
 // getAddress returns hostname:port format
@@ -147,41 +132,6 @@ func (t *target) parsePorts() {
 		return
 	}
 }
-
-// parsePortsRange returns an array containing all the ports that
-// will be scanned
-// func (t *target) parsePortsRange(protType string, prot protocol) []string {
-// 	var ports = []string{}
-// 	switch prot.Range {
-// 	// append all ports to the scan list
-// 	case "all":
-// 		for port := 1; port <= 65535; port++ {
-
-// 		}
-// 		return ports
-// 	// append reserved ports to the scan list
-// 	case "reserved":
-// 		for port := 1; port <= 1024; port++ {
-// 			ports = append(ports, strconv.Itoa(port))
-// 		}
-// 		return ports
-// 	}
-
-// 	if strings.Contains(a.scanRange, "-") {
-// 		// get the list's bounds
-// 		content := strings.Split(a.scanRange, "-")
-// 		first, err := strconv.Atoi(content[0])
-// 		last, err := strconv.Atoi(content[len(content)-1])
-// 		if err != nil {
-// 			log.Errorf("An error occured while getting ports to scan: %s", err)
-// 		}
-
-// 		for port := first; port <= last; port++ {
-// 			ports = append(ports, strconv.Itoa(port))
-// 		}
-// 	}
-// 	return ports
-// }
 
 func (c *conf) getConf(confFile string) *conf {
 	yamlConf, err := ioutil.ReadFile(confFile)
