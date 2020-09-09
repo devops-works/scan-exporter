@@ -10,6 +10,16 @@ targets:
       range: "1-1024"
       expected: "22,53"
 
+  - name: "blog"
+    period: "1h"
+    ip: "185.199.111.153"
+    tcp:
+      range: "all"
+      expected: "22,33,44"
+    udp:
+      range: "1-1024"
+      expected: "22,53"
+
   - name: "laptop"
     period: "1h"
     ip: "127.0.0.1"
