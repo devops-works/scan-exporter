@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/tatsushid/go-fastping"
+	"github.com/sparrc/go-ping"
 )
 
 type conf struct {
@@ -35,7 +35,6 @@ type target struct {
 }
 
 type protocol struct {
-	Name     string
 	Range    string `yaml:"range"`
 	Expected string `yaml:"expected"`
 }
@@ -44,13 +43,12 @@ func main() {
 	c := conf{}
 	confPath := getConfPath(os.Args)
 	c.getConf(confPath)
-
 	log.Infof("%d targets found in %s", len(c.Targets), confPath)
 
 	// targetList is an array that will contain each instance of up target found in conf file
 	targetList := []target{}
-	for i := 0; i < len(c.Targets); i++ {
-		t := target{}
+	for _, target := range c.Targets {
+		t := target
 		if t.getStatus() {
 			// if the target is up, we add it to targetList
 			targetList = append(targetList, t)
@@ -62,35 +60,49 @@ func main() {
 	}
 
 	/*
-		from now, we have a valid list of apps to scan in targetList.
+		from now, we have a valid list of targets to scan in targetList.
 		next step is to parse ports ranges for each protocol, and fill
-		{tcp,udp}PortsToScan in each app instance in targetList
+		{tcp,udp}PortsToScan in each target instance in targetList
 	*/
 
 	for i := 0; i < len(targetList); i++ {
 		t := targetList[i]
 		t.parsePorts()
 		t.scanApp()
+		fmt.Println(t.tcpPortsOpen)
 	}
+
 }
 
-// getStatus returns true if the application respond to ping requests
+// getStatus returns true if the target respond to ping requests
 func (t *target) getStatus() bool {
-	p := fastping.NewPinger()
-	ra, err := net.ResolveIPAddr("ip4:icmp", t.IP)
+	pinger, err := ping.NewPinger(t.IP)
+	pinger.Timeout = 2 * time.Second
 	if err != nil {
+		panic(err)
+	}
+	pinger.Count = 1
+	pinger.Run()
+	stats := pinger.Statistics()
+	if stats.PacketLoss == 100.0 {
 		return false
 	}
-	p.AddIPAddr(ra)
-	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-		log.Infof("%s RTT: %v\n", addr.String(), rtt)
-	}
-	if err = p.Run(); err != nil {
-		// we can end up here if we do not run the program as sudo...
-		return false
-	}
-
 	return true
+
+	// p := fastping.NewPinger()
+	// ra, err := net.ResolveIPAddr("ip4:icmp", t.IP)
+	// if err != nil {
+	// 	return false
+	// }
+	// p.AddIPAddr(ra)
+	// p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+	// 	log.Infof("%s RTT: %v\n", addr.String(), rtt)
+	// }
+	// if err = p.Run(); err != nil {
+	// 	// we can end up here if we do not run the program as sudo...
+	// 	return false
+	// }
+	// return true
 }
 
 // getAddress returns hostname:port format
@@ -197,9 +209,8 @@ func (t *target) scanApp() {
 	for _, port := range t.tcpPortsToScan {
 		// get address with host:port format
 		address := t.getAddress(port)
-		conn, err := net.DialTimeout("tcp", address, 60*time.Second)
+		conn, err := net.DialTimeout("tcp", address, 2*time.Second)
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
 		conn.Close()
