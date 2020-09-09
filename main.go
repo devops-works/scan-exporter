@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"strconv"
-	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -31,22 +29,26 @@ type protocol struct {
 }
 
 type app struct {
-	hostname  string
-	scanRange string
-	// ports contains all the ports that will be scanned
-	ports []string
+	infos targets
 }
 
 func main() {
 	c := conf{}
 	c.getConf("config.yaml")
-	fmt.Println(c)
+	log.Infof("%d targets found in config file", len(c.Targets))
+
+	for i := 0; i < len(c.Targets); i++ {
+		a := app{
+			infos: c.Targets[i],
+		}
+		fmt.Println(a)
+	}
 }
 
 // getStatus returns true if the application respond to ping requests
 func (a app) getStatus() bool {
 	p := fastping.NewPinger()
-	ra, err := net.ResolveIPAddr("ip4:icmp", a.hostname)
+	ra, err := net.ResolveIPAddr("ip4:icmp", a.infos.Name)
 	if err != nil {
 		return false
 	}
@@ -64,7 +66,7 @@ func (a app) getStatus() bool {
 
 // getAddress returns hostname:port format
 func (a app) getAddress(port string) string {
-	return a.hostname + ":" + port
+	return a.infos.Name + ":" + port
 }
 
 // scanPort dials a given address with a specified protocol
@@ -79,39 +81,39 @@ func scanPort(a app, protocol, port string) bool {
 
 // parsePortsRange returns an array containing all the ports that
 // will be scanned
-func (a app) parsePortsRange() []string {
-	var ports = []string{}
+// func (a app) parsePortsRange() []string {
+// 	var ports = []string{}
 
-	switch a.scanRange {
-	// append all ports to the scan list
-	case "all":
-		for port := 1; port <= 65535; port++ {
-			ports = append(ports, strconv.Itoa(port))
-		}
-		return ports
-	// append reserved ports to the scan list
-	case "reserved":
-		for port := 1; port <= 1024; port++ {
-			ports = append(ports, strconv.Itoa(port))
-		}
-		return ports
-	}
+// 	switch a.infos. {
+// 	// append all ports to the scan list
+// 	case "all":
+// 		for port := 1; port <= 65535; port++ {
+// 			ports = append(ports, strconv.Itoa(port))
+// 		}
+// 		return ports
+// 	// append reserved ports to the scan list
+// 	case "reserved":
+// 		for port := 1; port <= 1024; port++ {
+// 			ports = append(ports, strconv.Itoa(port))
+// 		}
+// 		return ports
+// 	}
 
-	if strings.Contains(a.scanRange, "-") {
-		// get the list's bounds
-		content := strings.Split(a.scanRange, "-")
-		first, err := strconv.Atoi(content[0])
-		last, err := strconv.Atoi(content[len(content)-1])
-		if err != nil {
-			log.Errorf("An error occured while getting ports to scan: %s", err)
-		}
+// 	if strings.Contains(a.scanRange, "-") {
+// 		// get the list's bounds
+// 		content := strings.Split(a.scanRange, "-")
+// 		first, err := strconv.Atoi(content[0])
+// 		last, err := strconv.Atoi(content[len(content)-1])
+// 		if err != nil {
+// 			log.Errorf("An error occured while getting ports to scan: %s", err)
+// 		}
 
-		for port := first; port <= last; port++ {
-			ports = append(ports, strconv.Itoa(port))
-		}
-	}
-	return ports
-}
+// 		for port := first; port <= last; port++ {
+// 			ports = append(ports, strconv.Itoa(port))
+// 		}
+// 	}
+// 	return ports
+// }
 
 func (c *conf) getConf(confFile string) *conf {
 	yamlConf, err := ioutil.ReadFile("config.yaml")
