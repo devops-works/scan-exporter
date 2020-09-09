@@ -2,15 +2,33 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
 	"strconv"
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/tatsushid/go-fastping"
 )
+
+type conf struct {
+	Targets []targets `yaml:"targets"`
+}
+
+type targets struct {
+	Name string   `yaml:"name"`
+	IP   string   `yaml:"ip"`
+	TCP  protocol `yaml:"tcp"`
+	UDP  protocol `yaml:"udp"`
+}
+
+type protocol struct {
+	Range    string `yaml:"range"`
+	Expected string `yaml:"expected"`
+}
 
 type app struct {
 	hostname  string
@@ -20,26 +38,9 @@ type app struct {
 }
 
 func main() {
-	// no need to specify the config file extension as it is already in the name of the config file
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	if err := viper.ReadInConfig(); err != nil {
-		log.Errorf("Fatal error while reading config file: %s", err)
-	}
-	targetsList := viper.Get("targets")
-	fmt.Println(targetsList)
-
-	app1 := app{hostname: "localhost", scanRange: "reserved"} // remplacement du fichier de conf
-	if !app1.getStatus() {
-		log.Warnf("%s seems to be down.", app1.hostname)
-	}
-	/*
-		ici il faudra lire la conf pour comprendre quels sont les ports visés
-		par le scan.
-		Créer des go routines !
-	*/
-	app1.ports = app1.parsePortsRange()
-	fmt.Println(len(app1.ports))
+	c := conf{}
+	c.getConf("config.yaml")
+	fmt.Println(c)
 }
 
 // getStatus returns true if the application respond to ping requests
@@ -110,4 +111,17 @@ func (a app) parsePortsRange() []string {
 		}
 	}
 	return ports
+}
+
+func (c *conf) getConf(confFile string) *conf {
+	yamlConf, err := ioutil.ReadFile("config.yaml")
+	if err != nil {
+		log.Errorf("Error while reading config.yaml: %v ", err)
+	}
+
+	if err = yaml.Unmarshal(yamlConf, &c); err != nil {
+		log.Errorf("Error while unmarshalling yamlConf: %v", err)
+	}
+
+	return c
 }
