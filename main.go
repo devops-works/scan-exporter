@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -68,10 +69,9 @@ func main() {
 	for i := 0; i < len(targetList); i++ {
 		t := targetList[i]
 		t.parsePorts()
-		t.scanApp()
-		fmt.Println(t.tcpPortsOpen)
+		log.Infof("Starting %s scan", t.Name)
+		t.scanTarget()
 	}
-
 }
 
 // getStatus returns true if the target respond to ping requests
@@ -154,16 +154,22 @@ func getConfPath(args []string) string {
 	return "config.yaml"
 }
 
-func (t *target) scanApp() {
-	// this loop must start goroutines
+func (t *target) scanTarget() {
+	var wg sync.WaitGroup
 	for _, port := range t.tcpPortsToScan {
-		// get address with host:port format
-		address := t.getAddress(port)
-		conn, err := net.DialTimeout("tcp", address, 2*time.Second)
-		if err != nil {
-			continue
-		}
-		conn.Close()
-		t.tcpPortsOpen = append(t.tcpPortsOpen, port+"/tcp")
+		wg.Add(1)
+		go scanWorker(t.getAddress(port), &wg)
 	}
+	wg.Wait()
+}
+
+func scanWorker(address string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	conn, err := net.DialTimeout("tcp", address, 2*time.Second)
+	if err != nil {
+		// port is closed
+		return
+	}
+	conn.Close()
+	fmt.Println(address) // debug
 }
