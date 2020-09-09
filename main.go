@@ -38,6 +38,9 @@ type app struct {
 	// config file.
 	tcpPortsToScan []string
 	udpPortsToScan []string
+	// those arrays will hold open ports
+	tcpPortsOpen []string
+	udpPortsOpen []string
 }
 
 func main() {
@@ -73,6 +76,7 @@ func main() {
 	for i := 0; i < len(appList); i++ {
 		a := appList[i]
 		a.parsePorts()
+		a.scanApp()
 	}
 }
 
@@ -192,4 +196,20 @@ func getConfPath(args []string) string {
 	}
 	// default config file
 	return "config.yaml"
+}
+
+func (a *app) scanApp() {
+	// this loop must start goroutines
+	for _, port := range a.tcpPortsToScan {
+		// get address with host:port format
+		address := a.getAddress(port)
+		conn, err := net.DialTimeout("tcp", address, 60*time.Second)
+		if err != nil {
+			// port is closed
+		} else {
+			defer conn.Close()
+			// port is open
+			a.tcpPortsOpen = append(a.tcpPortsOpen, port+"/tcp")
+		}
+	}
 }
