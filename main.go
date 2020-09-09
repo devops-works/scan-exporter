@@ -159,6 +159,8 @@ func (t *target) scanTarget() {
 		wg.Add(1)
 		go scanWorker(t.getAddress(port), &wg)
 	}
+	// comment lire le channel sans bloquer ?
+	// regarder "close" pour terminer un channel
 	wg.Wait()
 }
 
