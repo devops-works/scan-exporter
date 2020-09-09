@@ -1,6 +1,7 @@
 ---
 targets:
   - name: "mock"
+    period: "6d"
     ip: "154.123.546.54"
     tcp:
       range: "all"
@@ -10,6 +11,7 @@ targets:
       expected: "22,53"
 
   - name: "laptop"
+    period: "1h"
     ip: "127.0.0.1"
     tcp:
       range: "all"

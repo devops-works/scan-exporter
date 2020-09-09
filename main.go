@@ -18,10 +18,11 @@ type conf struct {
 }
 
 type targets struct {
-	Name string   `yaml:"name"`
-	IP   string   `yaml:"ip"`
-	TCP  protocol `yaml:"tcp"`
-	UDP  protocol `yaml:"udp"`
+	Name   string   `yaml:"name"`
+	Period string   `yaml:"period"`
+	IP     string   `yaml:"ip"`
+	TCP    protocol `yaml:"tcp"`
+	UDP    protocol `yaml:"udp"`
 }
 
 type protocol struct {
