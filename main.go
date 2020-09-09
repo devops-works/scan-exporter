@@ -28,6 +28,9 @@ type target struct {
 	// {tcp,udp}PortsToScan holds all the ports that will be scanned
 	// those fields are fielded after having parsed the range given in
 	// config file.
+	// THOSE SLICES SHOULD BE MAPS :
+	// map[protocol][port]
+	// 2 elements instead of 4, but more computing time (read key...)
 	tcpPortsToScan []string
 	udpPortsToScan []string
 	// those arrays will hold open ports
@@ -54,7 +57,7 @@ func main() {
 			// if the target is up, we add it to targetList
 			targetList = append(targetList, t)
 		} else {
-			// else, we log that the target is down
+			// else, we log that the target is probably down
 			// maybe we can send a mail or a notification to manually inspect this case ?
 			log.Warnf("%s (%s) seems to be down", t.Name, t.IP)
 		}
