@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
@@ -14,25 +15,15 @@ import (
 )
 
 type conf struct {
-	Targets []targets `yaml:"targets"`
+	Targets []target `yaml:"targets"`
 }
 
-type targets struct {
+type target struct {
 	Name   string   `yaml:"name"`
 	Period string   `yaml:"period"`
 	IP     string   `yaml:"ip"`
 	TCP    protocol `yaml:"tcp"`
 	UDP    protocol `yaml:"udp"`
-}
-
-type protocol struct {
-	Name     string
-	Range    string `yaml:"range"`
-	Expected string `yaml:"expected"`
-}
-
-type app struct {
-	infos targets
 	// {tcp,udp}PortsToScan holds all the ports that will be scanned
 	// those fields are fielded after having parsed the range given in
 	// config file.
@@ -43,6 +34,12 @@ type app struct {
 	udpPortsOpen []string
 }
 
+type protocol struct {
+	Name     string
+	Range    string `yaml:"range"`
+	Expected string `yaml:"expected"`
+}
+
 func main() {
 	c := conf{}
 	confPath := getConfPath(os.Args)
@@ -50,40 +47,37 @@ func main() {
 
 	log.Infof("%d targets found in %s", len(c.Targets), confPath)
 
-	// appList is an array that will contain each instance of target foudn in conf file
-	// it will be easier to work with apps.
-	appList := []app{}
+	// targetList is an array that will contain each instance of up target found in conf file
+	targetList := []target{}
 	for i := 0; i < len(c.Targets); i++ {
-		a := app{
-			infos: c.Targets[i],
-		}
-		if a.getStatus() {
-			// if the target is up, we add it to appList
-			appList = append(appList, a)
+		t := target{}
+		if t.getStatus() {
+			// if the target is up, we add it to targetList
+			targetList = append(targetList, t)
 		} else {
 			// else, we log that the target is down
 			// maybe we can send a mail or a notification to manually inspect this case ?
-			log.Warnf("%s (%s) seems to be down", a.infos.Name, a.infos.IP)
+			log.Warnf("%s (%s) seems to be down", t.Name, t.IP)
 		}
 	}
 
 	/*
-		from now, we have a valid list of apps to scan in appList.
+		from now, we have a valid list of apps to scan in targetList.
 		next step is to parse ports ranges for each protocol, and fill
-		{tcp,udp}PortsToScan in each app instance in appList
+		{tcp,udp}PortsToScan in each app instance in targetList
 	*/
 
-	for i := 0; i < len(appList); i++ {
-		a := appList[i]
-		a.parsePorts()
-		a.scanApp()
+	for i := 0; i < len(targetList); i++ {
+		t := targetList[i]
+		t.parsePorts()
+		t.scanApp()
 	}
 }
 
 // getStatus returns true if the application respond to ping requests
-func (a *app) getStatus() bool {
+func (t *target) getStatus() bool {
 	p := fastping.NewPinger()
-	ra, err := net.ResolveIPAddr("ip4:icmp", a.infos.IP)
+	ra, err := net.ResolveIPAddr("ip4:icmp", t.IP)
 	if err != nil {
 		return false
 	}
@@ -100,43 +94,43 @@ func (a *app) getStatus() bool {
 }
 
 // getAddress returns hostname:port format
-func (a *app) getAddress(port string) string {
-	return a.infos.Name + ":" + port
+func (t *target) getAddress(port string) string {
+	return t.IP + ":" + port
 }
 
 // parsePorts read app scanning range et fill {tcp,udp}PortsToScan
 // with required ports.
 // FOR NOW it doesn't support other parameters than 'all' and 'reserved'
-func (a *app) parsePorts() {
+func (t *target) parsePorts() {
 	/*
 		parse TCP ports
 	*/
-	cmd := a.infos.TCP.Range
+	cmd := t.TCP.Range
 	switch cmd {
 	case "all":
 		for port := 1; port <= 65535; port++ {
-			a.tcpPortsToScan = append(a.tcpPortsToScan, strconv.Itoa(port))
+			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
 		}
 		return
 	case "reserved":
 		for port := 1; port <= 1024; port++ {
-			a.tcpPortsToScan = append(a.tcpPortsToScan, strconv.Itoa(port))
+			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
 		}
 		return
 	}
 	/*
 		parse UDP ports
 	*/
-	cmd = a.infos.UDP.Range
+	cmd = t.UDP.Range
 	switch cmd {
 	case "all":
 		for port := 1; port <= 65535; port++ {
-			a.udpPortsToScan = append(a.udpPortsToScan, strconv.Itoa(port))
+			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
 		}
 		return
 	case "reserved":
 		for port := 1; port <= 1024; port++ {
-			a.udpPortsToScan = append(a.udpPortsToScan, strconv.Itoa(port))
+			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
 		}
 		return
 	}
@@ -144,7 +138,7 @@ func (a *app) parsePorts() {
 
 // parsePortsRange returns an array containing all the ports that
 // will be scanned
-// func (a *app) parsePortsRange(protType string, prot protocol) []string {
+// func (t *target) parsePortsRange(protType string, prot protocol) []string {
 // 	var ports = []string{}
 // 	switch prot.Range {
 // 	// append all ports to the scan list
@@ -198,18 +192,17 @@ func getConfPath(args []string) string {
 	return "config.yaml"
 }
 
-func (a *app) scanApp() {
+func (t *target) scanApp() {
 	// this loop must start goroutines
-	for _, port := range a.tcpPortsToScan {
+	for _, port := range t.tcpPortsToScan {
 		// get address with host:port format
-		address := a.getAddress(port)
+		address := t.getAddress(port)
 		conn, err := net.DialTimeout("tcp", address, 60*time.Second)
 		if err != nil {
-			// port is closed
-		} else {
-			defer conn.Close()
-			// port is open
-			a.tcpPortsOpen = append(a.tcpPortsOpen, port+"/tcp")
+			fmt.Println(err)
+			continue
 		}
+		conn.Close()
+		t.tcpPortsOpen = append(t.tcpPortsOpen, port+"/tcp")
 	}
 }
