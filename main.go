@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net"
+	"os"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -24,40 +24,65 @@ type targets struct {
 }
 
 type protocol struct {
+	Name     string
 	Range    string `yaml:"range"`
 	Expected string `yaml:"expected"`
 }
 
 type app struct {
 	infos targets
+	// {tcp,udp}PortsToScan holds all the ports that will be scanned
+	// those fields are fielded after having parsed the range given in
+	// config file.
+	tcpPortsToScan []string
+	udpPortsToScan []string
 }
 
 func main() {
 	c := conf{}
-	c.getConf("config.yaml")
-	log.Infof("%d targets found in config file", len(c.Targets))
+	confPath := getConfPath(os.Args)
+	c.getConf(confPath)
 
+	log.Infof("%d targets found in %s", len(c.Targets), confPath)
+
+	// appList is an array that will contain each instance of target foudn in conf file
+	// it will be easier to work with apps.
+	appList := []app{}
 	for i := 0; i < len(c.Targets); i++ {
 		a := app{
 			infos: c.Targets[i],
 		}
-		fmt.Println(a)
+		if a.getStatus() {
+			// if the target is up, we add it to appList
+			appList = append(appList, a)
+		} else {
+			// else, we log that the target is down
+			// maybe we can send a mail or a notification to manually inspect this case ?
+			log.Warnf("%s (%s) seems to be down", a.infos.Name, a.infos.IP)
+		}
 	}
+
+	/*
+		from now, we have a valid list of apps to scan in appList.
+		next step is to parse ports ranges for each protocol, and fill
+		{tcp,udp}PortsToScan in each app instance in appList
+	*/
+
 }
 
 // getStatus returns true if the application respond to ping requests
-func (a app) getStatus() bool {
+func (a *app) getStatus() bool {
 	p := fastping.NewPinger()
-	ra, err := net.ResolveIPAddr("ip4:icmp", a.infos.Name)
+	ra, err := net.ResolveIPAddr("ip4:icmp", a.infos.IP)
 	if err != nil {
 		return false
 	}
 	p.AddIPAddr(ra)
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-		log.Infof("IP Addr: %s, RTT: %v\n", addr.String(), rtt)
+		log.Infof("%s RTT: %v\n", addr.String(), rtt)
 	}
-	err = p.Run()
-	if err != nil {
+	if err = p.Run(); err != nil {
+		// we can end up here if we do not run the program as sudo...
 		return false
 	}
 
@@ -65,30 +90,19 @@ func (a app) getStatus() bool {
 }
 
 // getAddress returns hostname:port format
-func (a app) getAddress(port string) string {
+func (a *app) getAddress(port string) string {
 	return a.infos.Name + ":" + port
-}
-
-// scanPort dials a given address with a specified protocol
-func scanPort(a app, protocol, port string) bool {
-	conn, err := net.DialTimeout(protocol, a.getAddress(port), 2*time.Second)
-	if err != nil {
-		return false
-	}
-	defer conn.Close()
-	return true
 }
 
 // parsePortsRange returns an array containing all the ports that
 // will be scanned
-// func (a app) parsePortsRange() []string {
+// func (a *app) parsePortsRange(protType string, prot protocol) []string {
 // 	var ports = []string{}
-
-// 	switch a.infos. {
+// 	switch prot.Range {
 // 	// append all ports to the scan list
 // 	case "all":
 // 		for port := 1; port <= 65535; port++ {
-// 			ports = append(ports, strconv.Itoa(port))
+
 // 		}
 // 		return ports
 // 	// append reserved ports to the scan list
@@ -116,9 +130,9 @@ func scanPort(a app, protocol, port string) bool {
 // }
 
 func (c *conf) getConf(confFile string) *conf {
-	yamlConf, err := ioutil.ReadFile("config.yaml")
+	yamlConf, err := ioutil.ReadFile(confFile)
 	if err != nil {
-		log.Errorf("Error while reading config.yaml: %v ", err)
+		log.Errorf("Error while reading %s: %v ", confFile, err)
 	}
 
 	if err = yaml.Unmarshal(yamlConf, &c); err != nil {
@@ -126,4 +140,12 @@ func (c *conf) getConf(confFile string) *conf {
 	}
 
 	return c
+}
+
+func getConfPath(args []string) string {
+	if len(args) > 1 {
+		return args[1]
+	}
+	// default config file
+	return "config.yaml"
 }

@@ -1,6 +1,15 @@
 ---
 targets:
-  - name: "appX"
+  - name: "mock"
+    ip: "154.123.546.54"
+    tcp:
+      range: "all"
+      expected: "22,33,44"
+    udp:
+      range: "1-1024"
+      expected: "22,53"
+
+  - name: "laptop"
     ip: "localhost"
     tcp:
       range: "all"
