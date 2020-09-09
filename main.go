@@ -133,7 +133,8 @@ func (t *target) parsePorts() {
 	}
 }
 
-func (c *conf) getConf(confFile string) *conf {
+// getConf reads confFile and unmarshall it
+func (c *conf) getConf(confFile string) {
 	yamlConf, err := ioutil.ReadFile(confFile)
 	if err != nil {
 		log.Errorf("Error while reading %s: %v ", confFile, err)
@@ -142,8 +143,6 @@ func (c *conf) getConf(confFile string) *conf {
 	if err = yaml.Unmarshal(yamlConf, &c); err != nil {
 		log.Errorf("Error while unmarshalling yamlConf: %v", err)
 	}
-
-	return c
 }
 
 func getConfPath(args []string) string {
