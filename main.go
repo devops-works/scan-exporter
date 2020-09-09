@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"strconv"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -68,6 +69,10 @@ func main() {
 		{tcp,udp}PortsToScan in each app instance in appList
 	*/
 
+	for i := 0; i < len(appList); i++ {
+		a := appList[i]
+		a.parsePorts()
+	}
 }
 
 // getStatus returns true if the application respond to ping requests
@@ -92,6 +97,44 @@ func (a *app) getStatus() bool {
 // getAddress returns hostname:port format
 func (a *app) getAddress(port string) string {
 	return a.infos.Name + ":" + port
+}
+
+// parsePorts read app scanning range et fill {tcp,udp}PortsToScan
+// with required ports.
+// FOR NOW it doesn't support other parameters than 'all' and 'reserved'
+func (a *app) parsePorts() {
+	/*
+		parse TCP ports
+	*/
+	cmd := a.infos.TCP.Range
+	switch cmd {
+	case "all":
+		for port := 1; port <= 65535; port++ {
+			a.tcpPortsToScan = append(a.tcpPortsToScan, strconv.Itoa(port))
+		}
+		return
+	case "reserved":
+		for port := 1; port <= 1024; port++ {
+			a.tcpPortsToScan = append(a.tcpPortsToScan, strconv.Itoa(port))
+		}
+		return
+	}
+	/*
+		parse UDP ports
+	*/
+	cmd = a.infos.UDP.Range
+	switch cmd {
+	case "all":
+		for port := 1; port <= 65535; port++ {
+			a.udpPortsToScan = append(a.udpPortsToScan, strconv.Itoa(port))
+		}
+		return
+	case "reserved":
+		for port := 1; port <= 1024; port++ {
+			a.udpPortsToScan = append(a.udpPortsToScan, strconv.Itoa(port))
+		}
+		return
+	}
 }
 
 // parsePortsRange returns an array containing all the ports that

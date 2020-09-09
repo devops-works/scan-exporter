@@ -10,7 +10,7 @@ targets:
       expected: "22,53"
 
   - name: "laptop"
-    ip: "localhost"
+    ip: "127.0.0.1"
     tcp:
       range: "all"
       expected: "22,33,44"
