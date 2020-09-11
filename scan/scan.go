@@ -25,9 +25,11 @@ type Target struct {
 	// THOSE SLICES SHOULD BE MAPS :
 	// map[protocol][port]
 	// 2 elements instead of 4, but more computing time (read key...)
+	portsToScan    map[string]string
 	tcpPortsToScan []string
 	udpPortsToScan []string
 	// those arrays will hold open ports
+	portsOpen    map[string]string
 	tcpPortsOpen []string
 	udpPortsOpen []string
 }
@@ -158,11 +160,7 @@ func readNumericRange(portsRange string) ([]string, error) {
 				ports = append(ports, strconv.Itoa(j))
 			}
 		} else {
-			charInt, err := strconv.Atoi(char)
-			if err != nil {
-				return nil, err
-			}
-			ports = append(ports, strconv.Itoa(charInt))
+			ports = append(ports, char)
 		}
 	}
 	return ports, nil
