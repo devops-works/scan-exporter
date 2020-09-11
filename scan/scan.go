@@ -2,8 +2,10 @@ package scan
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -48,7 +50,7 @@ func (t *Target) getStatus() bool {
 	pinger, err := ping.NewPinger(t.IP)
 	pinger.Timeout = 2 * time.Second
 	if err != nil {
-		panic(err)
+		log.Fatalf("error occured when pinging the target %s: %s", t.IP, err)
 	}
 	pinger.Count = 1
 	pinger.Run()
@@ -121,4 +123,72 @@ func scanWorker(address string, wg *sync.WaitGroup) {
 	}
 	conn.Close()
 	fmt.Println(address) // debug
+}
+
+// readRange transforms a range of ports given in conf to an array of
+// effective ports
+// func readRange(portsRange string) ([]int, error) {
+// 	var ports = []int{}
+// 	var decomposedRange = []string{}
+// 	// create an array with portsRange chars
+// 	for i := 0; i < len(portsRange); i++ {
+// 		decomposedRange = append(decomposedRange, string(portsRange[i]))
+// 	}
+
+// 	// iterate on every char in decompose
+// 	for i, char := range decomposedRange {
+// 		if char == "," {
+// 			continue
+// 		} else if char == "-" {
+// 			min, err := strconv.Atoi(decomposedRange[len(decomposedRange)-1])
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 			max, err := strconv.Atoi(decomposedRange[i+1])
+// 			if err != nil {
+// 				return nil, err
+// 			}
+
+// 			for j := min; j <= max; j++ {
+// 				ports = append(ports, j)
+// 			}
+// 		} else {
+// 			charInt, err := strconv.Atoi(char)
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 			ports = append(ports, charInt)
+// 		}
+// 	}
+
+// 	return ports, nil
+// }
+
+func readRange(portsRange string) ([]int, error) {
+	var ports = []int{}
+	comaSplit := strings.Split(portsRange, ",")
+	for _, char := range comaSplit {
+		if strings.Contains(char, "-") {
+			decomposedRange := strings.Split(char, "-")
+			min, err := strconv.Atoi(decomposedRange[0])
+			if err != nil {
+				return nil, err
+			}
+			max, err := strconv.Atoi(decomposedRange[len(decomposedRange)-1])
+			if err != nil {
+				return nil, err
+			}
+
+			for j := min; j <= max; j++ {
+				ports = append(ports, j)
+			}
+		} else {
+			charInt, err := strconv.Atoi(char)
+			if err != nil {
+				return nil, err
+			}
+			ports = append(ports, charInt)
+		}
+	}
+	return ports, nil
 }
