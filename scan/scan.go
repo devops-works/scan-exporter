@@ -127,43 +127,6 @@ func scanWorker(address string, wg *sync.WaitGroup) {
 
 // readRange transforms a range of ports given in conf to an array of
 // effective ports
-// func readRange(portsRange string) ([]int, error) {
-// 	var ports = []int{}
-// 	var decomposedRange = []string{}
-// 	// create an array with portsRange chars
-// 	for i := 0; i < len(portsRange); i++ {
-// 		decomposedRange = append(decomposedRange, string(portsRange[i]))
-// 	}
-
-// 	// iterate on every char in decompose
-// 	for i, char := range decomposedRange {
-// 		if char == "," {
-// 			continue
-// 		} else if char == "-" {
-// 			min, err := strconv.Atoi(decomposedRange[len(decomposedRange)-1])
-// 			if err != nil {
-// 				return nil, err
-// 			}
-// 			max, err := strconv.Atoi(decomposedRange[i+1])
-// 			if err != nil {
-// 				return nil, err
-// 			}
-
-// 			for j := min; j <= max; j++ {
-// 				ports = append(ports, j)
-// 			}
-// 		} else {
-// 			charInt, err := strconv.Atoi(char)
-// 			if err != nil {
-// 				return nil, err
-// 			}
-// 			ports = append(ports, charInt)
-// 		}
-// 	}
-
-// 	return ports, nil
-// }
-
 func readRange(portsRange string) ([]int, error) {
 	var ports = []int{}
 	comaSplit := strings.Split(portsRange, ",")
