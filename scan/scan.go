@@ -19,19 +19,10 @@ type Target struct {
 	IP     string   `yaml:"ip"`
 	TCP    protocol `yaml:"tcp"`
 	UDP    protocol `yaml:"udp"`
-	// {tcp,udp}PortsToScan holds all the ports that will be scanned
-	// those fields are fielded after having parsed the range given in
-	// config file.
-	// THOSE SLICES SHOULD BE MAPS :
-	// map[protocol][port]
-	// 2 elements instead of 4, but more computing time (read key...)
-	portsToScan    map[string][]interface{}
-	tcpPortsToScan []string
-	udpPortsToScan []string
-	// those arrays will hold open ports
-	portsOpen    map[string][]interface{}
-	tcpPortsOpen []string
-	udpPortsOpen []string
+
+	// those maps hold the protocol and the ports
+	portsToScan map[string][]interface{}
+	portsOpen   map[string][]interface{}
 }
 
 type protocol struct {
@@ -50,11 +41,11 @@ func (t *Target) Validate() error {
 // getStatus returns true if the target respond to ping requests
 func (t *Target) getStatus() bool {
 	pinger, err := ping.NewPinger(t.IP)
-	pinger.Timeout = 2 * time.Second
 	if err != nil {
-		log.Fatalf("error occured when pinging the target %s: %s", t.IP, err)
+		log.Fatalf("error occured while creating the pinger %s: %s", t.IP, err)
 	}
-	pinger.Count = 1
+	pinger.Timeout = 2 * time.Second
+	pinger.Count = 3
 	pinger.Run()
 	stats := pinger.Statistics()
 	if stats.PacketLoss == 100.0 {
@@ -67,53 +58,6 @@ func (t *Target) getStatus() bool {
 func (t *Target) getAddress(port string) string {
 	return t.IP + ":" + port
 }
-
-// // ParsePorts read app scanning range et fill {tcp,udp}PortsToScan
-// // with required ports.
-// func (t *Target) ParsePorts() {
-// 	// parse TCP ports
-// 	cmd := t.TCP.Range
-// 	switch cmd {
-// 	case "all":
-// 		for port := 1; port <= 65535; port++ {
-// 			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
-// 		}
-// 		return
-// 	case "reserved":
-// 		for port := 1; port <= 1024; port++ {
-// 			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
-// 		}
-// 		return
-// 	default:
-// 		ports, err := readNumericRange(t.TCP.Range)
-// 		if err != nil {
-// 			log.Fatalf("error reading udp ports to scan: %s", err)
-// 		}
-// 		t.tcpPortsToScan = ports
-// 	}
-// 	/*
-// 		parse UDP ports
-// 	*/
-// 	cmd = t.UDP.Range
-// 	switch cmd {
-// 	case "all":
-// 		for port := 1; port <= 65535; port++ {
-// 			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
-// 		}
-// 		return
-// 	case "reserved":
-// 		for port := 1; port <= 1024; port++ {
-// 			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
-// 		}
-// 		return
-// 	default:
-// 		ports, err := readNumericRange(t.UDP.Range)
-// 		if err != nil {
-// 			log.Fatalf("error reading udp ports to scan: %s", err)
-// 		}
-// 		t.udpPortsToScan = ports
-// 	}
-// }
 
 // Scan starts a scan
 func (t *Target) Scan() {
