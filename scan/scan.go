@@ -119,10 +119,8 @@ func (t *Target) readPortsRange(protocol, portsRange string) error {
 }
 
 /*
-	feeder receive a target
-	parse it ports into a map
-	send the map content into a worker channel
-	it also starts workers
+	feeder() parses Target's port into maps. Once it is done, it sends the map content into a channel.
+	Next to this, it starts workers that will gather ports from the channel.
 */
 func (t *Target) feeder() {
 	t.portsToScan = make(map[string][]interface{})
