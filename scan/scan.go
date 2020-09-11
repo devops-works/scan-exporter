@@ -83,6 +83,12 @@ func (t *Target) ParsePorts() {
 			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
 		}
 		return
+	default:
+		ports, err := readNumericRange(t.TCP.Range)
+		if err != nil {
+			log.Fatalf("error reading udp ports to scan: %s", err)
+		}
+		t.tcpPortsToScan = ports
 	}
 	/*
 		parse UDP ports
@@ -99,6 +105,12 @@ func (t *Target) ParsePorts() {
 			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
 		}
 		return
+	default:
+		ports, err := readNumericRange(t.UDP.Range)
+		if err != nil {
+			log.Fatalf("error reading udp ports to scan: %s", err)
+		}
+		t.udpPortsToScan = ports
 	}
 }
 
