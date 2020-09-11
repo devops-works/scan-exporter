@@ -140,9 +140,8 @@ func (t *Target) feeder() {
 
 	var wg sync.WaitGroup
 	for _, port := range t.portsToScan["tcp"] {
-		wg.Add(2)
+		wg.Add(1)
 		go scanWorker("tcp", t.getAddress(fmt.Sprintf("%v", port)), &wg)
-		go scanWorker("udp", t.getAddress(fmt.Sprintf("%v", port)), &wg)
 	}
 	// comment lire le channel sans bloquer ?
 	// regarder "close" pour terminer un channel

@@ -4,7 +4,7 @@ targets:
     period: "1h"
     ip: "185.199.111.153"
     tcp:
-      range: "all"
+      range: "reserved"
       expected: "22,33,44"
     udp:
       range: "1-1024"
