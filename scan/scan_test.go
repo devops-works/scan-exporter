@@ -56,7 +56,7 @@ func Test_readRange(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "comas and dahs",
+			name: "comas and dash",
 			args: args{
 				portsRange: "12,14-16,48",
 			},
