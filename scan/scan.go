@@ -126,11 +126,11 @@ func (t *Target) feeder() {
 	*/
 	// parse tcp ports
 	if err := t.readPortsRange("tcp", t.TCP.Range); err != nil {
-		log.Fatalf("an error occured while parsing tcp ports: %s")
+		log.Fatalf("an error occured while parsing tcp ports: %s", err)
 	}
 	// parse udp ports
 	if err := t.readPortsRange("udp", t.UDP.Range); err != nil {
-		log.Fatalf("an error occured while parsing udp ports: %s")
+		log.Fatalf("an error occured while parsing udp ports: %s", err)
 	}
 
 	var wg sync.WaitGroup
