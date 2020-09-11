@@ -25,11 +25,11 @@ type Target struct {
 	// THOSE SLICES SHOULD BE MAPS :
 	// map[protocol][port]
 	// 2 elements instead of 4, but more computing time (read key...)
-	portsToScan    map[string]string
+	portsToScan    map[string][]interface{}
 	tcpPortsToScan []string
 	udpPortsToScan []string
 	// those arrays will hold open ports
-	portsOpen    map[string]string
+	portsOpen    map[string][]interface{}
 	tcpPortsOpen []string
 	udpPortsOpen []string
 }
@@ -68,69 +68,62 @@ func (t *Target) getAddress(port string) string {
 	return t.IP + ":" + port
 }
 
-// ParsePorts read app scanning range et fill {tcp,udp}PortsToScan
-// with required ports.
-// FOR NOW it doesn't support other parameters than 'all' and 'reserved'
-func (t *Target) ParsePorts() {
-	// parse TCP ports
-	cmd := t.TCP.Range
-	switch cmd {
-	case "all":
-		for port := 1; port <= 65535; port++ {
-			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
-		}
-		return
-	case "reserved":
-		for port := 1; port <= 1024; port++ {
-			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
-		}
-		return
-	default:
-		ports, err := readNumericRange(t.TCP.Range)
-		if err != nil {
-			log.Fatalf("error reading udp ports to scan: %s", err)
-		}
-		t.tcpPortsToScan = ports
-	}
-	/*
-		parse UDP ports
-	*/
-	cmd = t.UDP.Range
-	switch cmd {
-	case "all":
-		for port := 1; port <= 65535; port++ {
-			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
-		}
-		return
-	case "reserved":
-		for port := 1; port <= 1024; port++ {
-			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
-		}
-		return
-	default:
-		ports, err := readNumericRange(t.UDP.Range)
-		if err != nil {
-			log.Fatalf("error reading udp ports to scan: %s", err)
-		}
-		t.udpPortsToScan = ports
-	}
-}
+// // ParsePorts read app scanning range et fill {tcp,udp}PortsToScan
+// // with required ports.
+// func (t *Target) ParsePorts() {
+// 	// parse TCP ports
+// 	cmd := t.TCP.Range
+// 	switch cmd {
+// 	case "all":
+// 		for port := 1; port <= 65535; port++ {
+// 			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
+// 		}
+// 		return
+// 	case "reserved":
+// 		for port := 1; port <= 1024; port++ {
+// 			t.tcpPortsToScan = append(t.tcpPortsToScan, strconv.Itoa(port))
+// 		}
+// 		return
+// 	default:
+// 		ports, err := readNumericRange(t.TCP.Range)
+// 		if err != nil {
+// 			log.Fatalf("error reading udp ports to scan: %s", err)
+// 		}
+// 		t.tcpPortsToScan = ports
+// 	}
+// 	/*
+// 		parse UDP ports
+// 	*/
+// 	cmd = t.UDP.Range
+// 	switch cmd {
+// 	case "all":
+// 		for port := 1; port <= 65535; port++ {
+// 			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
+// 		}
+// 		return
+// 	case "reserved":
+// 		for port := 1; port <= 1024; port++ {
+// 			t.udpPortsToScan = append(t.udpPortsToScan, strconv.Itoa(port))
+// 		}
+// 		return
+// 	default:
+// 		ports, err := readNumericRange(t.UDP.Range)
+// 		if err != nil {
+// 			log.Fatalf("error reading udp ports to scan: %s", err)
+// 		}
+// 		t.udpPortsToScan = ports
+// 	}
+// }
 
 // Scan starts a scan
 func (t *Target) Scan() {
-	var wg sync.WaitGroup
-	for _, port := range t.tcpPortsToScan {
-		wg.Add(1)
-		go scanWorker(t.getAddress(port), &wg)
-	}
-	// comment lire le channel sans bloquer ?
-	// regarder "close" pour terminer un channel
-	wg.Wait()
+	t.feeder()
 }
 
-func scanWorker(address string, wg *sync.WaitGroup) {
+func scanWorker(protocol, address string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	conn, err := net.DialTimeout("tcp", address, 2*time.Second)
+	// grâce aux map qui sont envoyées dans les chan, chaque worker recoit le protocol et le port
+	conn, err := net.DialTimeout(protocol, address, 2*time.Second)
 	if err != nil {
 		// port is closed
 		return
@@ -139,29 +132,69 @@ func scanWorker(address string, wg *sync.WaitGroup) {
 	fmt.Println(address) // debug
 }
 
-// readNumericRange transforms a range of ports given in conf to an array of
+// readPortsRange transforms a range of ports given in conf to an array of
 // effective ports
-func readNumericRange(portsRange string) ([]string, error) {
-	var ports = []string{}
-	comaSplit := strings.Split(portsRange, ",")
-	for _, char := range comaSplit {
-		if strings.Contains(char, "-") {
-			decomposedRange := strings.Split(char, "-")
-			min, err := strconv.Atoi(decomposedRange[0])
-			if err != nil {
-				return nil, err
-			}
-			max, err := strconv.Atoi(decomposedRange[len(decomposedRange)-1])
-			if err != nil {
-				return nil, err
-			}
+func (t *Target) readPortsRange(protocol, portsRange string) error {
+	switch portsRange {
+	case "all":
+		for port := 1; port <= 65535; port++ {
+			t.portsToScan[protocol] = append(t.portsToScan[protocol], strconv.Itoa(port))
+		}
+	case "reserved":
+		for port := 1; port <= 1024; port++ {
+			t.portsToScan[protocol] = append(t.portsToScan[protocol], strconv.Itoa(port))
+		}
+	default:
+		comaSplit := strings.Split(portsRange, ",")
+		for _, char := range comaSplit {
+			if strings.Contains(char, "-") {
+				decomposedRange := strings.Split(char, "-")
+				min, err := strconv.Atoi(decomposedRange[0])
+				if err != nil {
+					return err
+				}
+				max, err := strconv.Atoi(decomposedRange[len(decomposedRange)-1])
+				if err != nil {
+					return err
+				}
 
-			for j := min; j <= max; j++ {
-				ports = append(ports, strconv.Itoa(j))
+				for j := min; j <= max; j++ {
+					t.portsToScan[protocol] = append(t.portsToScan[protocol], strconv.Itoa(j))
+				}
+			} else {
+				t.portsToScan[protocol] = append(t.portsToScan[protocol], char)
 			}
-		} else {
-			ports = append(ports, char)
 		}
 	}
-	return ports, nil
+	return nil
+}
+
+/*
+	feeder receive a target
+	parse it ports into a map
+	send the map content into a worker channel
+	it also starts workers
+*/
+func (t *Target) feeder() {
+	t.portsToScan = make(map[string][]interface{})
+	/*
+		make it concurrent ?
+	*/
+	// parse tcp ports
+	if err := t.readPortsRange("tcp", t.TCP.Range); err != nil {
+		log.Fatalf("an error occured while parsing tcp ports: %s")
+	}
+	// parse udp ports
+	if err := t.readPortsRange("udp", t.UDP.Range); err != nil {
+		log.Fatalf("an error occured while parsing udp ports: %s")
+	}
+
+	var wg sync.WaitGroup
+	for _, port := range t.portsToScan["tcp"] {
+		wg.Add(1)
+		go scanWorker("tcp", t.getAddress(fmt.Sprintf("%v", port)), &wg)
+	}
+	// comment lire le channel sans bloquer ?
+	// regarder "close" pour terminer un channel
+	wg.Wait()
 }

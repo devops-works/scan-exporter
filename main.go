@@ -53,7 +53,7 @@ func main() {
 
 	for i := 0; i < len(targetList); i++ {
 		t := targetList[i]
-		t.ParsePorts()
+		// t.ParsePorts()
 		log.Infof("Starting %s scan", t.Name)
 		t.Scan()
 	}
