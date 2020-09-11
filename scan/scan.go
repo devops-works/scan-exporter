@@ -125,10 +125,10 @@ func scanWorker(address string, wg *sync.WaitGroup) {
 	fmt.Println(address) // debug
 }
 
-// readRange transforms a range of ports given in conf to an array of
+// readNumericRange transforms a range of ports given in conf to an array of
 // effective ports
-func readRange(portsRange string) ([]int, error) {
-	var ports = []int{}
+func readNumericRange(portsRange string) ([]string, error) {
+	var ports = []string{}
 	comaSplit := strings.Split(portsRange, ",")
 	for _, char := range comaSplit {
 		if strings.Contains(char, "-") {
@@ -143,14 +143,14 @@ func readRange(portsRange string) ([]int, error) {
 			}
 
 			for j := min; j <= max; j++ {
-				ports = append(ports, j)
+				ports = append(ports, strconv.Itoa(j))
 			}
 		} else {
 			charInt, err := strconv.Atoi(char)
 			if err != nil {
 				return nil, err
 			}
-			ports = append(ports, charInt)
+			ports = append(ports, strconv.Itoa(charInt))
 		}
 	}
 	return ports, nil
