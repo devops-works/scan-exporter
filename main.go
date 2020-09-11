@@ -24,7 +24,7 @@ func main() {
 	if confFile == "" {
 		log.Fatalf("no config file specified")
 	}
-	
+
 	c := conf{}
 
 	conf, err := os.Open(confFile)
@@ -57,14 +57,6 @@ func main() {
 		log.Infof("Starting %s scan", t.Name)
 		t.Scan()
 	}
-}
-
-func getConfPath(args []string) string {
-	if len(args) > 1 {
-		return args[1]
-	}
-	// default config file
-	return "config.yaml"
 }
 
 // getConf reads confFile and unmarshall it
