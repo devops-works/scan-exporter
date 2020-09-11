@@ -21,10 +21,6 @@ func main() {
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.Parse()
 
-	if confFile == "" {
-		log.Fatalf("no config file specified")
-	}
-
 	c := conf{}
 
 	conf, err := os.Open(confFile)
@@ -44,12 +40,6 @@ func main() {
 		}
 		targetList = append(targetList, t)
 	}
-
-	/*
-		from now, we have a valid list of targets to scan in targetList.
-		next step is to parse ports ranges for each protocol, and fill
-		{tcp,udp}PortsToScan in each target instance in targetList
-	*/
 
 	for i := 0; i < len(targetList); i++ {
 		t := targetList[i]

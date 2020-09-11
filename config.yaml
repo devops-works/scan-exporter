@@ -1,15 +1,5 @@
 ---
 targets:
-  - name: "mock"
-    period: "6d"
-    ip: "154.123.46.54"
-    tcp:
-      range: "all"
-      expected: "22,33,44"
-    udp:
-      range: "1-1024"
-      expected: "22,53"
-
   - name: "blog"
     period: "1h"
     ip: "185.199.111.153"

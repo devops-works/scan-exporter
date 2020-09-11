@@ -30,11 +30,16 @@ type protocol struct {
 	Expected string `yaml:"expected"`
 }
 
-// Validate checks that target specification is valid
+// Validate checks that target specification is valid, and if target is responding
 func (t *Target) Validate() error {
 	if ip := net.ParseIP(t.IP); ip == nil {
 		return fmt.Errorf("unable to parse IP address %s", t.IP)
 	}
+
+	if !t.getStatus() {
+		return fmt.Errorf("%s seems to be down", t.IP)
+	}
+
 	return nil
 }
 
@@ -135,8 +140,9 @@ func (t *Target) feeder() {
 
 	var wg sync.WaitGroup
 	for _, port := range t.portsToScan["tcp"] {
-		wg.Add(1)
+		wg.Add(2)
 		go scanWorker("tcp", t.getAddress(fmt.Sprintf("%v", port)), &wg)
+		go scanWorker("udp", t.getAddress(fmt.Sprintf("%v", port)), &wg)
 	}
 	// comment lire le channel sans bloquer ?
 	// regarder "close" pour terminer un channel
