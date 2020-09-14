@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"devops-works/scan-exporter/metrics"
 	"fmt"
 	"log"
 	"net"
@@ -150,6 +151,9 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 }
 
 func (t *Target) reporter(mainWg *sync.WaitGroup) {
+	currentTime := time.Now()
+	logName := currentTime.Format("2006-01-02_15:04:05")
+	// logName := time.Now().String()
 	defer mainWg.Done()
 	t.portsOpen = make(map[string][]string)
 	for {
@@ -157,6 +161,9 @@ func (t *Target) reporter(mainWg *sync.WaitGroup) {
 		case openPort := <-reportChannel:
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
 			fmt.Println(t.IP + ":" + openPort.port + "/" + openPort.protocol) // debug
+
+			metrics.WriteLog(logName+"_"+t.Name, t.IP, openPort.port, openPort.protocol)
+
 		case <-time.After(5 * time.Second):
 			// when no new port fo 5sec, exit reporter
 			return
