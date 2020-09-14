@@ -163,7 +163,8 @@ func (t *Target) reporter(mainWg *sync.WaitGroup) {
 			fmt.Println(t.IP + ":" + openPort.port + "/" + openPort.protocol) // debug
 
 			metrics.WriteLog(logName+"_"+t.Name, t.IP, openPort.port, openPort.protocol)
-
+			// do something like metrics.Expose()
+			// check with team what and how
 		case <-time.After(5 * time.Second):
 			// when no new port fo 5sec, exit reporter
 			return
