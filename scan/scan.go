@@ -30,6 +30,11 @@ type protocol struct {
 	Expected string `yaml:"expected"`
 }
 
+type channelMsg struct {
+	protocol string
+	port     string
+}
+
 // Validate checks that target specification is valid, and if target is responding
 func (t *Target) Validate() error {
 	if ip := net.ParseIP(t.IP); ip == nil {
@@ -69,16 +74,17 @@ func (t *Target) Scan() {
 	t.feeder()
 }
 
-func scanWorker(protocol, address string, wg *sync.WaitGroup) {
+func scanWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	defer wg.Done()
+	todo := <-ch
 	// grâce aux map qui sont envoyées dans les chan, chaque worker recoit le protocol et le port
-	conn, err := net.DialTimeout(protocol, address, 2*time.Second)
+	conn, err := net.DialTimeout(todo.protocol, ip+":"+todo.port, 2*time.Second)
 	if err != nil {
 		// port is closed
 		return
 	}
 	conn.Close()
-	fmt.Println(address) // debug
+	fmt.Println(ip + ":" + todo.port) // debug
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of
@@ -137,9 +143,13 @@ func (t *Target) feeder() {
 	}
 
 	var wg sync.WaitGroup
+	workerChannel := make(chan channelMsg, 100)
 	for _, port := range t.portsToScan["tcp"] {
+		// msg hold informations about port to scan
+		var msg = channelMsg{protocol: "tcp", port: port}
+		workerChannel <- msg
 		wg.Add(1)
-		go scanWorker("tcp", t.getAddress(fmt.Sprintf("%v", port)), &wg)
+		go scanWorker(workerChannel, t.IP, &wg)
 	}
 	// comment lire le channel sans bloquer ?
 	// regarder "close" pour terminer un channel
