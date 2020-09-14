@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"flag"
 	"log"
 	"os"
 )
@@ -8,7 +9,9 @@ import (
 // WriteLog writes open ports in a log file, with a log format.
 // The name of the file is the scan date and time, and the name of the target
 func WriteLog(filename, ip, port, protocol string) {
-	f, err := os.OpenFile(filename+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// Lookup checks if logpath flag has been set. if not, it takes its default value ("./")
+	path := flag.Lookup("logpath").Value.(flag.Getter).Get().(string)
+	f, err := os.OpenFile(path+"/"+filename+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
 	}

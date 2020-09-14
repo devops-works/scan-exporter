@@ -16,6 +16,8 @@ type conf struct {
 	Targets []scan.Target `yaml:"targets"`
 }
 
+var logPath = flag.String("logpath", "./", "Path to save log files")
+
 func main() {
 	var confFile string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
