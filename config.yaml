@@ -1,14 +1,14 @@
 ---
 targets:
-  - name: "blog"
-    period: "1h"
-    ip: "185.199.111.153"
-    tcp:
-      range: "reserved"
-      expected: "22,33,44"
-    udp:
-      range: "1-1024"
-      expected: "22,53"
+  # - name: "blog"
+  #   period: "1h"
+  #   ip: "185.199.111.153"
+  #   tcp:
+  #     range: "reserved"
+  #     expected: "22,33,44"
+  #   udp:
+  #     range: "1-1024"
+  #     expected: "22,53"
 
   - name: "laptop"
     period: "1h"
