@@ -21,8 +21,8 @@ type Target struct {
 	UDP    protocol `yaml:"udp"`
 
 	// those maps hold the protocol and the ports
-	portsToScan map[string][]interface{}
-	portsOpen   map[string][]interface{}
+	portsToScan map[string][]string
+	portsOpen   map[string][]string
 }
 
 type protocol struct {
@@ -123,7 +123,7 @@ func (t *Target) readPortsRange(protocol, portsRange string) error {
 	Next to this, it starts workers that will gather ports from the channel.
 */
 func (t *Target) feeder() {
-	t.portsToScan = make(map[string][]interface{})
+	t.portsToScan = make(map[string][]string)
 	/*
 		make it concurrent ?
 	*/
