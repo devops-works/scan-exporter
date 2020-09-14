@@ -6,4 +6,3 @@ Export nmap scans to prometheus.
 * gérer period
 * créer packages
 * exposer métriques prometheus
-* écrire dans un fichier log
