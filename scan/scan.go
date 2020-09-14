@@ -35,6 +35,9 @@ type channelMsg struct {
 	port     string
 }
 
+// reportChannel holds open reports returned by workers
+var reportChannel = make(chan channelMsg, 1000)
+
 // Validate checks that target specification is valid, and if target is responding
 func (t *Target) Validate() error {
 	if ip := net.ParseIP(t.IP); ip == nil {
@@ -71,7 +74,11 @@ func (t *Target) getAddress(port string) string {
 
 // Scan starts a scan
 func (t *Target) Scan() {
-	t.feeder()
+	var mainWg sync.WaitGroup
+	mainWg.Add(2)
+	go t.feeder(&mainWg)
+	go t.reporter(&mainWg)
+	mainWg.Wait()
 }
 
 func scanWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
@@ -84,7 +91,9 @@ func scanWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 		return
 	}
 	conn.Close()
-	fmt.Println(ip + ":" + todo.port) // debug
+	// fmt.Println(ip + ":" + todo.port) // debug
+	var toSend = channelMsg{protocol: todo.protocol, port: todo.port}
+	reportChannel <- toSend
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of
@@ -128,7 +137,8 @@ func (t *Target) readPortsRange(protocol, portsRange string) error {
 	feeder() parses Target's port into maps. Once it is done, it sends the map content into a channel.
 	Next to this, it starts workers that will gather ports from the channel.
 */
-func (t *Target) feeder() {
+func (t *Target) feeder(mainWg *sync.WaitGroup) {
+	defer mainWg.Done()
 	t.portsToScan = make(map[string][]string)
 	/*
 		make it concurrent ?
@@ -154,4 +164,19 @@ func (t *Target) feeder() {
 	// comment lire le channel sans bloquer ?
 	// regarder "close" pour terminer un channel
 	wg.Wait()
+}
+
+func (t *Target) reporter(mainWg *sync.WaitGroup) {
+	defer mainWg.Done()
+	t.portsOpen = make(map[string][]string)
+	for {
+		select {
+		case openPort := <-reportChannel:
+			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
+			fmt.Println(t.IP + ":" + openPort.port)
+		case <-time.After(5 * time.Second):
+			// when no new port fo 5sec, exit reporter
+			return
+		}
+	}
 }
