@@ -158,7 +158,7 @@ func (t *Target) reporter(mainWg *sync.WaitGroup) {
 		select {
 		case openPort := <-reportChannel:
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
-			fmt.Println(t.IP + ":" + openPort.port) // debug
+			fmt.Println(t.IP + ":" + openPort.port + "/" + openPort.protocol) // debug
 		case <-time.After(5 * time.Second):
 			// when no new port fo 5sec, exit reporter
 			return
