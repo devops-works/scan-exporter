@@ -3,6 +3,7 @@
 Export nmap scans to prometheus.
 
 ### TODO
-* créer channels pour le scan
 * gérer period
 * créer packages
+* exposer métriques prometheus
+* écrire dans un fichier log
