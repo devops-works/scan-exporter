@@ -38,6 +38,15 @@ type channelMsg struct {
 // reportChannel holds open reports returned by workers
 var reportChannel = make(chan channelMsg, 1000)
 
+// Scan starts a scan
+func (t *Target) Scan() {
+	var mainWg sync.WaitGroup
+	mainWg.Add(2)
+	go t.feeder(&mainWg)
+	go t.reporter(&mainWg)
+	mainWg.Wait()
+}
+
 // Validate checks that target specification is valid, and if target is responding
 func (t *Target) Validate() error {
 	if ip := net.ParseIP(t.IP); ip == nil {
@@ -70,30 +79,6 @@ func (t *Target) getStatus() bool {
 // getAddress returns hostname:port format
 func (t *Target) getAddress(port string) string {
 	return t.IP + ":" + port
-}
-
-// Scan starts a scan
-func (t *Target) Scan() {
-	var mainWg sync.WaitGroup
-	mainWg.Add(2)
-	go t.feeder(&mainWg)
-	go t.reporter(&mainWg)
-	mainWg.Wait()
-}
-
-func scanWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	todo := <-ch
-	// grâce aux map qui sont envoyées dans les chan, chaque worker recoit le protocol et le port
-	conn, err := net.DialTimeout(todo.protocol, ip+":"+todo.port, 2*time.Second)
-	if err != nil {
-		// port is closed
-		return
-	}
-	conn.Close()
-	// fmt.Println(ip + ":" + todo.port) // debug
-	var toSend = channelMsg{protocol: todo.protocol, port: todo.port}
-	reportChannel <- toSend
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of
@@ -173,10 +158,24 @@ func (t *Target) reporter(mainWg *sync.WaitGroup) {
 		select {
 		case openPort := <-reportChannel:
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
-			fmt.Println(t.IP + ":" + openPort.port)
+			fmt.Println(t.IP + ":" + openPort.port) // debug
 		case <-time.After(5 * time.Second):
 			// when no new port fo 5sec, exit reporter
 			return
 		}
 	}
+}
+
+func scanWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	todo := <-ch
+	// grâce aux map qui sont envoyées dans les chan, chaque worker recoit le protocol et le port
+	conn, err := net.DialTimeout(todo.protocol, ip+":"+todo.port, 2*time.Second)
+	if err != nil {
+		// port is closed
+		return
+	}
+	conn.Close()
+	var toSend = channelMsg{protocol: todo.protocol, port: todo.port}
+	reportChannel <- toSend
 }
