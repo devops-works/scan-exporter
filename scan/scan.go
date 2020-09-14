@@ -151,10 +151,10 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 }
 
 func (t *Target) reporter(mainWg *sync.WaitGroup) {
+	defer mainWg.Done()
 	currentTime := time.Now()
 	logName := currentTime.Format("2006-01-02_15:04:05")
 	// logName := time.Now().String()
-	defer mainWg.Done()
 	t.portsOpen = make(map[string][]string)
 	for {
 		select {
