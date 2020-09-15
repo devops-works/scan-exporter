@@ -10,16 +10,19 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/sparrc/go-ping"
 )
 
 // Target holds an IP and a range of ports to scan
 type Target struct {
-	Name   string   `yaml:"name"`
-	Period string   `yaml:"period"`
-	IP     string   `yaml:"ip"`
-	TCP    protocol `yaml:"tcp"`
-	UDP    protocol `yaml:"udp"`
+	name   string
+	period string
+	ip     string
+	tcp    protocol
+	udp    protocol
+
+	logger zerolog.Logger
 
 	// those maps hold the protocol and the ports
 	portsToScan map[string][]string
@@ -27,8 +30,8 @@ type Target struct {
 }
 
 type protocol struct {
-	Range    string `yaml:"range"`
-	Expected string `yaml:"expected"`
+	rng      string
+	expected string
 }
 
 type channelMsg struct {
@@ -41,31 +44,88 @@ var reportChannel = make(chan channelMsg, 1000)
 
 // Scan starts a scan
 func (t *Target) Scan() {
-	var mainWg sync.WaitGroup
-	mainWg.Add(2)
-	go t.feeder(&mainWg)
-	go t.reporter(&mainWg)
-	mainWg.Wait()
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go t.feeder(&wg)
+	go t.reporter(&wg)
+	wg.Wait()
 }
 
-// Validate checks that target specification is valid, and if target is responding
-func (t *Target) Validate() error {
-	if ip := net.ParseIP(t.IP); ip == nil {
-		return fmt.Errorf("unable to parse IP address %s", t.IP)
+// New checks that target specification is valid, and if target is responding
+func New(name, period, ip string, o ...func(*Target) error) (*Target, error) {
+	if i := net.ParseIP(ip); i == nil {
+		return nil, fmt.Errorf("unable to parse IP address %s", ip)
 	}
 
-	if !t.getStatus() {
-		return fmt.Errorf("%s seems to be down", t.IP)
+	t := &Target{
+		name:   name,
+		period: period,
+		ip:     ip,
+	}
+
+	for _, f := range o {
+		if err := f(t); err != nil {
+			return nil, err
+		}
+	}
+
+	// if !t.getStatus() {
+	// 	return fmt.Errorf("%s seems to be down", t.ip)
+	// }
+
+	return t, nil
+}
+
+// WithPorts adds TCP or UDP ports specifications to scan target
+func WithPorts(proto, rng, expected string) func(*Target) error {
+	return func(t *Target) error {
+		return t.setPorts(proto, rng, expected)
+	}
+}
+
+// Name returns the target's name
+func (t *Target) Name() string {
+	return t.name
+}
+
+func (t *Target) setPorts(proto, rng, exp string) error {
+	// TODO: check ranges to see if they are valid
+	switch proto {
+	case "tcp":
+		t.tcp = protocol{
+			rng:      rng,
+			expected: exp,
+		}
+	case "udp":
+		t.udp = protocol{
+			rng:      rng,
+			expected: exp,
+		}
+	default:
+		return fmt.Errorf("unsuppoted protocol %q for target %s", proto, t.name)
 	}
 
 	return nil
 }
 
+// WithLogger adds TCP specifications to scan target
+func WithLogger(l zerolog.Logger) func(*Target) error {
+	return func(t *Target) error {
+		return t.setLogger(l)
+	}
+}
+
+// setLogger sets the logger on a target
+func (t *Target) setLogger(l zerolog.Logger) error {
+	t.logger = l
+	return nil
+}
+
 // getStatus returns true if the target respond to ping requests
 func (t *Target) getStatus() bool {
-	pinger, err := ping.NewPinger(t.IP)
+	pinger, err := ping.NewPinger(t.ip)
 	if err != nil {
-		log.Fatalf("error occured while creating the pinger %s: %s", t.IP, err)
+		log.Fatalf("error occured while creating the pinger %s: %s", t.ip, err)
 	}
 	pinger.Timeout = 2 * time.Second
 	pinger.Count = 3
@@ -79,7 +139,7 @@ func (t *Target) getStatus() bool {
 
 // getAddress returns hostname:port format
 func (t *Target) getAddress(port string) string {
-	return t.IP + ":" + port
+	return t.ip + ":" + port
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of
@@ -130,11 +190,11 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 		make it concurrent ?
 	*/
 	// parse tcp ports
-	if err := t.readPortsRange("tcp", t.TCP.Range); err != nil {
+	if err := t.readPortsRange("tcp", t.tcp.rng); err != nil {
 		log.Fatalf("an error occured while parsing tcp ports: %s", err)
 	}
 	// parse udp ports
-	if err := t.readPortsRange("udp", t.UDP.Range); err != nil {
+	if err := t.readPortsRange("udp", t.udp.rng); err != nil {
 		log.Fatalf("an error occured while parsing udp ports: %s", err)
 	}
 
@@ -145,7 +205,7 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 		var msg = channelMsg{protocol: "tcp", port: port}
 		workerChannel <- msg
 		wg.Add(1)
-		go scanWorker(workerChannel, t.IP, &wg)
+		go scanWorker(workerChannel, t.ip, &wg)
 	}
 	wg.Wait()
 }
@@ -160,9 +220,9 @@ func (t *Target) reporter(mainWg *sync.WaitGroup) {
 		select {
 		case openPort := <-reportChannel:
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
-			fmt.Println(t.IP + ":" + openPort.port + "/" + openPort.protocol) // debug
+			// fmt.Println(t.ip + ":" + openPort.port + "/" + openPort.protocol) // debug
 
-			metrics.WriteLog(logName+"_"+t.Name, t.IP, openPort.port, openPort.protocol)
+			metrics.WriteLog(logName+"_"+t.Name(), t.ip, openPort.port, openPort.protocol)
 			// do something like metrics.Expose()
 			// check with team what and how
 		case <-time.After(5 * time.Second):
