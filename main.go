@@ -2,33 +2,13 @@ package main
 
 import (
 	"flag"
-	"io"
-	"io/ioutil"
 	"os"
 
+	"devops-works/scan-exporter/config"
 	"devops-works/scan-exporter/scan"
 
 	"github.com/rs/zerolog"
-	"gopkg.in/yaml.v2"
 )
-
-// target holds an IP and a range of ports to scan
-type target struct {
-	Name   string   `yaml:"name"`
-	Period string   `yaml:"period"`
-	IP     string   `yaml:"ip"`
-	TCP    protocol `yaml:"tcp"`
-	UDP    protocol `yaml:"udp"`
-}
-
-type protocol struct {
-	Range    string `yaml:"range"`
-	Expected string `yaml:"expected"`
-}
-
-type conf struct {
-	Targets []target `yaml:"targets"`
-}
 
 var logPath = flag.String("logpath", "./", "Path to save log files")
 
@@ -37,8 +17,6 @@ func main() {
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&logLevel, "loglevel", "info", "log level to use")
 	flag.Parse()
-
-	c := conf{}
 
 	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 
@@ -49,13 +27,7 @@ func main() {
 
 	logger = logger.Level(lvl).With().Logger()
 
-
-	conf, err := os.Open(confFile)
-	if err != nil {
-		logger.Fatal().Msgf("unable to open config %s: %v", confFile, err)
-	}
-
-	err = c.getConf(conf)
+	c, err := config.New(confFile)
 	if err != nil {
 		logger.Fatal().Msgf("unable to read config %s: %v", confFile, err)
 	}
@@ -86,18 +58,4 @@ func main() {
 		logger.Info().Msgf("Starting %s scan", t.Name())
 		t.Scan()
 	}
-}
-
-// getConf reads confFile and unmarshall it
-func (c *conf) getConf(r io.Reader) error {
-	yamlConf, err := ioutil.ReadAll(r)
-	if err != nil {
-		return err
-	}
-
-	if err = yaml.Unmarshal(yamlConf, &c); err != nil {
-		return err
-	}
-
-	return nil
 }
