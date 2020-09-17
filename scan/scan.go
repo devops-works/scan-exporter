@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/sparrc/go-ping"
 )
 
 // Target holds an IP and a range of ports to scan
@@ -69,10 +68,6 @@ func New(name, period, ip string, o ...func(*Target) error) (*Target, error) {
 		}
 	}
 
-	// if !t.getStatus() {
-	// 	return fmt.Errorf("%s seems to be down", t.ip)
-	// }
-
 	return t, nil
 }
 
@@ -119,22 +114,6 @@ func WithLogger(l zerolog.Logger) func(*Target) error {
 func (t *Target) setLogger(l zerolog.Logger) error {
 	t.logger = l
 	return nil
-}
-
-// getStatus returns true if the target respond to ping requests
-func (t *Target) getStatus() bool {
-	pinger, err := ping.NewPinger(t.ip)
-	if err != nil {
-		log.Fatalf("error occured while creating the pinger %s: %s", t.ip, err)
-	}
-	pinger.Timeout = 2 * time.Second
-	pinger.Count = 3
-	pinger.Run()
-	stats := pinger.Statistics()
-	if stats.PacketLoss == 100.0 {
-		return false
-	}
-	return true
 }
 
 // getAddress returns hostname:port format
