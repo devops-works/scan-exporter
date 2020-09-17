@@ -108,7 +108,7 @@ func (t *Target) setPorts(proto, rng, exp string) error {
 	return nil
 }
 
-// WithLogger adds TCP specifications to scan target
+// WithLogger adds logger specifications to scan target
 func WithLogger(l zerolog.Logger) func(*Target) error {
 	return func(t *Target) error {
 		return t.setLogger(l)
