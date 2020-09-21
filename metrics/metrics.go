@@ -4,11 +4,22 @@ import (
 	"flag"
 	"log"
 	"os"
+	"time"
 )
 
-// WriteLog writes open ports in a log file, with a log format.
-// The name of the file is the scan date and time, and the name of the target
-func WriteLog(filename, ip, port, protocol string) {
+// Exploit exploits each ports received by reporter.
+// It should write in a log, but also expose prometheus metrics.
+func Exploit(name, ip, port, protocol string) {
+	currentTime := time.Now()
+	logName := currentTime.Format("2006-01-02_15:04:05")
+	writeLog(logName+"_"+name, ip, port, protocol)
+
+	// write something like expose() which will expose metrics to prometheus
+}
+
+// writeLog writes open ports in a log file, with a log format.
+// The name of the file is the scan date and time, and the name of the target.
+func writeLog(filename, ip, port, protocol string) {
 	// Lookup checks if logpath flag has been set. if not, it takes its default value ("./")
 	path := flag.Lookup("logpath").Value.(flag.Getter).Get().(string)
 	f, err := os.OpenFile(path+"/"+filename+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

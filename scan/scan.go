@@ -229,14 +229,10 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 		go udpWorker(udpChannel, t.ip, &wg)
 	}
 	wg.Wait()
-
 }
 
 func (t *Target) reporter(wg *sync.WaitGroup) {
 	defer wg.Done()
-
-	currentTime := time.Now()
-	logName := currentTime.Format("2006-01-02_15:04:05")
 
 	t.portsOpen = make(map[string][]string)
 
@@ -245,9 +241,7 @@ func (t *Target) reporter(wg *sync.WaitGroup) {
 		case openPort := <-reportChannel:
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
 
-			metrics.WriteLog(logName+"_"+t.Name(), t.ip, openPort.port, openPort.protocol)
-			// do something like metrics.Expose()
-			// check with team what and how
+			metrics.Exploit(t.name, t.ip, openPort.port, openPort.protocol)
 		case <-time.After(maxRTT):
 			// when no new port fo 5sec, exit reporter
 			return
