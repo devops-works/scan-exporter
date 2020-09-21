@@ -32,7 +32,7 @@ func main() {
 		logger.Fatal().Msgf("unable to read config %s: %v", confFile, err)
 	}
 
-	logger.Info().Msgf("%d targets found in %s", len(c.Targets), confFile)
+	logger.Info().Msgf("%d target(s) found in %s", len(c.Targets), confFile)
 
 	// targetList is an array that will contain each instance of up target found in conf file
 	targetList := []*scan.Target{}
