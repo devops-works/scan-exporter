@@ -220,8 +220,8 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 	}
 }
 
-func (t *Target) reporter(mainWg *sync.WaitGroup) {
-	defer mainWg.Done()
+func (t *Target) reporter(wg *sync.WaitGroup) {
+	defer wg.Done()
 	currentTime := time.Now()
 	logName := currentTime.Format("2006-01-02_15:04:05")
 	// logName := time.Now().String()
