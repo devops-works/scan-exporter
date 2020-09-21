@@ -311,9 +311,20 @@ func udpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 
 func icmpWorker(ip string) {
 	p := fastping.NewPinger()
-	ra, err := net.ResolveIPAddr("ip4:icmp", ip)
-	if err != nil {
-		return
+	var ra *net.IPAddr
+	var err error
+
+	// check if the ip is v4 or v6
+	if strings.Contains(ip, ".") {
+		ra, err = net.ResolveIPAddr("ip4:icmp", ip)
+		if err != nil {
+			return
+		}
+	} else if strings.Contains(ip, ":") {
+		ra, err = net.ResolveIPAddr("ip6:icmp", ip)
+		if err != nil {
+			return
+		}
 	}
 
 	p.AddIPAddr(ra)
@@ -332,8 +343,7 @@ func icmpWorker(ip string) {
 		return
 	}
 
-	err = p.Run()
-	if err != nil {
+	if err := p.Run(); err != nil {
 		// it will end up here if the program is not launched as superuser
 		return
 	}
