@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/tatsushid/go-fastping"
 )
 
 // Target holds an IP and a range of ports to scan
@@ -197,6 +198,11 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 
 	var wg sync.WaitGroup
 
+	// ping the target
+	if t.icmp.period != "" {
+		icmpWorker(t.ip)
+	}
+
 	// TCP scan
 	tcpChannel := make(chan channelMsg, 100)
 	for _, port := range t.portsToScan["tcp"] {
@@ -219,9 +225,6 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 	}
 	wg.Wait()
 
-	if t.icmp.period != "" {
-		icmpWorker()
-	}
 }
 
 func (t *Target) reporter(wg *sync.WaitGroup) {
@@ -297,5 +300,23 @@ func udpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	reportChannel <- toSend
 }
 
-func icmpWorker() {
+func icmpWorker(ip string) {
+	p := fastping.NewPinger()
+	ra, err := net.ResolveIPAddr("ip4:icmp", ip)
+	if err != nil {
+		return
+	}
+	p.AddIPAddr(ra)
+	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+		var toSend = channelMsg{protocol: "icmp"}
+		reportChannel <- toSend
+	}
+	p.OnIdle = func() {
+		return
+	}
+	err = p.Run()
+	if err != nil {
+		return
+	}
+
 }

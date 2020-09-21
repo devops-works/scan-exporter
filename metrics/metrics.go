@@ -18,5 +18,9 @@ func WriteLog(filename, ip, port, protocol string) {
 	defer f.Close()
 
 	logger := log.New(f, "", log.LstdFlags)
-	logger.Printf("%s:%s/%s\n", ip, port, protocol)
+	if protocol == "icmp" {
+		logger.Printf("%s responds to ping\n", ip)
+	} else {
+		logger.Printf("%s:%s/%s\n", ip, port, protocol)
+	}
 }
