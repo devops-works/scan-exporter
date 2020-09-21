@@ -243,7 +243,7 @@ func (t *Target) reporter(wg *sync.WaitGroup) {
 
 			metrics.Exploit(t.name, t.ip, openPort.port, openPort.protocol)
 		case <-time.After(maxRTT):
-			// when no new port fo 5sec, exit reporter
+			// when no new port for maxRTT, exit reporter
 			return
 		}
 	}
