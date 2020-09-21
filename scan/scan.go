@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -84,7 +85,8 @@ func (t *Target) Name() string {
 }
 
 func (t *Target) setPorts(proto, period, rng, exp string) error {
-	// TODO: check ranges to see if they are valid
+	// TODO: check ranges and periods to see if they are valid
+
 	switch proto {
 	case "tcp":
 		t.tcp = protocol{
@@ -100,6 +102,12 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 		}
 	default:
 		return fmt.Errorf("unsupported protocol %q for target %s", proto, t.name)
+	}
+
+	// check if the period is in a correct format
+	re := regexp.MustCompile(`[0-9]+[dhms]$`)
+	if !re.Match([]byte(period)) {
+		return fmt.Errorf("unsupported period format %q for protocol %q", period, proto)
 	}
 
 	return nil
