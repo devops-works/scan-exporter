@@ -45,11 +45,6 @@ type channelMsg struct {
 // reportChannel holds open reports returned by workers
 var reportChannel = make(chan channelMsg, 1000)
 
-// maxRTT holds the maximal RTT from a host.
-// By default, this value is set to 5sec.
-// It can be overwritten if icmp scan is done on target.
-var maxRTT = 5 * time.Second
-
 // Scan starts a scan
 func (t *Target) Scan() {
 	var wg sync.WaitGroup
@@ -274,9 +269,6 @@ func (t *Target) reporter(wg *sync.WaitGroup) {
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
 
 			metrics.Exploit(currentTime, t.name, t.ip, openPort.port, openPort.protocol)
-			// case <-time.After(maxRTT):
-			// 	// when no new port for maxRTT, exit reporter
-			// 	return
 		}
 	}
 }
@@ -398,10 +390,6 @@ func icmpWorker(ip string) {
 		// icmpWorker does not send port. See metrics.WriteLog()
 		var toSend = channelMsg{protocol: "icmp"}
 		reportChannel <- toSend
-		if 2*rtt != 0 {
-			// set maxRTT to 2*rtt measured if the value is not too low
-			maxRTT = 2 * rtt
-		}
 	}
 
 	p.OnIdle = func() {
