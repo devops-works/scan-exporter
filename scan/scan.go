@@ -314,7 +314,8 @@ func icmpWorker(ip string) {
 	var ra *net.IPAddr
 	var err error
 
-	// check if the ip is v4 or v6
+	// check if the ip is v4 or v6. We do not need to check IP validity as it is already
+	// done in New().
 	if strings.Contains(ip, ".") {
 		ra, err = net.ResolveIPAddr("ip4:icmp", ip)
 		if err != nil {
