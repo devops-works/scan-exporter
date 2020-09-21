@@ -182,17 +182,21 @@ func (t *Target) readPortsRange(protocol, portsRange string) error {
 */
 func (t *Target) feeder(mainWg *sync.WaitGroup) {
 	defer mainWg.Done()
+
 	t.portsToScan = make(map[string][]string)
+
 	// parse tcp ports
 	if err := t.readPortsRange("tcp", t.tcp.rng); err != nil {
 		log.Fatalf("an error occured while parsing tcp ports: %s", err)
 	}
+
 	// parse udp ports
 	if err := t.readPortsRange("udp", t.udp.rng); err != nil {
 		log.Fatalf("an error occured while parsing udp ports: %s", err)
 	}
 
 	var wg sync.WaitGroup
+
 	// TCP scan
 	tcpChannel := make(chan channelMsg, 100)
 	for _, port := range t.portsToScan["tcp"] {
@@ -222,15 +226,16 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 
 func (t *Target) reporter(wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	currentTime := time.Now()
 	logName := currentTime.Format("2006-01-02_15:04:05")
-	// logName := time.Now().String()
+
 	t.portsOpen = make(map[string][]string)
+
 	for {
 		select {
 		case openPort := <-reportChannel:
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
-			// fmt.Println(t.ip + ":" + openPort.port + "/" + openPort.protocol) // debug
 
 			metrics.WriteLog(logName+"_"+t.Name(), t.ip, openPort.port, openPort.protocol)
 			// do something like metrics.Expose()
@@ -244,6 +249,7 @@ func (t *Target) reporter(wg *sync.WaitGroup) {
 
 func tcpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	todo := <-ch
 	// grâce aux map qui sont envoyées dans les chan, chaque worker recoit le protocol et le port
 	conn, err := net.DialTimeout(todo.protocol, ip+":"+todo.port, 2*time.Second)
@@ -252,18 +258,20 @@ func tcpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 		return
 	}
 	conn.Close()
+
 	var toSend = channelMsg{protocol: todo.protocol, port: todo.port}
 	reportChannel <- toSend
 }
 
 func udpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	todo := <-ch
+
 	serverAddr, err := net.ResolveUDPAddr(todo.protocol, ip+":"+todo.port)
 	if err != nil {
 		return
 	}
-
 	conn, err := net.DialUDP(todo.protocol, nil, serverAddr)
 	if err != nil {
 		return
@@ -280,11 +288,11 @@ func udpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 			errorCount++
 		}
 	}
-
 	if errorCount > 0 {
 		// port is closed
 		return
 	}
+
 	var toSend = channelMsg{protocol: todo.protocol, port: todo.port}
 	reportChannel <- toSend
 }
