@@ -331,6 +331,7 @@ func icmpWorker(ip string) {
 
 	err = p.Run()
 	if err != nil {
+		// it will end up here if the program is not launched as superuser
 		return
 	}
 
