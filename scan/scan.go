@@ -267,6 +267,7 @@ func (t *Target) reporter(wg *sync.WaitGroup) {
 	}
 }
 
+// tcpWorker does a TCP scan on a given ip and send the result to reportChannel
 func tcpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -283,6 +284,7 @@ func tcpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	reportChannel <- toSend
 }
 
+// udpWorker does an UDP scan on a given ip and send the result to reportChannel
 func udpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -317,6 +319,7 @@ func udpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	reportChannel <- toSend
 }
 
+// icmpWorker does an ICMP request on a given ip and send the result to reportChannel
 func icmpWorker(ip string) {
 	var ra *net.IPAddr
 	var err error
