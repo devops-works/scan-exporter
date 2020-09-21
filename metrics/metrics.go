@@ -9,9 +9,8 @@ import (
 
 // Exploit exploits each ports received by reporter.
 // It should write in a log, but also expose prometheus metrics.
-func Exploit(name, ip, port, protocol string) {
-	currentTime := time.Now()
-	logName := currentTime.Format("2006-01-02_15:04:05")
+func Exploit(time time.Time, name, ip, port, protocol string) {
+	logName := time.Format("2006-01-02_15:04:05")
 	writeLog(logName+"_"+name, ip, port, protocol)
 
 	// write something like expose() which will expose metrics to prometheus

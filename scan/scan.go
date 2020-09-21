@@ -124,6 +124,13 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 		}
 	}
 
+	if proto != "icmp" {
+		re := regexp.MustCompile(`(\d+)([-,]\s*\d+)*|^all$|^reserved$`)
+		if !re.Match([]byte(rng)) {
+			return fmt.Errorf("unsupported range format %q for protocol %q", rng, proto)
+		}
+	}
+
 	return nil
 }
 
@@ -235,13 +242,14 @@ func (t *Target) reporter(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	t.portsOpen = make(map[string][]string)
+	currentTime := time.Now()
 
 	for {
 		select {
 		case openPort := <-reportChannel:
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
 
-			metrics.Exploit(t.name, t.ip, openPort.port, openPort.protocol)
+			metrics.Exploit(currentTime, t.name, t.ip, openPort.port, openPort.protocol)
 		case <-time.After(maxRTT):
 			// when no new port for maxRTT, exit reporter
 			return
@@ -316,7 +324,6 @@ func icmpWorker(ip string) {
 			// set maxRTT to 2*rtt measured if the value is not too low
 			maxRTT = 2 * rtt
 		}
-		fmt.Println(maxRTT)
 	}
 
 	p.OnIdle = func() {
