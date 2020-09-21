@@ -29,6 +29,7 @@ type Target struct {
 }
 
 type protocol struct {
+	period   string
 	rng      string
 	expected string
 }
@@ -51,15 +52,14 @@ func (t *Target) Scan() {
 }
 
 // New checks that target specification is valid, and if target is responding
-func New(name, period, ip string, o ...func(*Target) error) (*Target, error) {
+func New(name, ip string, o ...func(*Target) error) (*Target, error) {
 	if i := net.ParseIP(ip); i == nil {
 		return nil, fmt.Errorf("unable to parse IP address %s", ip)
 	}
 
 	t := &Target{
-		name:   name,
-		period: period,
-		ip:     ip,
+		name: name,
+		ip:   ip,
 	}
 
 	for _, f := range o {
@@ -72,9 +72,9 @@ func New(name, period, ip string, o ...func(*Target) error) (*Target, error) {
 }
 
 // WithPorts adds TCP or UDP ports specifications to scan target
-func WithPorts(proto, rng, expected string) func(*Target) error {
+func WithPorts(proto, period, rng, expected string) func(*Target) error {
 	return func(t *Target) error {
-		return t.setPorts(proto, rng, expected)
+		return t.setPorts(proto, period, rng, expected)
 	}
 }
 
@@ -83,21 +83,23 @@ func (t *Target) Name() string {
 	return t.name
 }
 
-func (t *Target) setPorts(proto, rng, exp string) error {
+func (t *Target) setPorts(proto, period, rng, exp string) error {
 	// TODO: check ranges to see if they are valid
 	switch proto {
 	case "tcp":
 		t.tcp = protocol{
+			period:   period,
 			rng:      rng,
 			expected: exp,
 		}
 	case "udp":
 		t.udp = protocol{
+			period:   period,
 			rng:      rng,
 			expected: exp,
 		}
 	default:
-		return fmt.Errorf("unsuppoted protocol %q for target %s", proto, t.name)
+		return fmt.Errorf("unsupported protocol %q for target %s", proto, t.name)
 	}
 
 	return nil

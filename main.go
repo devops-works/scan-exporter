@@ -39,10 +39,9 @@ func main() {
 	for _, target := range c.Targets {
 		t, err := scan.New(
 			target.Name,
-			target.Period,
 			target.IP,
-			scan.WithPorts("tcp", target.TCP.Range, target.TCP.Expected),
-			scan.WithPorts("udp", target.UDP.Range, target.UDP.Expected),
+			scan.WithPorts("tcp", target.TCP.Period, target.TCP.Range, target.TCP.Expected),
+			scan.WithPorts("udp", target.UDP.Period, target.UDP.Range, target.UDP.Expected),
 			scan.WithLogger(logger),
 		)
 

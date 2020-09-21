@@ -9,14 +9,14 @@ import (
 
 // target holds an IP and a range of ports to scan
 type target struct {
-	Name   string   `yaml:"name"`
-	Period string   `yaml:"period"`
-	IP     string   `yaml:"ip"`
-	TCP    protocol `yaml:"tcp"`
-	UDP    protocol `yaml:"udp"`
+	Name string   `yaml:"name"`
+	IP   string   `yaml:"ip"`
+	TCP  protocol `yaml:"tcp"`
+	UDP  protocol `yaml:"udp"`
 }
 
 type protocol struct {
+	Period   string `yaml:"period"`
 	Range    string `yaml:"range"`
 	Expected string `yaml:"expected"`
 }

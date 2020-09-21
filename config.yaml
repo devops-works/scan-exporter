@@ -11,11 +11,12 @@ targets:
   #     expected: "22,53"
 
   - name: "laptop"
-    period: "1h"
     ip: "127.0.0.1"
     tcp:
+      period: "1h"
       range: "all"
       expected: "22,33,44"
     udp:
+      period: "2h"
       range: "1-1024"
       expected: "22,53"
