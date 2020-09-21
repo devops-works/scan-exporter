@@ -263,13 +263,13 @@ func tcpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	todo := <-ch
-	// grâce aux map qui sont envoyées dans les chan, chaque worker recoit le protocol et le port
+
 	conn, err := net.DialTimeout(todo.protocol, ip+":"+todo.port, 2*time.Second)
 	if err != nil {
 		// port is closed
 		return
 	}
-	conn.Close()
+	defer conn.Close()
 
 	var toSend = channelMsg{protocol: todo.protocol, port: todo.port}
 	reportChannel <- toSend
@@ -310,9 +310,10 @@ func udpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 }
 
 func icmpWorker(ip string) {
-	p := fastping.NewPinger()
 	var ra *net.IPAddr
 	var err error
+
+	p := fastping.NewPinger()
 
 	// check if the ip is v4 or v6. We do not need to check IP validity as it is already
 	// done in New().
