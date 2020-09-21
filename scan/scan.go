@@ -204,6 +204,9 @@ func (p *protocol) getFreq() (time.Duration, error) {
 // Next to this, it starts workers that will gather ports from the channel.
 func (t *Target) feeder(mainWg *sync.WaitGroup) {
 	defer mainWg.Done()
+	trigger := make(chan string, 10)
+
+	go t.scheduler(trigger, "tcp", "udp", "icmp")
 
 	t.portsToScan = make(map[string][]string)
 
@@ -219,32 +222,70 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 
 	var wg sync.WaitGroup
 
-	// ping the target if asked in conf file
-	if t.icmp.period != "" {
-		icmpWorker(t.ip)
-	}
+	for {
+		select {
+		case proto := <-trigger:
+			switch proto {
+			case "tcp":
+				fmt.Printf("TCP at %s\n", time.Now().String()) // debug
+				// TCP scan
+				tcpChannel := make(chan channelMsg, 100)
+				for _, port := range t.portsToScan["tcp"] {
+					// msg hold informations about port to scan
+					var msg = channelMsg{protocol: "tcp", port: port}
+					tcpChannel <- msg
+					wg.Add(1)
+					go tcpWorker(tcpChannel, t.ip, &wg)
+				}
+				wg.Wait()
+			case "udp":
+				fmt.Printf("UDP at %s\n", time.Now().String()) //debug
+				// UDP scan
+				udpChannel := make(chan channelMsg, 100)
+				for _, port := range t.portsToScan["udp"] {
+					// msg hold informations about port to scan
+					var msg = channelMsg{protocol: "udp", port: port}
+					udpChannel <- msg
+					wg.Add(1)
+					go udpWorker(udpChannel, t.ip, &wg)
+				}
+				wg.Wait()
+			case "icmp":
+				fmt.Printf("ICMP at %s\n", time.Now().String()) //debug
+				// ping the target if asked in conf file
+				if t.icmp.period != "" {
+					icmpWorker(t.ip)
+				}
+			}
+		}
+		// }
+		// // ping the target if asked in conf file
+		// if t.icmp.period != "" {
+		// 	icmpWorker(t.ip)
+		// }
 
-	// TCP scan
-	tcpChannel := make(chan channelMsg, 100)
-	for _, port := range t.portsToScan["tcp"] {
-		// msg hold informations about port to scan
-		var msg = channelMsg{protocol: "tcp", port: port}
-		tcpChannel <- msg
-		wg.Add(1)
-		go tcpWorker(tcpChannel, t.ip, &wg)
-	}
-	wg.Wait()
+		// // TCP scan
+		// tcpChannel := make(chan channelMsg, 100)
+		// for _, port := range t.portsToScan["tcp"] {
+		// 	// msg hold informations about port to scan
+		// 	var msg = channelMsg{protocol: "tcp", port: port}
+		// 	tcpChannel <- msg
+		// 	wg.Add(1)
+		// 	go tcpWorker(tcpChannel, t.ip, &wg)
+		// }
+		// wg.Wait()
 
-	// UDP scan
-	udpChannel := make(chan channelMsg, 100)
-	for _, port := range t.portsToScan["udp"] {
-		// msg hold informations about port to scan
-		var msg = channelMsg{protocol: "udp", port: port}
-		udpChannel <- msg
-		wg.Add(1)
-		go udpWorker(udpChannel, t.ip, &wg)
+		// // UDP scan
+		// udpChannel := make(chan channelMsg, 100)
+		// for _, port := range t.portsToScan["udp"] {
+		// 	// msg hold informations about port to scan
+		// 	var msg = channelMsg{protocol: "udp", port: port}
+		// 	udpChannel <- msg
+		// 	wg.Add(1)
+		// 	go udpWorker(udpChannel, t.ip, &wg)
+		// }
+		// wg.Wait()
 	}
-	wg.Wait()
 }
 
 // reporter get values from reportChannel and send them to the metrics package.
@@ -260,9 +301,47 @@ func (t *Target) reporter(wg *sync.WaitGroup) {
 			t.portsOpen[openPort.protocol] = append(t.portsOpen[openPort.protocol], openPort.port)
 
 			metrics.Exploit(currentTime, t.name, t.ip, openPort.port, openPort.protocol)
-		case <-time.After(maxRTT):
-			// when no new port for maxRTT, exit reporter
-			return
+			// case <-time.After(maxRTT):
+			// 	// when no new port for maxRTT, exit reporter
+			// 	return
+		}
+	}
+}
+
+// scheduler create tickers for each protocol given and when they tick, it sends the protocol
+// name in the trigger's channel in order to alert feeder that a scan must be started.
+func (t *Target) scheduler(trigger chan string, protocols ...string) {
+	var tcpTicker, udpTicker, icmpTicker *time.Ticker
+	for _, proto := range protocols {
+		switch proto {
+		case "tcp":
+			tcpFreq, err := t.tcp.getFreq()
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			tcpTicker = time.NewTicker(tcpFreq)
+		case "udp":
+			udpFreq, err := t.udp.getFreq()
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			udpTicker = time.NewTicker(udpFreq)
+		case "icmp":
+			icmpFreq, err := t.icmp.getFreq()
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			icmpTicker = time.NewTicker(icmpFreq)
+		}
+	}
+	for {
+		select {
+		case <-tcpTicker.C:
+			trigger <- "tcp"
+		case <-udpTicker.C:
+			trigger <- "udp"
+		case <-icmpTicker.C:
+			trigger <- "icmp"
 		}
 	}
 }
