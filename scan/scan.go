@@ -87,6 +87,7 @@ func (t *Target) Name() string {
 func (t *Target) setPorts(proto, period, rng, exp string) error {
 	// TODO: check ranges and periods to see if they are valid
 
+	// check if protocol is supported
 	switch proto {
 	case "tcp":
 		t.tcp = protocol{
