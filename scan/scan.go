@@ -308,6 +308,7 @@ func icmpWorker(ip string) {
 	}
 	p.AddIPAddr(ra)
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+		// icmpWorker does not send port. See metrics.WriteLog()
 		var toSend = channelMsg{protocol: "icmp"}
 		reportChannel <- toSend
 	}
