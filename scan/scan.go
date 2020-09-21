@@ -226,8 +226,14 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 		select {
 		case proto := <-trigger:
 			switch proto {
+			case "icmp":
+				t.logger.Info().Msgf("%s scan started", proto)
+				// ping the target if asked in conf file
+				if t.icmp.period != "" {
+					icmpWorker(t.ip)
+				}
 			case "tcp":
-				fmt.Printf("TCP at %s\n", time.Now().String()) // debug
+				t.logger.Info().Msgf("%s scan started", proto)
 				// TCP scan
 				tcpChannel := make(chan channelMsg, 100)
 				for _, port := range t.portsToScan["tcp"] {
@@ -239,7 +245,7 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 				}
 				wg.Wait()
 			case "udp":
-				fmt.Printf("UDP at %s\n", time.Now().String()) //debug
+				t.logger.Info().Msgf("%s scan started", proto)
 				// UDP scan
 				udpChannel := make(chan channelMsg, 100)
 				for _, port := range t.portsToScan["udp"] {
@@ -250,12 +256,6 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 					go udpWorker(udpChannel, t.ip, &wg)
 				}
 				wg.Wait()
-			case "icmp":
-				fmt.Printf("ICMP at %s\n", time.Now().String()) //debug
-				// ping the target if asked in conf file
-				if t.icmp.period != "" {
-					icmpWorker(t.ip)
-				}
 			}
 		}
 	}
