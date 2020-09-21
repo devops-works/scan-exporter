@@ -21,6 +21,7 @@ type Target struct {
 	ip     string
 	tcp    protocol
 	udp    protocol
+	icmp   protocol
 
 	logger zerolog.Logger
 
@@ -100,6 +101,10 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 			period:   period,
 			rng:      rng,
 			expected: exp,
+		}
+	case "icmp":
+		t.icmp = protocol{
+			period: period,
 		}
 	default:
 		return fmt.Errorf("unsupported protocol %q for target %s", proto, t.name)

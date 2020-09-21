@@ -13,6 +13,7 @@ type target struct {
 	IP   string   `yaml:"ip"`
 	TCP  protocol `yaml:"tcp"`
 	UDP  protocol `yaml:"udp"`
+	ICMP protocol `yaml:"icmp"`
 }
 
 type protocol struct {

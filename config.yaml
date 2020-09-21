@@ -20,3 +20,5 @@ targets:
       period: "2h"
       range: "1-1024"
       expected: "22,53"
+    icmp:
+      period: "10s"
