@@ -47,7 +47,7 @@ var reportChannel = make(chan channelMsg, 1000)
 
 // maxRTT holds the maximal RTT from a host.
 // By default, this value is set to 5sec.
-// It can be overrided if icmp scan is done on target.
+// It can be overwritten if icmp scan is done on target.
 var maxRTT = 5 * time.Second
 
 // Scan starts a scan
@@ -122,7 +122,7 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 		}
 	}
 
-	// test range and expected. ICMP does not need a port range
+	// test range and expected. ICMP does not need a port range.
 	if proto != "icmp" {
 		re := regexp.MustCompile(`(\d+)([-,]\s*\d+)*|^all$|^reserved$`)
 		if !re.Match([]byte(rng)) {
