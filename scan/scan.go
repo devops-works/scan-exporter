@@ -212,7 +212,7 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 
 	var wg sync.WaitGroup
 
-	// ping the target
+	// ping the target if asked in conf file
 	if t.icmp.period != "" {
 		icmpWorker(t.ip)
 	}
