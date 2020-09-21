@@ -191,9 +191,17 @@ func (t *Target) readPortsRange(protocol, portsRange string) error {
 	return nil
 }
 
-// feeder() parses Target's port into maps. Once it is done, it sends the map content into a channel.
-// Next to this, it starts workers that will gather ports from the channel.
+// getFreq transforms a protocol's period into a time.Duration value
+func (p *protocol) getFreq() (time.Duration, error) {
+	t, err := time.ParseDuration(p.period)
+	if err != nil {
+		return 0, err
+	}
+	return t, nil
+}
 
+// feeder parses Target's port into maps. Once it is done, it sends the map content into a channel.
+// Next to this, it starts workers that will gather ports from the channel.
 func (t *Target) feeder(mainWg *sync.WaitGroup) {
 	defer mainWg.Done()
 
@@ -239,7 +247,7 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 	wg.Wait()
 }
 
-// reporter() get values from reportChannel and send them to the metrics package.
+// reporter get values from reportChannel and send them to the metrics package.
 func (t *Target) reporter(wg *sync.WaitGroup) {
 	defer wg.Done()
 
