@@ -258,33 +258,6 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 				}
 			}
 		}
-		// }
-		// // ping the target if asked in conf file
-		// if t.icmp.period != "" {
-		// 	icmpWorker(t.ip)
-		// }
-
-		// // TCP scan
-		// tcpChannel := make(chan channelMsg, 100)
-		// for _, port := range t.portsToScan["tcp"] {
-		// 	// msg hold informations about port to scan
-		// 	var msg = channelMsg{protocol: "tcp", port: port}
-		// 	tcpChannel <- msg
-		// 	wg.Add(1)
-		// 	go tcpWorker(tcpChannel, t.ip, &wg)
-		// }
-		// wg.Wait()
-
-		// // UDP scan
-		// udpChannel := make(chan channelMsg, 100)
-		// for _, port := range t.portsToScan["udp"] {
-		// 	// msg hold informations about port to scan
-		// 	var msg = channelMsg{protocol: "udp", port: port}
-		// 	udpChannel <- msg
-		// 	wg.Add(1)
-		// 	go udpWorker(udpChannel, t.ip, &wg)
-		// }
-		// wg.Wait()
 	}
 }
 
