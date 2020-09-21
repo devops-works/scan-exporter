@@ -116,7 +116,7 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 
 	// check if the period is in a correct format (1d, 60s, 45h ...)
 	if period != "" {
-		re := regexp.MustCompile(`[0-9]+[dhms]$`)
+		re := regexp.MustCompile(`\d+[dhms]$`)
 		if !re.Match([]byte(period)) {
 			return fmt.Errorf("unsupported period format %q for protocol %q", period, proto)
 		}
