@@ -13,11 +13,11 @@ targets:
   - name: "laptop"
     ip: "127.0.0.1"
     tcp:
-      period: "1h"
+      period: "20s"
       range: "all"
       expected: "22,33,44"
     udp:
-      period: "2h"
+      period: "30s"
       range: "all"
       expected: "22,53"
     icmp:
