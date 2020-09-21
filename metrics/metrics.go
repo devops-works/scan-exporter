@@ -20,7 +20,7 @@ func WriteLog(filename, ip, port, protocol string) {
 	logger := log.New(f, "", log.LstdFlags)
 	if protocol == "icmp" {
 		// if protocol is icmp, we write a special line into the log
-		logger.Printf("%s responds to ping\n", ip)
+		logger.Printf("%s/%s\n", ip, protocol)
 	} else {
 		logger.Printf("%s:%s/%s\n", ip, port, protocol)
 	}
