@@ -124,7 +124,7 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 
 	// test range and expected. ICMP does not need a port range.
 	if proto != "icmp" {
-		re := regexp.MustCompile(`(\d+)([-,]\s*\d+)*|^all$|^reserved$`)
+		re := regexp.MustCompile(`(\d+)([-,]\d+)*|^all$|^reserved$`)
 		if !re.Match([]byte(rng)) {
 			return fmt.Errorf("unsupported range format %q for protocol %q", rng, proto)
 		}
