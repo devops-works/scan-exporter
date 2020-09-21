@@ -183,9 +183,6 @@ func (t *Target) readPortsRange(protocol, portsRange string) error {
 func (t *Target) feeder(mainWg *sync.WaitGroup) {
 	defer mainWg.Done()
 	t.portsToScan = make(map[string][]string)
-	/*
-		make it concurrent ?
-	*/
 	// parse tcp ports
 	if err := t.readPortsRange("tcp", t.tcp.rng); err != nil {
 		log.Fatalf("an error occured while parsing tcp ports: %s", err)
@@ -196,15 +193,31 @@ func (t *Target) feeder(mainWg *sync.WaitGroup) {
 	}
 
 	var wg sync.WaitGroup
-	workerChannel := make(chan channelMsg, 100)
+	// TCP scan
+	tcpChannel := make(chan channelMsg, 100)
 	for _, port := range t.portsToScan["tcp"] {
 		// msg hold informations about port to scan
 		var msg = channelMsg{protocol: "tcp", port: port}
-		workerChannel <- msg
+		tcpChannel <- msg
 		wg.Add(1)
-		go scanWorker(workerChannel, t.ip, &wg)
+		go tcpWorker(tcpChannel, t.ip, &wg)
 	}
 	wg.Wait()
+
+	// UDP scan
+	udpChannel := make(chan channelMsg, 100)
+	for _, port := range t.portsToScan["udp"] {
+		// msg hold informations about port to scan
+		var msg = channelMsg{protocol: "udp", port: port}
+		udpChannel <- msg
+		wg.Add(1)
+		go udpWorker(udpChannel, t.ip, &wg)
+	}
+	wg.Wait()
+
+	if t.icmp.period != "" {
+		icmpWorker()
+	}
 }
 
 func (t *Target) reporter(mainWg *sync.WaitGroup) {
@@ -229,7 +242,7 @@ func (t *Target) reporter(mainWg *sync.WaitGroup) {
 	}
 }
 
-func scanWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
+func tcpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	todo := <-ch
 	// grâce aux map qui sont envoyées dans les chan, chaque worker recoit le protocol et le port
@@ -241,4 +254,40 @@ func scanWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
 	conn.Close()
 	var toSend = channelMsg{protocol: todo.protocol, port: todo.port}
 	reportChannel <- toSend
+}
+
+func udpWorker(ch chan channelMsg, ip string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	todo := <-ch
+	serverAddr, err := net.ResolveUDPAddr(todo.protocol, ip+":"+todo.port)
+	if err != nil {
+		return
+	}
+
+	conn, err := net.DialUDP(todo.protocol, nil, serverAddr)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	// write 3 times to the udp socket and check
+	// if there's any kind of error
+	errorCount := 0
+	for i := 0; i < 3; i++ {
+		buf := []byte("0")
+		_, err := conn.Write(buf)
+		if err != nil {
+			errorCount++
+		}
+	}
+
+	if errorCount > 0 {
+		// port is closed
+		return
+	}
+	var toSend = channelMsg{protocol: todo.protocol, port: todo.port}
+	reportChannel <- toSend
+}
+
+func icmpWorker() {
 }
