@@ -41,8 +41,10 @@ func New(name, ip string, o ...func(*Target) error) (*Target, error) {
 	}
 
 	t := &Target{
-		name: name,
-		ip:   ip,
+		name:        name,
+		ip:          ip,
+		protos:      make(map[string]protocol),
+		portsToScan: make(map[string][]string),
 	}
 
 	for _, f := range o {
@@ -81,10 +83,15 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 	return nil
 }
 
+// Name returns target name
+func (t *Target) Name() string {
+	return t.name
+}
+
 // Run should be called using `go` and will run forever running the scanning
 // schedule
 func (t *Target) Run() {
-
+	fmt.Printf("%v\n", t)
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of
@@ -95,6 +102,9 @@ func readPortsRange(ranges string) ([]string, error) {
 	parts := strings.Split(ranges, ",")
 
 	for _, spec := range parts {
+		if spec == "" {
+			continue
+		}
 		switch spec {
 		case "all":
 			for port := 1; port <= 65535; port++ {
@@ -105,32 +115,31 @@ func readPortsRange(ranges string) ([]string, error) {
 				ports = append(ports, strconv.Itoa(port))
 			}
 		default:
-			if strings.Contains(spec, "-") {
-				decomposedRange := strings.Split(spec, "-")
-				min, err := strconv.Atoi(decomposedRange[0])
-				if err != nil {
-					return nil, err
-				}
-				max, err := strconv.Atoi(decomposedRange[len(decomposedRange)-1])
-				if err != nil {
-					return nil, err
-				}
+			decomposedRange := []string{}
 
-				if min > max {
-					return nil, fmt.Errorf("lower port %d is higher than high port %d", min, max)
-				}
-				if max > 65535 {
-					return nil, fmt.Errorf("port %d is higher than max port", max)
-				}
-				for i := min; i <= max; i++ {
-					ports = append(ports, strconv.Itoa(i))
-				}
+			if !strings.Contains(spec, "-") {
+				decomposedRange = []string{spec, spec}
 			} else {
-				if _, err := strconv.Atoi(spec); spec != "" && err != nil {
-					return nil, fmt.Errorf("port %s is not a valid number", spec)
-				}
+				decomposedRange = strings.Split(spec, "-")
+			}
 
-				ports = append(ports, spec)
+			min, err := strconv.Atoi(decomposedRange[0])
+			if err != nil {
+				return nil, err
+			}
+			max, err := strconv.Atoi(decomposedRange[len(decomposedRange)-1])
+			if err != nil {
+				return nil, err
+			}
+
+			if min > max {
+				return nil, fmt.Errorf("lower port %d is higher than high port %d", min, max)
+			}
+			if max > 65535 {
+				return nil, fmt.Errorf("port %d is higher than max port", max)
+			}
+			for i := min; i <= max; i++ {
+				ports = append(ports, strconv.Itoa(i))
 			}
 		}
 	}

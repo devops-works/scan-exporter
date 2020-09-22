@@ -4,11 +4,11 @@ targets:
     ip: "127.0.0.1"
     tcp:
       period: "20s"
-      range: "all"
+      range: "125-250"
       expected: "22,33,44"
     udp:
       period: "30s"
-      range: "all"
+      range: "1-5"
       expected: "22,53"
     icmp:
       period: "10s"

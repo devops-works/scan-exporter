@@ -217,7 +217,7 @@ func Test_readPortsRange(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		{name: "empty range", ranges: "", want: []string{""}, wantErr: false},
+		{name: "empty range", ranges: "", want: []string{}, wantErr: false},
 		{name: "simple port", ranges: "122", want: []string{"122"}, wantErr: false},
 		{name: "port range", ranges: "122-125", want: []string{"122", "123", "124", "125"}, wantErr: false},
 		{name: "equal range", ranges: "122-122", want: []string{"122"}, wantErr: false},
