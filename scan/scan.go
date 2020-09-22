@@ -112,17 +112,17 @@ func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 	if _, ok := t.portsToScan[proto]; !ok {
 		return nil, fmt.Errorf("no such protocol %q in current protocol list", proto)
 	}
-	step := (len(t.portsToScan[proto]) / workersCount)
+	step := (len(t.portsToScan[proto]) + workersCount - 1) / workersCount
 
 	fmt.Printf("step is %d for %d workers with a len of %d\n", step, workersCount, len(t.portsToScan[proto]))
 	jobs := []jobMsg{}
 
 	for i := 0; i < len(t.portsToScan[proto]); i += step {
-		right := len(t.portsToScan[proto])
+		right := i + step
 		// Check right boundary for slice
 
-		if i+step < right {
-			right = i + step
+		if right > len(t.portsToScan[proto]) {
+			right = len(t.portsToScan[proto])
 		}
 
 		jobs = append(jobs, jobMsg{
