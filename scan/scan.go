@@ -9,6 +9,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
+var workersCount = 4
+
 // Target holds an IP and a range of ports to scan
 type Target struct {
 	name   string
@@ -91,7 +93,44 @@ func (t *Target) Name() string {
 // Run should be called using `go` and will run forever running the scanning
 // schedule
 func (t *Target) Run() {
-	fmt.Printf("%v\n", t)
+	// TODO: udp & icmp
+	// Create channel to send jobMsg
+	jobsChan := make(chan jobMsg, workersCount)
+	jobs, err := t.createJobs("tcp")
+	if err != nil {
+		return // TODO:  Handle error somehow
+	}
+	for _, j := range jobs {
+		jobsChan <- j
+	}
+	// Start required number (n) of workers
+	// Create n jobs containing 1/n of total scan range
+	// Send jobs to channel
+}
+
+func (t *Target) createJobs(proto string) ([]jobMsg, error) {
+	if _, ok := t.portsToScan[proto]; !ok {
+		return nil, fmt.Errorf("no such protocol %q in current protocol list", proto)
+	}
+	step := (len(t.portsToScan[proto]) / workersCount)
+
+	fmt.Printf("step is %d for %d workers with a len of %d\n", step, workersCount, len(t.portsToScan[proto]))
+	jobs := []jobMsg{}
+
+	for i := 0; i < len(t.portsToScan[proto]); i += step {
+		right := len(t.portsToScan[proto])
+		// Check right boundary for slice
+
+		if i+step < right {
+			right = i + step
+		}
+
+		jobs = append(jobs, jobMsg{
+			proto,
+			t.portsToScan[proto][i:right],
+		})
+	}
+	return jobs, nil
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of
