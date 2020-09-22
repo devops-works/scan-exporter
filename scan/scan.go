@@ -186,12 +186,24 @@ func (t *Target) readPortsRange(protocol, portsRange string) error {
 	return nil
 }
 
-// getFreq transforms a protocol's period into a time.Duration value
-func (p *protocol) getFreq() (time.Duration, error) {
-	t, err := time.ParseDuration(p.period)
+// getDuration transforms a protocol's period into a time.Duration value
+func (p *protocol) getDuration() (time.Duration, error) {
+	// only hours, minutes and seconds are handled by ParseDuration
+	if strings.ContainsAny(p.period, "hms") {
+		t, err := time.ParseDuration(p.period)
+		if err != nil {
+			return 0, err
+		}
+		return t, nil
+	}
+
+	sep := strings.Split(p.period, "d")
+	days, err := strconv.Atoi(sep[0])
 	if err != nil {
 		return 0, err
 	}
+
+	t := time.Duration(days) * time.Hour * 24
 	return t, nil
 }
 
@@ -280,19 +292,19 @@ func (t *Target) scheduler(trigger chan string, protocols ...string) {
 	for _, proto := range protocols {
 		switch proto {
 		case "tcp":
-			tcpFreq, err := t.tcp.getFreq()
+			tcpFreq, err := t.tcp.getDuration()
 			if err != nil {
 				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
 			}
 			tcpTicker = time.NewTicker(tcpFreq)
 		case "udp":
-			udpFreq, err := t.udp.getFreq()
+			udpFreq, err := t.udp.getDuration()
 			if err != nil {
 				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
 			}
 			udpTicker = time.NewTicker(udpFreq)
 		case "icmp":
-			icmpFreq, err := t.icmp.getFreq()
+			icmpFreq, err := t.icmp.getDuration()
 			if err != nil {
 				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
 			}
