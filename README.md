@@ -2,13 +2,13 @@
 
 Export ports scans to [Prometheus](https://prometheus.io/).
 
-## Cool zone
+## :space_invader: Cool zone
 
 [![forthebadge](https://forthebadge.com/images/badges/made-with-go.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/open-source.svg)](https://forthebadge.com)
 
-## Installation
+## Getting started
 
 Clone this repository and build the binary with Go :
 
@@ -39,7 +39,7 @@ FLAGS
         log level to use
         default: info
 ```
-## Internals
+## :gear: Internals
 
 Scan Exporter reads a YAML configuration file to know which hosts to scan :
 
