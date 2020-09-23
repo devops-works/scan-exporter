@@ -319,6 +319,9 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 
 // ticker handles a protocol ticker, and send the protocol in a channel when the ticker ticks
 func ticker(trigger chan string, proto string, protTicker *time.Ticker) {
+	// First scan at the start
+	trigger <- proto
+
 	for {
 		select {
 		case <-protTicker.C:
