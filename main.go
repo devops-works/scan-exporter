@@ -52,7 +52,7 @@ func main() {
 
 		targetList = append(targetList, t)
 	}
-	// This waitgroup is never done
+	// This waitgroup never ends
 	var wg sync.WaitGroup
 	wg.Add(1)
 
