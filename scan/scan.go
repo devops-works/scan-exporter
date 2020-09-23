@@ -11,7 +11,7 @@ import (
 	"github.com/sparrc/go-ping"
 )
 
-var workersCount = 10
+var workersCount = 1000
 
 // Target holds an IP and a range of ports to scan
 type Target struct {
@@ -111,8 +111,10 @@ func (t *Target) Run() {
 	// Create trigger channel for scheduler
 	trigger := make(chan string, 100)
 
+	protoList := t.getWantedProto()
+
 	// Start scheduler
-	go t.scheduler(trigger, "tcp", "udp", "icmp")
+	go t.scheduler(trigger, protoList)
 
 	// Create channel to send jobMsg
 	jobsChan := make(chan jobMsg, workersCount)
@@ -141,6 +143,24 @@ func (t *Target) Run() {
 			}
 		}
 	}
+}
+
+// getWantedProto check if a protocol is set in config file and returns a slice of wnated protocols.
+func (t *Target) getWantedProto() []string {
+	var protoList = []string{}
+	if p := t.protos["tcp"].period; p != "" {
+		protoList = append(protoList, "tcp")
+	}
+
+	if p := t.protos["udp"].period; p != "" {
+		protoList = append(protoList, "udp")
+	}
+
+	if p := t.protos["icmp"].period; p != "" {
+		protoList = append(protoList, "icmp")
+	}
+
+	return protoList
 }
 
 func worker(jobsChan chan jobMsg) {
@@ -264,7 +284,7 @@ func stringInSlice(s string, sl []string) bool {
 
 // scheduler create tickers for each protocol given and when they tick, it sends the protocol
 // name in the trigger's channel in order to alert feeder that a scan must be started.
-func (t *Target) scheduler(trigger chan string, protocols ...string) {
+func (t *Target) scheduler(trigger chan string, protocols []string) {
 	var tcpTicker, udpTicker, icmpTicker *time.Ticker
 	for _, proto := range protocols {
 		switch proto {
@@ -274,28 +294,33 @@ func (t *Target) scheduler(trigger chan string, protocols ...string) {
 				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
 			}
 			tcpTicker = time.NewTicker(tcpFreq)
+			// starts its own ticker
+			go ticker(trigger, proto, tcpTicker)
 		case "udp":
 			udpFreq, err := getDuration(t.protos[proto].period)
 			if err != nil {
 				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
 			}
 			udpTicker = time.NewTicker(udpFreq)
+			// starts its own ticker
+			go ticker(trigger, proto, udpTicker)
 		case "icmp":
 			icmpFreq, err := getDuration(t.protos[proto].period)
 			if err != nil {
 				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
 			}
 			icmpTicker = time.NewTicker(icmpFreq)
+			// starts its own ticker
+			go ticker(trigger, proto, icmpTicker)
 		}
 	}
+}
+
+func ticker(trigger chan string, proto string, tcpTicker *time.Ticker) {
 	for {
 		select {
 		case <-tcpTicker.C:
-			trigger <- "tcp"
-		case <-udpTicker.C:
-			trigger <- "udp"
-		case <-icmpTicker.C:
-			trigger <- "icmp"
+			trigger <- proto
 		}
 	}
 }
