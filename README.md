@@ -68,7 +68,7 @@ A target has a minimum of 4 fields : `name`, `ip`, `workers` and a protocol (`tc
 
 * `name` is for readability : it doesn't play any major role ;
 * `ip` is the IP of the host you want to scan ;
-* `workers` is the size of the workers pool ;
+* `workers` is the size of the workers pool (see below) ;
 * protocol (see below).
   
 ### :wrench: Workers
