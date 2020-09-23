@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"sync"
 
 	"devops-works/scan-exporter/config"
 	"devops-works/scan-exporter/scan"
@@ -51,10 +52,15 @@ func main() {
 
 		targetList = append(targetList, t)
 	}
+	// This waitgroup is never done
+	var wg sync.WaitGroup
+	wg.Add(1)
 
 	for i := 0; i < len(targetList); i++ {
 		t := targetList[i]
 		logger.Info().Msgf("Starting %s scan", t.Name())
-		t.Run()
+		go t.Run()
 	}
+	// Wait here forever
+	wg.Wait()
 }
