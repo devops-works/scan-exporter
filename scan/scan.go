@@ -256,6 +256,44 @@ func stringInSlice(s string, sl []string) bool {
 	return false
 }
 
+// scheduler create tickers for each protocol given and when they tick, it sends the protocol
+// name in the trigger's channel in order to alert feeder that a scan must be started.
+func (t *Target) scheduler(trigger chan string, protocols ...string) {
+	var tcpTicker, udpTicker, icmpTicker *time.Ticker
+	for _, proto := range protocols {
+		switch proto {
+		case "tcp":
+			tcpFreq, err := getDuration(t.protos[proto].period)
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			tcpTicker = time.NewTicker(tcpFreq)
+		case "udp":
+			udpFreq, err := getDuration(t.protos[proto].period)
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			udpTicker = time.NewTicker(udpFreq)
+		case "icmp":
+			icmpFreq, err := getDuration(t.protos[proto].period)
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			icmpTicker = time.NewTicker(icmpFreq)
+		}
+	}
+	for {
+		select {
+		case <-tcpTicker.C:
+			trigger <- "tcp"
+		case <-udpTicker.C:
+			trigger <- "udp"
+		case <-icmpTicker.C:
+			trigger <- "icmp"
+		}
+	}
+}
+
 // tcpScan scans an ip and returns true if the port responds.
 func tcpScan(ip, port string) bool {
 	conn, err := net.DialTimeout("tcp", ip+":"+port, 5*time.Second)
@@ -335,44 +373,6 @@ func icmpScan(ip string) bool {
 	}
 
 	return false
-}
-
-// scheduler create tickers for each protocol given and when they tick, it sends the protocol
-// name in the trigger's channel in order to alert feeder that a scan must be started.
-func (t *Target) scheduler(trigger chan string, protocols ...string) {
-	var tcpTicker, udpTicker, icmpTicker *time.Ticker
-	for _, proto := range protocols {
-		switch proto {
-		case "tcp":
-			tcpFreq, err := getDuration(t.protos[proto].period)
-			if err != nil {
-				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
-			}
-			tcpTicker = time.NewTicker(tcpFreq)
-		case "udp":
-			udpFreq, err := getDuration(t.protos[proto].period)
-			if err != nil {
-				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
-			}
-			udpTicker = time.NewTicker(udpFreq)
-		case "icmp":
-			icmpFreq, err := getDuration(t.protos[proto].period)
-			if err != nil {
-				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
-			}
-			icmpTicker = time.NewTicker(icmpFreq)
-		}
-	}
-	for {
-		select {
-		case <-tcpTicker.C:
-			trigger <- "tcp"
-		case <-udpTicker.C:
-			trigger <- "udp"
-		case <-icmpTicker.C:
-			trigger <- "icmp"
-		}
-	}
 }
 
 // getDuration transforms a protocol's period into a time.Duration value
