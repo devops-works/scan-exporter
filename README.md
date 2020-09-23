@@ -68,12 +68,12 @@ A target has a minimum of 4 fields : `name`, `ip`, `workers` and a protocol (`tc
 
 * `name` is for readability : it doesn't play any major role ;
 * `ip` is the IP of the host you want to scan ;
-* `workers` is the size of the workers pool (see below) ;
+* `workers` is the size of the workers pool for each target (see below) ;
 * protocol (see below).
   
 ### :wrench: Workers
 
-Scan Exporter starts a pool of workers responsible of the scans that never ends. They wait for jobs on a job channel. The number of workers is set in the configuration file. It must be an int.
+Scan Exporter starts a pool of workers responsible of the scans that never ends. There is one pool of workers for each target. The number of workers of each pool is set in the configuration file. It must be an int.
 
 ### :speech_balloon: Protocol
 
@@ -93,8 +93,8 @@ Authorized `range` and `expected` values are any number between 0 and 65535 sepa
 
 ## :ballot_box_with_check: Prerequisites
 
-* Go
-* Sudo
+* [Golang](https://golang.org/) (version >= 1.14 recommended)
+* root privileges
 
 ## :copyright: License
 
