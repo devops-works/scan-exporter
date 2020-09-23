@@ -18,7 +18,7 @@ $ cd scan-exporter
 $ go build .
 ```
 
-## Usage
+## :computer_mouse: Usage
 
 ### Basic usage
 
@@ -62,7 +62,7 @@ targets:
 
 By default, `config.yaml` is expected to be at the root of the folder. But you can specify a configuration file path via the flags (see Usage).
 
-### Targets
+### :dart: Targets
 A target has a minimum of 3 fields : `name`, `ip`, and a protocol (`tcp`, `udp`, `icmp`) and a maximum of 5.
 
 * `name` is for readability : it doesn't play any major role ;
@@ -73,7 +73,7 @@ A target has a minimum of 3 fields : `name`, `ip`, and a protocol (`tcp`, `udp`,
 
 Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to specify a scanning period. For `tcp` and `udp`, you have to add a `range` of ports to scan, and `expected`, which will hold which ports are supposed to be opened.
 
-### Period
+### :clock230: Period
 
 `period` is the period between each scan. Authorized `period` values are any number followed by `s`, `m`, `h` or `d` (respectively seconds, minutes, hours and days).
 
@@ -84,7 +84,7 @@ Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to
 
 Authorized `range` and `expected` values are any number between 0 and 65535 separated by a coma or a dash. It is possible to mix dashes and comas : `22,80-443,9001` will work.
 
-### Workers
+### :wrench: Workers
 
 Scan Exporter starts a pool of workers that never ends. They wait for jobs on a channel. The number of workers is set at 1000 by default, but it can be set from a `WRKCNT` environnement variable. Note that if you launch Scan Exporter as root (to ping the hosts for example), `WRKCNT` must be declared in root's environnement.
 
