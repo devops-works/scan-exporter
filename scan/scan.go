@@ -242,7 +242,7 @@ func readPortsRange(ranges string) ([]string, error) {
 				ports = append(ports, strconv.Itoa(port))
 			}
 		default:
-			decomposedRange := []string{}
+			var decomposedRange []string
 
 			if !strings.Contains(spec, "-") {
 				decomposedRange = []string{spec, spec}

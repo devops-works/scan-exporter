@@ -10,8 +10,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-var logPath = flag.String("logpath", "./", "Path to save log files")
-
 func main() {
 	var confFile, logLevel string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
