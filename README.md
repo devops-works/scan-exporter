@@ -8,7 +8,7 @@ Export ports scans to [Prometheus](https://prometheus.io/).
 [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/open-source.svg)](https://forthebadge.com)
 
-## Getting started
+## :footprints: Getting started
 
 Clone this repository and build the binary with Go :
 
@@ -83,6 +83,15 @@ Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to
 * `expected` is ports that should be opened.
 
 Authorized `range` and `expected` values are any number between 0 and 65535 separated by a coma or a dash. It is possible to mix dashes and comas : `22,80-443,9001` will work.
+
+### Workers
+
+Scan Exporter starts a pool of workers that never ends. They wait for jobs on a channel. The number of workers is set at 1000 by default, but it can be set from a `WRKCNT` environnement variable. Note that if you launch Scan Exporter as root (to ping the hosts for example), `WRKCNT` must be declared in root's environnement.
+
+To set `WRKCNT` to 10000 :
+```
+$ export WRKCNT=10000
+```
 
 ## Prerequisites
 
