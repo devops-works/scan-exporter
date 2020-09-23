@@ -89,6 +89,6 @@ Authorized `range` and `expected` values are any number between 0 and 65535 sepa
 * Go
 * Sudo
 
-## License
+## :copyright: License
 
 MIT
