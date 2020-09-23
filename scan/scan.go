@@ -5,18 +5,17 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/tatsushid/go-fastping"
 )
 
-var workersCount = 4
+var workersCount = 100
 
 // Target holds an IP and a range of ports to scan
 type Target struct {
 	name   string
-	period string
 	ip     string
 	protos map[string]protocol
 
@@ -109,10 +108,12 @@ func (t *Target) Name() string {
 // Run should be called using `go` and will run forever running the scanning
 // schedule
 func (t *Target) Run() {
-	var wg sync.WaitGroup
-	wg.Add(1)
+	// Create trigger channel for scheduler
+	trigger := make(chan string, 100)
 
-	// TODO: udp & icmp
+	// Start scheduler
+	go t.scheduler(trigger, "tcp", "udp", "icmp")
+
 	// Create channel to send jobMsg
 	jobsChan := make(chan jobMsg, workersCount)
 
@@ -122,18 +123,23 @@ func (t *Target) Run() {
 	}
 	t.logger.Info().Msgf("%d workers started", workersCount)
 
-	// Create n jobs containing 1/n of total scan range
-	jobs, err := t.createJobs("tcp")
-	if err != nil {
-		t.logger.Error().Msgf("error creating jobs")
-		return // TODO:  Handle error somehow
-	}
+	// Infinite loop that follow trigger
+	for {
+		select {
+		case proto := <-trigger:
+			// Create n jobs containing 1/n of total scan range
+			jobs, err := t.createJobs(proto)
+			if err != nil {
+				t.logger.Error().Msgf("error creating jobs")
+				return // TODO:  Handle error somehow
+			}
 
-	// Send jobs to channel
-	for _, j := range jobs {
-		jobsChan <- j
+			// Send jobs to channel
+			for _, j := range jobs {
+				jobsChan <- j
+			}
+		}
 	}
-	wg.Wait()
 }
 
 func worker(jobsChan chan jobMsg) {
@@ -145,13 +151,20 @@ func worker(jobsChan chan jobMsg) {
 				// Launch TCP scan
 				for _, p := range job.ports {
 					if tcpScan(job.ip, p) {
-						fmt.Printf("%s:%s OPEN\n", job.ip, p)
+						fmt.Printf("%s:%s/tcp OPEN\n", job.ip, p)
 					}
 				}
 			case "udp":
 				// Launch UDP scan
+				for _, p := range job.ports {
+					if udpScan(job.ip, p) {
+						fmt.Printf("%s:%s/udp OPEN\n", job.ip, p)
+					}
+				}
 			case "icmp":
-				// Ping that mf
+				if icmpScan(job.ip) {
+					fmt.Printf("%s/icmp OPEN\n", job.ip)
+				}
 			}
 		}
 	}
@@ -163,7 +176,6 @@ func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 	}
 	step := (len(t.portsToScan[proto]) + workersCount - 1) / workersCount
 
-	// fmt.Printf("step is %d for %d workers with a len of %d\n", step, workersCount, len(t.portsToScan[proto]))
 	jobs := []jobMsg{}
 
 	for i := 0; i < len(t.portsToScan[proto]); i += step {
@@ -253,4 +265,133 @@ func tcpScan(ip, port string) bool {
 	defer conn.Close()
 
 	return true
+}
+
+// udpScan scans an ip and returns true if the port responds.
+func udpScan(ip, port string) bool {
+	serverAddr, err := net.ResolveUDPAddr("udp", ip+":"+port)
+	if err != nil {
+		return false
+	}
+	conn, err := net.DialUDP("udp", nil, serverAddr)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+
+	// write 3 times to the udp socket and check
+	// if there's any kind of error
+	errorCount := 0
+	for i := 0; i < 3; i++ {
+		buf := []byte("0")
+		_, err := conn.Write(buf)
+		if err != nil {
+			errorCount++
+		}
+	}
+	if errorCount > 0 {
+		// port is closed
+		return false
+	}
+
+	return true
+}
+
+// icmpScan pings a host
+func icmpScan(ip string) bool {
+	var ra *net.IPAddr
+	var err error
+
+	p := fastping.NewPinger()
+
+	// check if the ip is v4 or v6. We do not need to check IP validity as it is already
+	// done in New().
+	if strings.Contains(ip, ".") {
+		ra, err = net.ResolveIPAddr("ip4:icmp", ip)
+		if err != nil {
+			return false
+		}
+	} else if strings.Contains(ip, ":") {
+		ra, err = net.ResolveIPAddr("ip6:icmp", ip)
+		if err != nil {
+			return false
+		}
+	}
+
+	p.AddIPAddr(ra)
+
+	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+		// icmpWorker does not send port. See metrics.WriteLog()
+		return
+	}
+
+	p.OnIdle = func() {
+		return
+	}
+
+	if err := p.Run(); err != nil {
+		// it will end up here if the program is not launched as superuser
+		return false
+	}
+
+	return false
+}
+
+// scheduler create tickers for each protocol given and when they tick, it sends the protocol
+// name in the trigger's channel in order to alert feeder that a scan must be started.
+func (t *Target) scheduler(trigger chan string, protocols ...string) {
+	var tcpTicker, udpTicker, icmpTicker *time.Ticker
+	for _, proto := range protocols {
+		switch proto {
+		case "tcp":
+			tcpFreq, err := getDuration(t.protos[proto].period)
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			tcpTicker = time.NewTicker(tcpFreq)
+		case "udp":
+			udpFreq, err := getDuration(t.protos[proto].period)
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			udpTicker = time.NewTicker(udpFreq)
+		case "icmp":
+			icmpFreq, err := getDuration(t.protos[proto].period)
+			if err != nil {
+				t.logger.Error().Msgf("error getting %s frequency in scheduler: %s", proto, err)
+			}
+			icmpTicker = time.NewTicker(icmpFreq)
+		}
+	}
+	for {
+		select {
+		case <-tcpTicker.C:
+			trigger <- "tcp"
+		case <-udpTicker.C:
+			trigger <- "udp"
+		case <-icmpTicker.C:
+			trigger <- "icmp"
+		}
+	}
+}
+
+// getDuration transforms a protocol's period into a time.Duration value
+func getDuration(period string) (time.Duration, error) {
+	// only hours, minutes and seconds are handled by ParseDuration
+	if strings.ContainsAny(period, "hms") {
+		t, err := time.ParseDuration(period)
+		if err != nil {
+			return 0, err
+		}
+		return t, nil
+	}
+
+	sep := strings.Split(period, "d")
+	days, err := strconv.Atoi(sep[0])
+	if err != nil {
+		return 0, err
+	}
+
+	t := time.Duration(days) * time.Hour * 24
+	return t, nil
 }
