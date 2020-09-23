@@ -3,6 +3,7 @@ package scan
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 // func TestTarget_getAddress(t *testing.T) {
@@ -273,6 +274,33 @@ func TestTarget_createJobs(t *testing.T) {
 			}
 			if len(got) != tt.workersCount {
 				t.Errorf("Target.createJobs() = %d, wanted %d jobs; joblist %v", len(got), tt.workersCount, got)
+			}
+		})
+	}
+}
+
+func Test_getDuration(t *testing.T) {
+	tests := []struct {
+		name    string
+		period  string
+		want    time.Duration
+		wantErr bool
+	}{
+		{name: "seconds", period: "666s", want: 666 * time.Second, wantErr: false},
+		{name: "minutes", period: "42m", want: 42 * time.Minute, wantErr: false},
+		{name: "hours", period: "69h", want: 69 * time.Hour, wantErr: false},
+		{name: "days", period: "13d", want: 13 * 24 * time.Hour, wantErr: false},
+		{name: "error", period: "1337gg", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getDuration(tt.period)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getDuration() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("getDuration() = %v, want %v", got, tt.want)
 			}
 		})
 	}
