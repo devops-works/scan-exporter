@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/tatsushid/go-fastping"
+	"github.com/sparrc/go-ping"
 )
 
-var workersCount = 100
+var workersCount = 10
 
 // Target holds an IP and a range of ports to scan
 type Target struct {
@@ -137,6 +137,7 @@ func (t *Target) Run() {
 			// Send jobs to channel
 			for _, j := range jobs {
 				jobsChan <- j
+				t.logger.Debug().Msgf("appended job %s %s in channel", j.ip, j.protocol)
 			}
 		}
 	}
@@ -171,12 +172,16 @@ func worker(jobsChan chan jobMsg) {
 }
 
 func (t *Target) createJobs(proto string) ([]jobMsg, error) {
+	jobs := []jobMsg{}
+	if proto == "icmp" {
+		return []jobMsg{
+			jobMsg{ip: t.ip, protocol: proto},
+		}, nil
+	}
 	if _, ok := t.portsToScan[proto]; !ok {
 		return nil, fmt.Errorf("no such protocol %q in current protocol list", proto)
 	}
 	step := (len(t.portsToScan[proto]) + workersCount - 1) / workersCount
-
-	jobs := []jobMsg{}
 
 	for i := 0; i < len(t.portsToScan[proto]); i += step {
 		right := i + step
@@ -190,6 +195,7 @@ func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 			protocol: proto,
 			ports:    t.portsToScan[proto][i:right],
 		})
+		t.logger.Debug().Msgf("a job for %s has been appended", proto)
 	}
 	return jobs, nil
 }
@@ -337,42 +343,18 @@ func udpScan(ip, port string) bool {
 
 // icmpScan pings a host
 func icmpScan(ip string) bool {
-	var ra *net.IPAddr
-	var err error
-
-	p := fastping.NewPinger()
-
-	// check if the ip is v4 or v6. We do not need to check IP validity as it is already
-	// done in New().
-	if strings.Contains(ip, ".") {
-		ra, err = net.ResolveIPAddr("ip4:icmp", ip)
-		if err != nil {
-			return false
-		}
-	} else if strings.Contains(ip, ":") {
-		ra, err = net.ResolveIPAddr("ip6:icmp", ip)
-		if err != nil {
-			return false
-		}
+	pinger, err := ping.NewPinger(ip)
+	if err != nil {
+		panic(err) // TODO: need a better error handling
 	}
-
-	p.AddIPAddr(ra)
-
-	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-		// icmpWorker does not send port. See metrics.WriteLog()
-		return
-	}
-
-	p.OnIdle = func() {
-		return
-	}
-
-	if err := p.Run(); err != nil {
-		// it will end up here if the program is not launched as superuser
+	pinger.Count = 3
+	pinger.Run()
+	stats := pinger.Statistics()
+	if stats.PacketLoss == 100.0 {
 		return false
 	}
 
-	return false
+	return true
 }
 
 // getDuration transforms a protocol's period into a time.Duration value
