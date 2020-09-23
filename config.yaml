@@ -1,15 +1,15 @@
 ---
 targets:
   - name: "laptop"
-    ip: "192.168.42.229"
-    workers: 10010
+    ip: "192.168.42.228"
+    workers: 10000
     tcp:
       period: "5m"
       range: "all"
       expected: "22,33,44"
-    # udp:
-    #   period: "20s"
-    #   range: "all"
-    #   expected: "22,53"
+    udp:
+      period: "10m"
+      range: "reserved"
+      expected: "22,53"
     icmp:
       period: "1m"

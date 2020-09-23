@@ -80,7 +80,6 @@ func TestTarget_createJobs(t *testing.T) {
 			tg := &Target{
 				portsToScan: tt.pts,
 			}
-			workersCount = tt.workersCount
 			got, err := tg.createJobs("tcp")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Target.createJobs() error = %v, wantErr %v", err, tt.wantErr)

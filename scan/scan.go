@@ -317,10 +317,11 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 	}
 }
 
-func ticker(trigger chan string, proto string, tcpTicker *time.Ticker) {
+// ticker handles a protocol ticker, and send the protocol in a channel when the ticker ticks
+func ticker(trigger chan string, proto string, protTicker *time.Ticker) {
 	for {
 		select {
-		case <-tcpTicker.C:
+		case <-protTicker.C:
 			trigger <- proto
 		}
 	}
