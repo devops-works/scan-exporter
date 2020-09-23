@@ -1,9 +1,10 @@
 ---
 targets:
   - name: "laptop"
-    ip: "192.168.42.228"
+    ip: "192.168.42.229"
+    workers: 10010
     tcp:
-      period: "10s"
+      period: "5m"
       range: "all"
       expected: "22,33,44"
     # udp:
@@ -11,4 +12,4 @@ targets:
     #   range: "all"
     #   expected: "22,53"
     icmp:
-      period: "5s"
+      period: "1m"

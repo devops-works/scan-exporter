@@ -48,6 +48,7 @@ Scan Exporter reads a YAML configuration file to know which hosts to scan :
 targets:
   - name: "app1"
     ip: "89.168.42.229"
+    workers: 1000
     tcp:
       period: "12h"
       range: "reserved"
@@ -63,12 +64,17 @@ targets:
 By default, `config.yaml` is expected to be at the root of the folder. But you can specify a configuration file path via the flags (see Usage).
 
 ### :dart: Targets
-A target has a minimum of 3 fields : `name`, `ip`, and a protocol (`tcp`, `udp`, `icmp`) and a maximum of 5.
+A target has a minimum of 4 fields : `name`, `ip`, `workers` and a protocol (`tcp`, `udp`, `icmp`) and a maximum of 6.
 
 * `name` is for readability : it doesn't play any major role ;
 * `ip` is the IP of the host you want to scan ;
+* `workers` is the size of the workers pool ;
 * protocol (see below).
   
+### :wrench: Workers
+
+Scan Exporter starts a pool of workers responsible of the scans that never ends. They wait for jobs on a job channel. The number of workers is set in the configuration file. It must be an int.
+
 ### :speech_balloon: Protocol
 
 Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to specify a scanning period. For `tcp` and `udp`, you have to add a `range` of ports to scan, and `expected`, which will hold which ports are supposed to be opened.
@@ -84,14 +90,6 @@ Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to
 
 Authorized `range` and `expected` values are any number between 0 and 65535 separated by a coma or a dash. It is possible to mix dashes and comas : `22,80-443,9001` will work.
 
-### :wrench: Workers
-
-Scan Exporter starts a pool of workers that never ends. They wait for jobs on a channel. The number of workers is set at 1000 by default, but it can be set from a `WRKCNT` environnement variable. Note that if you launch Scan Exporter as root (to ping the hosts for example), `WRKCNT` must be declared in root's environnement.
-
-To set `WRKCNT` to 10000 :
-```
-$ export WRKCNT=10000
-```
 
 ## :ballot_box_with_check: Prerequisites
 

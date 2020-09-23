@@ -3,7 +3,6 @@ package scan
 import (
 	"fmt"
 	"net"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -12,13 +11,12 @@ import (
 	"github.com/sparrc/go-ping"
 )
 
-var workersCount int
-
 // Target holds an IP and a range of ports to scan
 type Target struct {
-	name   string
-	ip     string
-	protos map[string]protocol
+	name    string
+	ip      string
+	workers int
+	protos  map[string]protocol
 
 	logger zerolog.Logger
 
@@ -40,7 +38,7 @@ type jobMsg struct {
 }
 
 // New checks that target specification is valid, and if target is responding
-func New(name, ip string, o ...func(*Target) error) (*Target, error) {
+func New(name, ip string, workers int, o ...func(*Target) error) (*Target, error) {
 	if i := net.ParseIP(ip); i == nil {
 		return nil, fmt.Errorf("unable to parse IP address %s", ip)
 	}
@@ -48,6 +46,7 @@ func New(name, ip string, o ...func(*Target) error) (*Target, error) {
 	t := &Target{
 		name:        name,
 		ip:          ip,
+		workers:     workers,
 		protos:      make(map[string]protocol),
 		portsToScan: make(map[string][]string),
 	}
@@ -109,19 +108,9 @@ func (t *Target) Name() string {
 // Run should be called using `go` and will run forever running the scanning
 // schedule
 func (t *Target) Run() {
-	// Check if workerCount is set in WRKCNT env variable.
-	// If the program is launched as root, the env var must be set by root user
-	if os.Getenv("WRKCNT") == "" {
-		workersCount = 1000
-	} else {
-		num, err := strconv.Atoi(os.Getenv("WRKCNT"))
-		if err != nil {
-			panic(err) // TODO: find a way to handle this
-		}
-		workersCount = num
-	}
 	// Create trigger channel for scheduler
 	trigger := make(chan string, 100)
+	workersCount := t.workers
 
 	protoList := t.getWantedProto()
 
@@ -213,7 +202,7 @@ func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 	if _, ok := t.portsToScan[proto]; !ok {
 		return nil, fmt.Errorf("no such protocol %q in current protocol list", proto)
 	}
-	step := (len(t.portsToScan[proto]) + workersCount - 1) / workersCount
+	step := (len(t.portsToScan[proto]) + t.workers - 1) / t.workers
 
 	for i := 0; i < len(t.portsToScan[proto]); i += step {
 		right := i + step

@@ -40,6 +40,7 @@ func main() {
 		t, err := scan.New(
 			target.Name,
 			target.IP,
+			target.Workers,
 			scan.WithPorts("tcp", target.TCP.Period, target.TCP.Range, target.TCP.Expected),
 			scan.WithPorts("udp", target.UDP.Period, target.UDP.Range, target.UDP.Expected),
 			scan.WithPorts("icmp", target.ICMP.Period, target.ICMP.Range, target.ICMP.Expected),
