@@ -26,7 +26,7 @@ $ go build .
 $ sudo ./scan-exporter
 ```
 
-### Flags
+### :triangular_flag_on_post: Flags
 
 Scan Exporter accepts some flags :
 ```
@@ -69,7 +69,7 @@ A target has a minimum of 3 fields : `name`, `ip`, and a protocol (`tcp`, `udp`,
 * `ip` is the IP of the host you want to scan ;
 * protocol (see below).
   
-### Protocol
+### :speech_balloon: Protocol
 
 Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to specify a scanning period. For `tcp` and `udp`, you have to add a `range` of ports to scan, and `expected`, which will hold which ports are supposed to be opened.
 
@@ -77,7 +77,7 @@ Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to
 
 `period` is the period between each scan. Authorized `period` values are any number followed by `s`, `m`, `h` or `d` (respectively seconds, minutes, hours and days).
 
-### Range and expected
+### :arrows_counterclockwise: Range and expected
 
 * `range` is the ports range to scan ;
 * `expected` is ports that should be opened.
@@ -93,7 +93,7 @@ To set `WRKCNT` to 10000 :
 $ export WRKCNT=10000
 ```
 
-## Prerequisites
+## :ballot_box_with_check: Prerequisites
 
 * Go
 * Sudo
