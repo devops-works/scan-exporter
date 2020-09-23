@@ -5,6 +5,8 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -32,6 +34,7 @@ type protocol struct {
 }
 
 type jobMsg struct {
+	ip       string
 	protocol string
 	ports    []string
 }
@@ -106,19 +109,52 @@ func (t *Target) Name() string {
 // Run should be called using `go` and will run forever running the scanning
 // schedule
 func (t *Target) Run() {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	// TODO: udp & icmp
 	// Create channel to send jobMsg
 	jobsChan := make(chan jobMsg, workersCount)
+
+	// Start required number (n) of workers
+	for w := 0; w < workersCount; w++ {
+		go worker(jobsChan)
+	}
+	t.logger.Info().Msgf("%d workers started", workersCount)
+
+	// Create n jobs containing 1/n of total scan range
 	jobs, err := t.createJobs("tcp")
 	if err != nil {
+		t.logger.Error().Msgf("error creating jobs")
 		return // TODO:  Handle error somehow
 	}
+
+	// Send jobs to channel
 	for _, j := range jobs {
 		jobsChan <- j
 	}
-	// Start required number (n) of workers
-	// Create n jobs containing 1/n of total scan range
-	// Send jobs to channel
+	wg.Wait()
+}
+
+func worker(jobsChan chan jobMsg) {
+	for {
+		select {
+		case job := <-jobsChan:
+			switch job.protocol {
+			case "tcp":
+				// Launch TCP scan
+				for _, p := range job.ports {
+					if tcpScan(job.ip, p) {
+						fmt.Printf("%s:%s OPEN\n", job.ip, p)
+					}
+				}
+			case "udp":
+				// Launch UDP scan
+			case "icmp":
+				// Ping that mf
+			}
+		}
+	}
 }
 
 func (t *Target) createJobs(proto string) ([]jobMsg, error) {
@@ -127,20 +163,20 @@ func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 	}
 	step := (len(t.portsToScan[proto]) + workersCount - 1) / workersCount
 
-	fmt.Printf("step is %d for %d workers with a len of %d\n", step, workersCount, len(t.portsToScan[proto]))
+	// fmt.Printf("step is %d for %d workers with a len of %d\n", step, workersCount, len(t.portsToScan[proto]))
 	jobs := []jobMsg{}
 
 	for i := 0; i < len(t.portsToScan[proto]); i += step {
 		right := i + step
 		// Check right boundary for slice
-
 		if right > len(t.portsToScan[proto]) {
 			right = len(t.portsToScan[proto])
 		}
 
 		jobs = append(jobs, jobMsg{
-			proto,
-			t.portsToScan[proto][i:right],
+			ip:       t.ip,
+			protocol: proto,
+			ports:    t.portsToScan[proto][i:right],
 		})
 	}
 	return jobs, nil
@@ -206,4 +242,15 @@ func stringInSlice(s string, sl []string) bool {
 		}
 	}
 	return false
+}
+
+// tcpScan scans an ip and returns true if the port responds.
+func tcpScan(ip, port string) bool {
+	conn, err := net.DialTimeout("tcp", ip+":"+port, 5*time.Second)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+
+	return true
 }
