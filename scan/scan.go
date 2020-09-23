@@ -85,6 +85,19 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 	return nil
 }
 
+// WithLogger adds logger specifications to scan target
+func WithLogger(l zerolog.Logger) func(*Target) error {
+	return func(t *Target) error {
+		return t.setLogger(l)
+	}
+}
+
+// setLogger sets the logger on a target
+func (t *Target) setLogger(l zerolog.Logger) error {
+	t.logger = l
+	return nil
+}
+
 // Name returns target name
 func (t *Target) Name() string {
 	return t.name
