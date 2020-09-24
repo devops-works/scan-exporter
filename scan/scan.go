@@ -431,7 +431,7 @@ func ticker(trigger chan string, proto string, protTicker *time.Ticker) {
 
 // tcpScan scans an ip and returns true if the port responds.
 func tcpScan(ip, port string) bool {
-	conn, err := net.DialTimeout("tcp", ip+":"+port, 5*time.Second)
+	conn, err := net.DialTimeout("tcp", ip+":"+port, 2*time.Second)
 	if err != nil {
 		return false
 	}
