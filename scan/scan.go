@@ -41,10 +41,10 @@ type jobMsg struct {
 }
 
 type resMsg struct {
-	id       string
-	ip       string
-	protocol string
-	port     []string
+	id        string
+	ip        string
+	protocol  string
+	openPorts []string
 }
 
 // New checks that target specification is valid, and if target is responding
@@ -133,8 +133,14 @@ func (t *Target) Run() {
 	// Create channel to send scan results
 	resChan := make(chan jobMsg, 3*workersCount)
 
+	// postScan allow receiver to send scan results into the redis gouroutine
+	postScan := make(chan resMsg, 3*workersCount)
+
+	// Redis goroutine
+	// go sendToRedis(postScan)
+
 	// Create receiver that will receive done jobs.
-	go receiver(resChan)
+	go receiver(resChan, postScan)
 
 	// Start required number (n) of workers
 	for w := 0; w < workersCount; w++ {
@@ -172,7 +178,7 @@ func (t *Target) Run() {
 // If no new result is received within the protocol scan freq minus 1 second, it exits. This means that the scan is finished.
 // Note that for ICMP, it quits as soon as it receive the result because there is no differents ports.
 // TODO: instead of printing results, log them, build a map, and push it to redis (via a permanent goroutine and a channel or just a func ?)
-func receiver(resChan chan jobMsg) {
+func receiver(resChan chan jobMsg, postScan chan resMsg) {
 	// openPorts holds all openPorts for a jobID
 	var openPorts = make(map[string][]string)
 	var jobsStarted = make(map[string]int)
@@ -192,15 +198,20 @@ func receiver(resChan chan jobMsg) {
 				openPorts[res.id] = append(openPorts[res.id], p)
 			}
 
-			if jobsStarted[res.id] == res.jobCount {
+			if jobsStarted[res.id] == res.jobCount { // Special treatment for special protocol ;)
 				fmt.Printf("[%s] FINISHED at %s\n", res.id, time.Now().String())
 				// All jobs finished
-				fmt.Printf("[%s] open %s ports : %s\n", res.id, res.protocol, openPorts[res.id])
-				// Fill a struct with openPorts, and send it to chan
-			} else if res.protocol == "icmp" {
-				// Special treatment for special protocol ;)
-			} else {
-				// Jobs missing, so loop again and again
+				fmt.Printf("[%s] open %s ports : %s\n", res.id, res.protocol, openPorts[res.id]) // debug
+
+				// results holds all the informations about a finished scan
+				results := resMsg{
+					id:        res.id,
+					ip:        res.ip,
+					protocol:  res.protocol,
+					openPorts: openPorts[res.id],
+				}
+				postScan <- results
+				// send results to redis channel
 			}
 		}
 	}
