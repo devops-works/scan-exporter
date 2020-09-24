@@ -363,12 +363,8 @@ func udpScan(ip, port string) bool {
 			errorCount++
 		}
 	}
-	if errorCount > 0 {
-		// port is closed
-		return false
-	}
-
-	return true
+	// port is closed
+	return errorCount <= 0
 }
 
 // icmpScan pings a host
@@ -380,11 +376,8 @@ func icmpScan(ip string) bool {
 	pinger.Count = 3
 	pinger.Run()
 	stats := pinger.Statistics()
-	if stats.PacketLoss == 100.0 {
-		return false
-	}
 
-	return true
+	return stats.PacketLoss != 100.0
 }
 
 // getDuration transforms a protocol's period into a time.Duration value
