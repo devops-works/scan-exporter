@@ -79,6 +79,8 @@ Scan Exporter starts a pool of workers responsible of the scans that never ends.
 
 Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to specify a scanning period. For `tcp` and `udp`, you have to add a `range` of ports to scan, and `expected`, which will hold which ports are supposed to be opened.
 
+:warning: As long as `udp` requests don't have any payloads (at least for known ports, e.g. 53), it is not accurate !
+
 ### :clock230: Period
 
 `period` is the period between each scan. Authorized `period` values are any number followed by `s`, `m`, `h` or `d` (respectively seconds, minutes, hours and days).
