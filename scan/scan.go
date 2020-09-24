@@ -178,7 +178,7 @@ func receiver(jobID string, resChan chan resMsg) {
 				// If protocol is ICMP, we do not need to wait.
 				case "icmp":
 					fmt.Printf("scan ID: %s / %s/%s OPEN\n", jobID, res.ip, res.protocol)
-					fmt.Printf("%s ICMP receiever terminated\n", jobID)
+					fmt.Printf("end off: %s receiever terminated\n", jobID)
 					return
 				default:
 					fmt.Printf("scan ID: %s / %s:%s/%s OPEN\n", jobID, res.ip, res.port, res.protocol)
@@ -186,7 +186,7 @@ func receiver(jobID string, resChan chan resMsg) {
 			}
 			// When no new results for 30sec, exit.
 		case <-time.After(30 * time.Second):
-			fmt.Printf("%s receiver terminated\n", jobID)
+			fmt.Printf("end off: %s receiver terminated\n", jobID)
 			return
 		}
 	}
