@@ -33,17 +33,18 @@ type protocol struct {
 }
 
 type jobMsg struct {
-	ID       string
+	id       string
+	jobCount int
 	ip       string
 	protocol string
 	ports    []string
 }
 
 type resMsg struct {
-	ID       string
+	id       string
 	ip       string
 	protocol string
-	port     string
+	port     []string
 }
 
 // New checks that target specification is valid, and if target is responding
@@ -127,10 +128,13 @@ func (t *Target) Run() {
 	go t.scheduler(trigger, protoList)
 
 	// Create channel to send jobMsg
-	jobsChan := make(chan jobMsg, workersCount)
+	jobsChan := make(chan jobMsg, 3*workersCount)
 
 	// Create channel to send scan results
-	resChan := make(chan resMsg, workersCount)
+	resChan := make(chan jobMsg, 3*workersCount)
+
+	// Create receiver that will receive done jobs.
+	go receiver(resChan)
 
 	// Start required number (n) of workers
 	for w := 0; w < workersCount; w++ {
@@ -151,12 +155,10 @@ func (t *Target) Run() {
 
 			jobID := generateRandomString(10)
 
-			// Create receiver that will receive done jobs.
-			go receiver(jobID, resChan)
-
 			// Send jobs to channel
 			for _, j := range jobs {
-				j.ID = jobID
+				j.id = jobID
+				j.jobCount = len(jobs)
 				jobsChan <- j
 				t.logger.Debug().Msgf("appended job %s %s in channel", j.ip, j.protocol)
 			}
@@ -164,30 +166,42 @@ func (t *Target) Run() {
 	}
 }
 
-// receiver is created when a scan routine is started.
+// TODO: change this description
+// receiver is created once.
 // It waits for incoming results (sent by workers when a port is open).
-// If no new result is received within 30sec, it exits. This means that the scan is finished.
+// If no new result is received within the protocol scan freq minus 1 second, it exits. This means that the scan is finished.
 // Note that for ICMP, it quits as soon as it receive the result because there is no differents ports.
 // TODO: instead of printing results, log them, build a map, and push it to redis (via a permanent goroutine and a channel or just a func ?)
-func receiver(jobID string, resChan chan resMsg) {
+func receiver(resChan chan jobMsg) {
+	// openPorts holds all openPorts for a jobID
+	var openPorts = make(map[string][]string)
+	var jobsStarted = make(map[string]int)
+
 	for {
 		select {
 		case res := <-resChan:
-			if res.ID == jobID {
-				switch res.protocol {
-				// If protocol is ICMP, we do not need to wait.
-				case "icmp":
-					fmt.Printf("scan ID: %s / %s/%s OPEN\n", jobID, res.ip, res.protocol)
-					fmt.Printf("end off: %s receiever terminated\n", jobID)
-					return
-				default:
-					fmt.Printf("scan ID: %s / %s:%s/%s OPEN\n", jobID, res.ip, res.port, res.protocol)
-				}
+			// Debug purposes... Unless ?
+			if jobsStarted[res.id] == 0 {
+				fmt.Printf("[%s] STARTED at %s\n", res.id, time.Now().String())
 			}
-			// When no new results for 30sec, exit.
-		case <-time.After(30 * time.Second):
-			fmt.Printf("end off: %s receiver terminated\n", jobID)
-			return
+
+			jobsStarted[res.id]++
+
+			// Append ports here
+			for _, p := range res.ports {
+				openPorts[res.id] = append(openPorts[res.id], p)
+			}
+
+			if jobsStarted[res.id] == res.jobCount {
+				fmt.Printf("[%s] FINISHED at %s\n", res.id, time.Now().String())
+				// All jobs finished
+				fmt.Printf("[%s] open %s ports : %s\n", res.id, res.protocol, openPorts[res.id])
+				// Fill a struct with openPorts, and send it to chan
+			} else if res.protocol == "icmp" {
+				// Special treatment for special protocol ;)
+			} else {
+				// Jobs missing, so loop again and again
+			}
 		}
 	}
 }
@@ -199,7 +213,7 @@ func generateRandomString(n int) string {
 
 	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-	b := make([]rune, 10)
+	b := make([]rune, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
@@ -227,46 +241,41 @@ func (t *Target) getWantedProto() []string {
 // worker is a neverending goroutine which waits for incoming jobs.
 // Depending of the job's protocol, it launches different kinds of scans.
 // If a scan is successful, it sends a resMsg to the receiver.
-func worker(jobsChan chan jobMsg, resChan chan resMsg) {
+func worker(jobsChan chan jobMsg, resChan chan jobMsg) {
 	for {
 		select {
 		case job := <-jobsChan:
-			switch job.protocol {
+			// res holds the result of the scan and some more infos
+			res := jobMsg{
+				id:       job.id,
+				ip:       job.ip,
+				jobCount: job.jobCount,
+				protocol: job.protocol,
+			}
+			switch res.protocol {
 			case "tcp":
 				// Launch TCP scan
 				for _, p := range job.ports {
+					// Fill res.ports with open ports
 					if tcpScan(job.ip, p) {
-						res := resMsg{
-							ID:       job.ID,
-							ip:       job.ip,
-							protocol: job.protocol,
-							port:     p,
-						}
-						resChan <- res
+						res.ports = append(res.ports, p)
 					}
+
 				}
+				resChan <- res
 			case "udp":
 				// Launch UDP scan
 				for _, p := range job.ports {
 					if udpScan(job.ip, p) {
-						res := resMsg{
-							ID:       job.ID,
-							ip:       job.ip,
-							protocol: job.protocol,
-							port:     p,
-						}
-						resChan <- res
+						res.ports = append(res.ports, p)
 					}
 				}
+				resChan <- res
 			case "icmp":
 				if icmpScan(job.ip) {
-					res := resMsg{
-						ID:       job.ID,
-						ip:       job.ip,
-						protocol: job.protocol,
-					}
-					resChan <- res
+					res.ports = append(res.ports, "1")
 				}
+				resChan <- res
 			}
 		}
 	}
