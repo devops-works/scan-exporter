@@ -2,7 +2,7 @@
 targets:
   - name: "laptop"
     ip: "192.168.42.228"
-    workers: 10000
+    workers: 1000
     tcp:
       period: "1m"
       range: "all"
