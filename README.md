@@ -98,4 +98,4 @@ Authorized `range` and `expected` values are any number between 0 and 65535 sepa
 
 ## :copyright: License
 
-MIT
+[MIT](https://choosealicense.com/licenses/mit/)
