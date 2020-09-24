@@ -23,7 +23,6 @@ type Target struct {
 
 	// those maps hold the protocol and the ports
 	portsToScan map[string][]string
-	portsOpen   map[string][]string
 }
 
 type protocol struct {
@@ -193,10 +192,8 @@ func receiver(resChan chan jobMsg, postScan chan resMsg) {
 
 			jobsStarted[res.id]++
 
-			// Append ports here
-			for _, p := range res.ports {
-				openPorts[res.id] = append(openPorts[res.id], p)
-			}
+			// Append ports
+			openPorts[res.id] = append(openPorts[res.id], res.ports...)
 
 			if jobsStarted[res.id] == res.jobCount { // Special treatment for special protocol ;)
 				fmt.Printf("[%s] FINISHED at %s\n", res.id, time.Now().String())
