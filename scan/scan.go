@@ -171,12 +171,8 @@ func (t *Target) Run() {
 	}
 }
 
-// TODO: change this description
-// receiver is created once.
+// receiver is created once
 // It waits for incoming results (sent by workers when a port is open).
-// If no new result is received within the protocol scan freq minus 1 second, it exits. This means that the scan is finished.
-// Note that for ICMP, it quits as soon as it receive the result because there is no differents ports.
-// TODO: instead of printing results, log them, build a map, and push it to redis (via a permanent goroutine and a channel or just a func ?)
 func receiver(resChan chan jobMsg, postScan chan resMsg) {
 	// openPorts holds all openPorts for a jobID
 	var openPorts = make(map[string][]string)
