@@ -59,7 +59,7 @@ func main() {
 	for i := 0; i < len(targetList); i++ {
 		t := targetList[i]
 		logger.Info().Msgf("Starting %s scan", t.Name())
-		go t.Run()
+		go t.Run(len(targetList))
 	}
 	// Wait here forever
 	wg.Wait()
