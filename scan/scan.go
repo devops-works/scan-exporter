@@ -41,11 +41,12 @@ type jobMsg struct {
 }
 
 type resMsg struct {
-	id             string
-	ip             string
-	protocol       string
-	openPorts      []string
-	openPortsCount int
+	id              string
+	ip              string
+	protocol        string
+	openPorts       []string
+	unexpectedPorts []string
+	closedPorts     []string
 }
 
 // New checks that target specification is valid, and if target is responding
@@ -138,7 +139,7 @@ func (t *Target) Run() {
 	postScan := make(chan resMsg, 3*workersCount)
 
 	// Redis goroutine
-	// go sendToRedis(postScan)
+	go sendToRedis(postScan)
 
 	// Create receiver that will receive done jobs.
 	go t.receiver(resChan, postScan)
@@ -211,6 +212,9 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
 
 				recap(unexpectedPorts, closedPorts, t.logger)
 
+				results.unexpectedPorts = unexpectedPorts
+				results.closedPorts = closedPorts
+
 				postScan <- results
 				// send results to redis channel
 			}
@@ -249,6 +253,9 @@ func (t *Target) checkAccordance(proto string, open []string) ([]string, []strin
 	return unexpectedPorts, closedPorts, nil
 }
 
+// recap logs one-line logs if there is some unexpected or closed ports in the last scan.
+// If the lists are empty, nothing is logged.
+// Logs are written with warn level.
 func recap(unexpected, closed []string, l zerolog.Logger) {
 	if len(unexpected) > 0 {
 		l.Warn().Msgf("%s unexpected", unexpected)
@@ -273,7 +280,7 @@ func generateRandomString(n int) string {
 	return string(b)
 }
 
-// getWantedProto check if a protocol is set in config file and returns a slice of wnated protocols.
+// getWantedProto checks if a protocol is set in config file and returns a slice of wnated protocols.
 func (t *Target) getWantedProto() []string {
 	var protoList = []string{}
 	if p := t.protos["tcp"].period; p != "" {
@@ -462,6 +469,11 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 			go ticker(trigger, proto, icmpTicker)
 		}
 	}
+}
+
+// sendToRedis is used as an interface between scan and metrics packages
+func sendToRedis(res chan resMsg) {
+
 }
 
 // ticker handles a protocol ticker, and send the protocol in a channel when the ticker ticks
