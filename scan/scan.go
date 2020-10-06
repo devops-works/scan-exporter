@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"devops-works/scan-exporter/metrics"
 	"fmt"
 	"math/rand"
 	"net"
@@ -119,7 +120,7 @@ func (t *Target) Name() string {
 
 // Run should be called using `go` and will run forever running the scanning
 // schedule
-func (t *Target) Run() {
+func (t *Target) Run(numOfTargets int) {
 	// Create trigger channel for scheduler
 	trigger := make(chan string, 100)
 	workersCount := t.workers
@@ -139,7 +140,7 @@ func (t *Target) Run() {
 	postScan := make(chan resMsg, 3*workersCount)
 
 	// Redis goroutine
-	go sendToRedis(postScan)
+	go sendToRedis(postScan, numOfTargets)
 
 	// Create receiver that will receive done jobs.
 	go t.receiver(resChan, postScan)
@@ -472,8 +473,13 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 }
 
 // sendToRedis is used as an interface between scan and metrics packages
-func sendToRedis(res chan resMsg) {
-
+func sendToRedis(resChan chan resMsg, numOfTargets int) {
+	for {
+		select {
+		case res := <-resChan:
+			metrics.Handle(res, numOfTargets)
+		}
+	}
 }
 
 // ticker handles a protocol ticker, and send the protocol in a channel when the ticker ticks
