@@ -121,6 +121,9 @@ func (t *Target) Name() string {
 // Run should be called using `go` and will run forever running the scanning
 // schedule
 func (t *Target) Run(numOfTargets int) {
+	// Start Promethus server
+	go metrics.StartServ()
+
 	// Create trigger channel for scheduler
 	trigger := make(chan string, 100)
 	workersCount := t.workers
@@ -475,10 +478,10 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 // sendToRedis is used as an interface between scan and metrics packages
 func sendToRedis(resChan chan resMsg, numOfTargets int) {
 	for {
-		select {
-		case res := <-resChan:
-			metrics.Handle(res, numOfTargets)
-		}
+		// select {
+		// case _ := <-resChan:
+		// 	// metrics.Handle(res, numOfTargets)
+		// }
 	}
 }
 
