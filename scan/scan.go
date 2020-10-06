@@ -183,22 +183,12 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
 	for {
 		select {
 		case res := <-resChan:
-			// Debug purposes... Unless ?
-			if res.protocol == "icmp" {
-				// l.Info().Msgf("%s scan started", res.protocol) // debug
-				// fmt.Printf("[%s] STARTED at %s\n", res.id, time.Now().String()) // debug
-			}
-
 			jobsStarted[res.id]++
 
 			// Append ports
 			openPorts[res.id] = append(openPorts[res.id], res.ports...)
 
 			if jobsStarted[res.id] == res.jobCount {
-				// fmt.Printf("[%s] FINISHED at %s\n", res.id, time.Now().String()) // debug
-				// l.Info().Msgf("[%s] - %s scan ended", res.id, res.protocol)
-				// All jobs finished
-				// fmt.Printf("[%s] open %s ports : %s\n", res.id, res.protocol, openPorts[res.id]) // debug
 
 				// results holds all the informations about a finished scan
 				results := resMsg{
@@ -207,8 +197,6 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
 					protocol:  res.protocol,
 					openPorts: openPorts[res.id],
 				}
-
-				// fmt.Printf("%s : %d open ports\n", res.protocol, openPortsCounter) // debug
 
 				// Check diff between expected and open
 				if results.protocol != "icmp" {
