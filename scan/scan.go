@@ -32,18 +32,20 @@ type protocol struct {
 }
 
 type jobMsg struct {
-	id       string
-	jobCount int
-	ip       string
-	protocol string
-	ports    []string
+	id             string
+	jobCount       int
+	ip             string
+	protocol       string
+	ports          []string
+	openPortsCount int
 }
 
 type resMsg struct {
-	id        string
-	ip        string
-	protocol  string
-	openPorts []string
+	id             string
+	ip             string
+	protocol       string
+	openPorts      []string
+	openPortsCount int
 }
 
 // New checks that target specification is valid, and if target is responding
@@ -139,11 +141,11 @@ func (t *Target) Run() {
 	// go sendToRedis(postScan)
 
 	// Create receiver that will receive done jobs.
-	go receiver(resChan, postScan)
+	go t.receiver(resChan, postScan)
 
 	// Start required number (n) of workers
 	for w := 0; w < workersCount; w++ {
-		go worker(jobsChan, resChan)
+		go worker(jobsChan, resChan, t.logger)
 	}
 	t.logger.Info().Msgf("%d workers started", workersCount)
 
@@ -173,7 +175,7 @@ func (t *Target) Run() {
 
 // receiver is created once
 // It waits for incoming results (sent by workers when a port is open).
-func receiver(resChan chan jobMsg, postScan chan resMsg) {
+func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
 	// openPorts holds all openPorts for a jobID
 	var openPorts = make(map[string][]string)
 	var jobsStarted = make(map[string]int)
@@ -182,8 +184,9 @@ func receiver(resChan chan jobMsg, postScan chan resMsg) {
 		select {
 		case res := <-resChan:
 			// Debug purposes... Unless ?
-			if jobsStarted[res.id] == 0 {
-				fmt.Printf("[%s] STARTED at %s\n", res.id, time.Now().String())
+			if res.protocol == "icmp" {
+				// l.Info().Msgf("%s scan started", res.protocol) // debug
+				// fmt.Printf("[%s] STARTED at %s\n", res.id, time.Now().String()) // debug
 			}
 
 			jobsStarted[res.id]++
@@ -191,10 +194,11 @@ func receiver(resChan chan jobMsg, postScan chan resMsg) {
 			// Append ports
 			openPorts[res.id] = append(openPorts[res.id], res.ports...)
 
-			if jobsStarted[res.id] == res.jobCount { // Special treatment for special protocol ;)
-				fmt.Printf("[%s] FINISHED at %s\n", res.id, time.Now().String())
+			if jobsStarted[res.id] == res.jobCount {
+				// fmt.Printf("[%s] FINISHED at %s\n", res.id, time.Now().String()) // debug
+				// l.Info().Msgf("[%s] - %s scan ended", res.id, res.protocol)
 				// All jobs finished
-				fmt.Printf("[%s] open %s ports : %s\n", res.id, res.protocol, openPorts[res.id]) // debug
+				// fmt.Printf("[%s] open %s ports : %s\n", res.id, res.protocol, openPorts[res.id]) // debug
 
 				// results holds all the informations about a finished scan
 				results := resMsg{
@@ -203,11 +207,46 @@ func receiver(resChan chan jobMsg, postScan chan resMsg) {
 					protocol:  res.protocol,
 					openPorts: openPorts[res.id],
 				}
+
+				// fmt.Printf("%s : %d open ports\n", res.protocol, openPortsCounter) // debug
+
+				// Check diff between expected and open
+				if results.protocol != "icmp" {
+					_, err := t.checkAccordance(results.protocol, results.openPorts)
+					if err != nil {
+						t.logger.Error().Msgf("error occured while checking port accordance: %s", err)
+					}
+				}
+
 				postScan <- results
 				// send results to redis channel
 			}
 		}
 	}
+}
+
+// checkAccordance verifies if the open ports list matches the expected ports list given in config.
+// It returns a list of unexpected ports. The list is empty if everything is ok.
+func (t *Target) checkAccordance(proto string, open []string) ([]string, error) {
+	var unexpectedPorts = []string{}
+
+	expected, err := readPortsRange(t.protos[proto].expected)
+	if err != nil {
+		return unexpectedPorts, err
+	}
+
+	for _, port := range open {
+		// If the open port is not in the expected
+		if !stringInSlice(port, expected) {
+			// Log it
+			t.logger.Info().Msgf("%s/%s unexpected", port, proto)
+
+			// Append it to unexpectedPorts
+			unexpectedPorts = append(unexpectedPorts, port)
+		}
+	}
+
+	return unexpectedPorts, nil
 }
 
 // generateRandomString generates a random string with a lenght of n.
@@ -245,7 +284,7 @@ func (t *Target) getWantedProto() []string {
 // worker is a neverending goroutine which waits for incoming jobs.
 // Depending of the job's protocol, it launches different kinds of scans.
 // If a scan is successful, it sends a resMsg to the receiver.
-func worker(jobsChan chan jobMsg, resChan chan jobMsg) {
+func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
 	for {
 		select {
 		case job := <-jobsChan:
@@ -263,6 +302,7 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg) {
 					// Fill res.ports with open ports
 					if tcpScan(job.ip, p) {
 						res.ports = append(res.ports, p)
+						l.Info().Msgf("port %s/%s open", p, res.protocol)
 					}
 
 				}
@@ -272,12 +312,14 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg) {
 				for _, p := range job.ports {
 					if udpScan(job.ip, p) {
 						res.ports = append(res.ports, p)
+						l.Info().Msgf("port %s/%s open", p, res.protocol)
 					}
 				}
 				resChan <- res
 			case "icmp":
 				if icmpScan(job.ip) {
 					res.ports = append(res.ports, "1")
+					l.Info().Msgf("%s responds", res.protocol)
 				}
 				resChan <- res
 			}
