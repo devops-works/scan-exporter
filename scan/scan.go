@@ -33,22 +33,12 @@ type protocol struct {
 }
 
 type jobMsg struct {
-	id             string
-	jobCount       int
-	ip             string
-	protocol       string
-	ports          []string
-	openPortsCount int
+	id       string
+	jobCount int
+	ip       string
+	protocol string
+	ports    []string
 }
-
-// type ResMsg struct {
-// 	id              string
-// 	ip              string
-// 	protocol        string
-// 	openPorts       []string
-// 	unexpectedPorts []string
-// 	closedPorts     []string
-// }
 
 // New checks that target specification is valid, and if target is responding
 func New(name, ip string, workers int, o ...func(*Target) error) (*Target, error) {
@@ -120,7 +110,7 @@ func (t *Target) Name() string {
 
 // Run should be called using `go` and will run forever running the scanning
 // schedule
-func (t *Target) Run(numOfTargets int) {
+func (t *Target) Run() {
 	// Create trigger channel for scheduler
 	trigger := make(chan string, 100)
 	workersCount := t.workers
@@ -140,7 +130,7 @@ func (t *Target) Run(numOfTargets int) {
 	postScan := make(chan metrics.ResMsg, 3*workersCount)
 
 	// Redis goroutine
-	go sendToRedis(postScan, numOfTargets)
+	go sendToRedis(postScan)
 
 	// Create receiver that will receive done jobs.
 	go t.receiver(resChan, postScan)
@@ -338,6 +328,8 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
 				if icmpScan(job.ip) {
 					res.ports = append(res.ports, "1")
 					l.Debug().Msgf("%s responds", res.protocol)
+				} else {
+					l.Debug().Msgf("%s doesn't responds", res.protocol)
 				}
 				resChan <- res
 			}
@@ -370,7 +362,7 @@ func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 			protocol: proto,
 			ports:    t.portsToScan[proto][i:right],
 		})
-		t.logger.Debug().Msgf("a job for %s has been appended", proto)
+		// t.logger.Debug().Msgf("a job for %s has been appended", proto)
 	}
 	return jobs, nil
 }
@@ -473,11 +465,11 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 }
 
 // sendToRedis is used as an interface between scan and metrics packages
-func sendToRedis(resChan chan metrics.ResMsg, numOfTargets int) {
+func sendToRedis(resChan chan metrics.ResMsg) {
 	for {
 		select {
 		case res := <-resChan:
-			metrics.Handle(res, numOfTargets)
+			metrics.Handle(res)
 		}
 	}
 }
@@ -539,6 +531,7 @@ func icmpScan(ip string) bool {
 		panic(err) // TODO: need a better error handling
 	}
 	pinger.Count = 3
+	pinger.Timeout = 2 * time.Second
 	pinger.Run()
 	stats := pinger.Statistics()
 

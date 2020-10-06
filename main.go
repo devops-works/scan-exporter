@@ -60,14 +60,14 @@ func main() {
 	for i := 0; i < len(targetList); i++ {
 		t := targetList[i]
 		logger.Info().Msgf("Starting %s scan", t.Name())
-		go t.Run(len(targetList))
+		go t.Run()
 	}
 
 	masterLogger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 	masterLogger = masterLogger.Level(lvl).With().Logger()
 
 	// Start Promethus server
-	go metrics.StartServ(masterLogger)
+	go metrics.StartServ(masterLogger, len(targetList))
 
 	// Wait here forever
 	wg.Wait()
