@@ -31,6 +31,26 @@ var (
 		Help: "Number of targets that doesn't respond to pings.",
 	})
 
+	unexpectedPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "scanexporter_unexpected_ports_total",
+		Help: "Number of ports that are open, and shouldn't.",
+	},
+		[]string{
+			"proto",
+			"ip",
+		},
+	)
+
+	openPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "scanexporter_open_ports_total",
+		Help: "Number of ports that are open.",
+	},
+		[]string{
+			"proto",
+			"ip",
+		},
+	)
+
 	notRespondingList = []string{}
 )
 
@@ -38,12 +58,14 @@ var (
 func Handle(res ResMsg) {
 	if res.Protocol == "icmp" {
 		icmpNotResponding(res.OpenPorts, res.IP)
+		return
 	}
 
-	// check if there is already some entries in redis
-	// write data in target:ip:proto:1 if there is something, else in target:ip:proto:0
-	// compare
-	// expose
+	// Expose the number of unexpected ports.
+	unexpectedPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.UnexpectedPorts)))
+
+	// Expose the number of open ports.
+	openPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.OpenPorts)))
 }
 
 // StartServ starts the prometheus server.
@@ -63,6 +85,8 @@ func StartServ(l zerolog.Logger, nTargets int) {
 	l.Error().Msgf("server error : %s", srv.ListenAndServe())
 }
 
+// icmpNotResponding adjust the numOfDownTargets variable depending of the current and the previous
+// status of the target.
 func icmpNotResponding(ports []string, IP string) {
 	isResponding := true
 	if len(ports) == 0 {
@@ -99,4 +123,6 @@ func icmpNotResponding(ports []string, IP string) {
 func init() {
 	prometheus.MustRegister(numOfTargets)
 	prometheus.MustRegister(numOfDownTargets)
+	prometheus.MustRegister(unexpectedPorts)
+	prometheus.MustRegister(openPorts)
 }
