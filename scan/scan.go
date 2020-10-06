@@ -338,7 +338,8 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
 	}
 }
 
-// createJobs split portsToScan from a specified protocol into an even number of jobs that will be returned.
+// createJobs split portsToScan from a specified protocol into an even number
+// of jobs that will be returned.
 func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 	jobs := []jobMsg{}
 	if proto == "icmp" {
@@ -421,8 +422,9 @@ func readPortsRange(ranges string) ([]string, error) {
 	return ports, nil
 }
 
-// scheduler create tickers for each protocol given and when they tick, it sends the protocol
-// name in the trigger's channel in order to alert feeder that a scan must be started.
+// scheduler create tickers for each protocol given and when they tick,
+// it sends the protocol name in the trigger's channel in order to alert
+// feeder that a scan must be started.
 func (t *Target) scheduler(trigger chan string, protocols []string) {
 	var tcpTicker, udpTicker, icmpTicker *time.Ticker
 	for _, proto := range protocols {
