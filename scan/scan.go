@@ -272,7 +272,8 @@ func generateRandomString(n int) string {
 	return string(b)
 }
 
-// getWantedProto checks if a protocol is set in config file and returns a slice of wnated protocols.
+// getWantedProto checks if a protocol is set in config file and returns a slice
+// of wanted protocols.
 func (t *Target) getWantedProto() []string {
 	var protoList = []string{}
 	if p := t.protos["tcp"].period; p != "" {
