@@ -167,7 +167,7 @@ func (t *Target) Run() {
 				j.id = jobID
 				j.jobCount = len(jobs)
 				jobsChan <- j
-				t.logger.Debug().Msgf("appended job %s %s in channel", j.ip, j.protocol)
+				// t.logger.Debug().Msgf("appended job %s %s in channel", j.ip, j.protocol)
 			}
 		}
 	}
@@ -198,13 +198,18 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
 					openPorts: openPorts[res.id],
 				}
 
+				var unexpectedPorts, closedPorts []string
+				var err error
+
 				// Check diff between expected and open
 				if results.protocol != "icmp" {
-					_, err := t.checkAccordance(results.protocol, results.openPorts)
+					unexpectedPorts, closedPorts, err = t.checkAccordance(results.protocol, results.openPorts)
 					if err != nil {
 						t.logger.Error().Msgf("error occured while checking port accordance: %s", err)
 					}
 				}
+
+				recap(unexpectedPorts, closedPorts, t.logger)
 
 				postScan <- results
 				// send results to redis channel
@@ -214,27 +219,44 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
 }
 
 // checkAccordance verifies if the open ports list matches the expected ports list given in config.
-// It returns a list of unexpected ports. The list is empty if everything is ok.
-func (t *Target) checkAccordance(proto string, open []string) ([]string, error) {
+// It returns a list of unexpected ports and closedPorts :
+// unexpectedPorts holds the ports that are open but not expected;
+// closedPorts holds the ports that are expected but not opened.
+// The list is empty if everything is ok.
+func (t *Target) checkAccordance(proto string, open []string) ([]string, []string, error) {
 	var unexpectedPorts = []string{}
+	var closedPorts = []string{}
 
 	expected, err := readPortsRange(t.protos[proto].expected)
 	if err != nil {
-		return unexpectedPorts, err
+		return unexpectedPorts, closedPorts, err
 	}
 
+	// If the port is open but not expected
 	for _, port := range open {
-		// If the open port is not in the expected
 		if !stringInSlice(port, expected) {
-			// Log it
-			t.logger.Info().Msgf("%s/%s unexpected", port, proto)
-
-			// Append it to unexpectedPorts
 			unexpectedPorts = append(unexpectedPorts, port)
 		}
 	}
 
-	return unexpectedPorts, nil
+	// If the port is expected but not open
+	for _, port := range expected {
+		if !stringInSlice(port, open) {
+			closedPorts = append(closedPorts, port)
+		}
+	}
+
+	return unexpectedPorts, closedPorts, nil
+}
+
+func recap(unexpected, closed []string, l zerolog.Logger) {
+	if len(unexpected) > 0 {
+		l.Warn().Msgf("%s unexpected", unexpected)
+	}
+
+	if len(closed) > 0 {
+		l.Warn().Msgf("%s closed", closed)
+	}
 }
 
 // generateRandomString generates a random string with a lenght of n.
@@ -290,7 +312,7 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
 					// Fill res.ports with open ports
 					if tcpScan(job.ip, p) {
 						res.ports = append(res.ports, p)
-						l.Info().Msgf("port %s/%s open", p, res.protocol)
+						l.Debug().Msgf("%s/%s open", p, res.protocol)
 					}
 
 				}
@@ -300,14 +322,14 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
 				for _, p := range job.ports {
 					if udpScan(job.ip, p) {
 						res.ports = append(res.ports, p)
-						l.Info().Msgf("port %s/%s open", p, res.protocol)
+						l.Debug().Msgf("%s/%s open", p, res.protocol)
 					}
 				}
 				resChan <- res
 			case "icmp":
 				if icmpScan(job.ip) {
 					res.ports = append(res.ports, "1")
-					l.Info().Msgf("%s responds", res.protocol)
+					l.Debug().Msgf("%s responds", res.protocol)
 				}
 				resChan <- res
 			}
