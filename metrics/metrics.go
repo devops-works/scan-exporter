@@ -102,24 +102,24 @@ func icmpNotResponding(ports []string, IP string) {
 		for index := range notRespondingList {
 			if notRespondingList[index] == IP {
 				// Remove the element at index i from a.
-				notRespondingList[index] = notRespondingList[len(notRespondingList)-1] // Copy last element to index i.
-				notRespondingList[len(notRespondingList)-1] = ""                       // Erase last element (write zero value).
-				notRespondingList = notRespondingList[:len(notRespondingList)-1]       // Truncate slice.
+				notRespondingList[index] = notRespondingList[len(notRespondingList)-1]
+				notRespondingList[len(notRespondingList)-1] = ""
+				notRespondingList = notRespondingList[:len(notRespondingList)-1]
 			}
 		}
 
 	} else if !isResponding && !alreadyNotResponding {
-		// First time it doesn't respond
-		// Increment the number of down targets
+		// First time it doesn't respond.
+		// Increment the number of down targets.
 		numOfDownTargets.Inc()
-		// Add IP to notRespondingList
+		// Add IP to notRespondingList.
 		notRespondingList = append(notRespondingList, IP)
 	} else {
 		// Everything is good, do nothing or everything is as bad as it was, so do nothing too.
 	}
 }
 
-// init is called at package initialisation.
+// init is called at package initialisation. It initialize prometheus variables.
 func init() {
 	prometheus.MustRegister(numOfTargets)
 	prometheus.MustRegister(numOfDownTargets)

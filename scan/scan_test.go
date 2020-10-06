@@ -6,25 +6,6 @@ import (
 	"time"
 )
 
-func Test_stringInSlice(t *testing.T) {
-	tests := []struct {
-		name string
-		s    string
-		sl   []string
-		want bool
-	}{
-		{name: "exists", s: "a", sl: []string{"a", "b", "c"}, want: true},
-		{name: "does not exist", s: "z", sl: []string{"a", "b", "c"}, want: false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := stringInSlice(tt.s, tt.sl); got != tt.want {
-				t.Errorf("stringInSlice() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_readPortsRange(t *testing.T) {
 	tests := []struct {
 		name    string
