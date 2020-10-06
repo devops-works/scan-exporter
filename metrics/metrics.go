@@ -51,6 +51,16 @@ var (
 		},
 	)
 
+	closedPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "scanexporter_closed_ports_total",
+		Help: "Number of ports that are closed and shouldn't be.",
+	},
+		[]string{
+			"proto",
+			"ip",
+		},
+	)
+
 	notRespondingList = []string{}
 )
 
@@ -66,6 +76,9 @@ func Handle(res ResMsg) {
 
 	// Expose the number of open ports.
 	openPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.OpenPorts)))
+
+	// Expose the number of closed ports.
+	closedPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.ClosedPorts)))
 }
 
 // StartServ starts the prometheus server.
@@ -125,4 +138,5 @@ func init() {
 	prometheus.MustRegister(numOfDownTargets)
 	prometheus.MustRegister(unexpectedPorts)
 	prometheus.MustRegister(openPorts)
+	prometheus.MustRegister(closedPorts)
 }
