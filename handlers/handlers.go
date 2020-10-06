@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// HandleFunc handles functions
+// HandleFunc handles the metrics path.
 func HandleFunc() *mux.Router {
 	r := mux.NewRouter()
 	r.Handle("/metrics", promhttp.Handler())
@@ -18,6 +18,7 @@ func HandleFunc() *mux.Router {
 	return r
 }
 
+// defaultPage set the response header to 404 status and prints an error message.
 func defaultPage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	fmt.Fprint(w, "404 page not found")

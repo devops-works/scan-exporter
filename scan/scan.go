@@ -130,7 +130,7 @@ func (t *Target) Run() {
 	// postScan allow receiver to send scan results into the redis gouroutine
 	postScan := make(chan metrics.ResMsg, 3*workersCount)
 
-	// Redis goroutine
+	// scan to metrics goroutine
 	go sendToRedis(postScan)
 
 	// Create receiver that will receive done jobs.
@@ -142,7 +142,7 @@ func (t *Target) Run() {
 	}
 	t.logger.Info().Msgf("%d workers started", workersCount)
 
-	// Infinite loop that follow trigger
+	// Infinite loop that wait for trigger
 	for {
 		select {
 		case proto := <-trigger:

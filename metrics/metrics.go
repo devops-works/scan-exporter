@@ -33,7 +33,7 @@ var (
 
 	unexpectedPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "scanexporter_unexpected_ports_total",
-		Help: "Number of ports that are open, and shouldn't.",
+		Help: "Number of ports that are open, and shouldn't be.",
 	},
 		[]string{
 			"proto",
