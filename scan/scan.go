@@ -41,14 +41,14 @@ type jobMsg struct {
 	openPortsCount int
 }
 
-type resMsg struct {
-	id              string
-	ip              string
-	protocol        string
-	openPorts       []string
-	unexpectedPorts []string
-	closedPorts     []string
-}
+// type ResMsg struct {
+// 	id              string
+// 	ip              string
+// 	protocol        string
+// 	openPorts       []string
+// 	unexpectedPorts []string
+// 	closedPorts     []string
+// }
 
 // New checks that target specification is valid, and if target is responding
 func New(name, ip string, workers int, o ...func(*Target) error) (*Target, error) {
@@ -121,9 +121,6 @@ func (t *Target) Name() string {
 // Run should be called using `go` and will run forever running the scanning
 // schedule
 func (t *Target) Run(numOfTargets int) {
-	// Start Promethus server
-	go metrics.StartServ()
-
 	// Create trigger channel for scheduler
 	trigger := make(chan string, 100)
 	workersCount := t.workers
@@ -140,7 +137,7 @@ func (t *Target) Run(numOfTargets int) {
 	resChan := make(chan jobMsg, 3*workersCount)
 
 	// postScan allow receiver to send scan results into the redis gouroutine
-	postScan := make(chan resMsg, 3*workersCount)
+	postScan := make(chan metrics.ResMsg, 3*workersCount)
 
 	// Redis goroutine
 	go sendToRedis(postScan, numOfTargets)
@@ -180,7 +177,7 @@ func (t *Target) Run(numOfTargets int) {
 
 // receiver is created once
 // It waits for incoming results (sent by workers when a port is open).
-func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
+func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 	// openPorts holds all openPorts for a jobID
 	var openPorts = make(map[string][]string)
 	var jobsStarted = make(map[string]int)
@@ -196,19 +193,19 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
 			if jobsStarted[res.id] == res.jobCount {
 
 				// results holds all the informations about a finished scan
-				results := resMsg{
-					id:        res.id,
-					ip:        res.ip,
-					protocol:  res.protocol,
-					openPorts: openPorts[res.id],
+				results := metrics.ResMsg{
+					ID:        res.id,
+					IP:        res.ip,
+					Protocol:  res.protocol,
+					OpenPorts: openPorts[res.id],
 				}
 
 				var unexpectedPorts, closedPorts []string
 				var err error
 
 				// Check diff between expected and open
-				if results.protocol != "icmp" {
-					unexpectedPorts, closedPorts, err = t.checkAccordance(results.protocol, results.openPorts)
+				if results.Protocol != "icmp" {
+					unexpectedPorts, closedPorts, err = t.checkAccordance(results.Protocol, results.OpenPorts)
 					if err != nil {
 						t.logger.Error().Msgf("error occured while checking port accordance: %s", err)
 					}
@@ -216,8 +213,8 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan resMsg) {
 
 				recap(unexpectedPorts, closedPorts, t.logger)
 
-				results.unexpectedPorts = unexpectedPorts
-				results.closedPorts = closedPorts
+				results.UnexpectedPorts = unexpectedPorts
+				results.ClosedPorts = closedPorts
 
 				postScan <- results
 				// send results to redis channel
@@ -476,12 +473,12 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 }
 
 // sendToRedis is used as an interface between scan and metrics packages
-func sendToRedis(resChan chan resMsg, numOfTargets int) {
+func sendToRedis(resChan chan metrics.ResMsg, numOfTargets int) {
 	for {
-		// select {
-		// case _ := <-resChan:
-		// 	// metrics.Handle(res, numOfTargets)
-		// }
+		select {
+		case res := <-resChan:
+			metrics.Handle(res, numOfTargets)
+		}
 	}
 }
 

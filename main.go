@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"devops-works/scan-exporter/config"
+	"devops-works/scan-exporter/metrics"
 	"devops-works/scan-exporter/scan"
 
 	"github.com/rs/zerolog"
@@ -61,6 +62,13 @@ func main() {
 		logger.Info().Msgf("Starting %s scan", t.Name())
 		go t.Run(len(targetList))
 	}
+
+	masterLogger := zerolog.New(os.Stderr).With().Timestamp().Logger()
+	masterLogger = masterLogger.Level(lvl).With().Logger()
+
+	// Start Promethus server
+	go metrics.StartServ(masterLogger)
+
 	// Wait here forever
 	wg.Wait()
 }
