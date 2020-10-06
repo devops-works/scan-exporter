@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"devops-works/scan-exporter/common"
 	"devops-works/scan-exporter/metrics"
 	"fmt"
 	"math/rand"
@@ -71,7 +72,7 @@ func WithPorts(proto, period, rng, expected string) func(*Target) error {
 }
 
 func (t *Target) setPorts(proto, period, rng, exp string) error {
-	if !stringInSlice(proto, []string{"udp", "tcp", "icmp"}) {
+	if !common.StringInSlice(proto, []string{"udp", "tcp", "icmp"}) {
 		return fmt.Errorf("unsupported protocol %q for target %s", proto, t.name)
 	}
 
@@ -229,14 +230,14 @@ func (t *Target) checkAccordance(proto string, open []string) ([]string, []strin
 
 	// If the port is open but not expected
 	for _, port := range open {
-		if !stringInSlice(port, expected) {
+		if !common.StringInSlice(port, expected) {
 			unexpectedPorts = append(unexpectedPorts, port)
 		}
 	}
 
 	// If the port is expected but not open
 	for _, port := range expected {
-		if !stringInSlice(port, open) {
+		if !common.StringInSlice(port, open) {
 			closedPorts = append(closedPorts, port)
 		}
 	}
@@ -418,16 +419,6 @@ func readPortsRange(ranges string) ([]string, error) {
 	}
 
 	return ports, nil
-}
-
-// stringInSlice checks if a string appears in a slice.
-func stringInSlice(s string, sl []string) bool {
-	for _, v := range sl {
-		if v == s {
-			return true
-		}
-	}
-	return false
 }
 
 // scheduler create tickers for each protocol given and when they tick, it sends the protocol
