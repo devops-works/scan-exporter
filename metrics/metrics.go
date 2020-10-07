@@ -3,9 +3,11 @@ package metrics
 import (
 	"devops-works/scan-exporter/common"
 	"devops-works/scan-exporter/handlers"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 )
@@ -61,7 +63,18 @@ var (
 		},
 	)
 
-	notRespondingList = []string{}
+	diffPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "scanexporter_diff_ports_total",
+		Help: "Number of ports that are different from previous scan.",
+	},
+		[]string{
+			"proto",
+			"ip",
+		},
+	)
+
+	notRespondingList = []string{} // Improve this with mutex
+	rdb               *redis.Client
 )
 
 // Handle receives data from a finished scan. It also receive the number of targets declared in config file.
@@ -79,6 +92,19 @@ func Handle(res ResMsg) {
 
 	// Expose the number of closed ports.
 	closedPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.ClosedPorts)))
+
+	setName := res.IP + "/" + res.Protocol
+	// Read dataset
+	items := readSet(rdb, setName)
+	fmt.Printf("dataset read from redis : %s\n", items)
+	if len(items) == 0 {
+		writeSet(rdb, setName, res.OpenPorts)
+		diffPorts.WithLabelValues(res.Protocol, res.IP).Set(0)
+	} else {
+		diff := common.CompareStringSlices(items, res.OpenPorts)
+		diffPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(diff))
+		writeSet(rdb, setName, res.OpenPorts)
+	}
 }
 
 // StartServ starts the prometheus server.
@@ -88,6 +114,9 @@ func StartServ(l zerolog.Logger, nTargets int) {
 
 	// Set the number of hosts that doesn't respond to ping to 0.
 	numOfDownTargets.Set(0)
+
+	// init rdb
+	initRedisClient()
 
 	srv := &http.Server{
 		Addr:         ":2112",
@@ -132,6 +161,39 @@ func icmpNotResponding(ports []string, IP string) {
 
 }
 
+// writeSet writes items in a Redis dataset called setName.
+func writeSet(rdb *redis.Client, setName string, items []string) {
+	for _, item := range items {
+		err := rdb.SAdd(setName, item, 0).Err()
+		if err != nil {
+			panic(err) // TODO: change this :/
+		}
+	}
+}
+
+// readSet reads items from a Redis dataset called setName.
+func readSet(rdb *redis.Client, setName string) []string {
+	items, err := rdb.SMembers(setName).Result()
+	if err != nil {
+		panic(err)
+	}
+	return items
+}
+
+// initRedisClient initiates a new Redis client item.
+func initRedisClient() {
+	rdb = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	pong, err := rdb.Ping().Result()
+	if pong != "PONG" || err != nil {
+		panic(err) // TODO: change this
+	}
+}
+
 // init is called at package initialisation. It initialize prometheus variables.
 func init() {
 	prometheus.MustRegister(numOfTargets)
@@ -139,4 +201,5 @@ func init() {
 	prometheus.MustRegister(unexpectedPorts)
 	prometheus.MustRegister(openPorts)
 	prometheus.MustRegister(closedPorts)
+	prometheus.MustRegister(diffPorts)
 }
