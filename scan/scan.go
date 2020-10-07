@@ -14,7 +14,7 @@ import (
 	"github.com/sparrc/go-ping"
 )
 
-// Target holds an IP and a range of ports to scan
+// Target holds an IP and a range of ports to scan.
 type Target struct {
 	name    string
 	ip      string
@@ -23,7 +23,7 @@ type Target struct {
 
 	logger zerolog.Logger
 
-	// those maps hold the protocol and the ports
+	// those maps hold the protocol and the ports.
 	portsToScan map[string][]string
 }
 
@@ -41,7 +41,7 @@ type jobMsg struct {
 	ports    []string
 }
 
-// New checks that target specification is valid, and if target is responding
+// New checks that target specification is valid, and if target is responding.
 func New(name, ip string, workers int, o ...func(*Target) error) (*Target, error) {
 	if i := net.ParseIP(ip); i == nil {
 		return nil, fmt.Errorf("unable to parse IP address %s", ip)
@@ -64,7 +64,7 @@ func New(name, ip string, workers int, o ...func(*Target) error) (*Target, error
 	return t, nil
 }
 
-// WithPorts adds TCP or UDP ports specifications to scan target
+// WithPorts adds TCP or UDP ports specifications to scan target.
 func WithPorts(proto, period, rng, expected string) func(*Target) error {
 	return func(t *Target) error {
 		return t.setPorts(proto, period, rng, expected)
@@ -91,28 +91,28 @@ func (t *Target) setPorts(proto, period, rng, exp string) error {
 	return nil
 }
 
-// WithLogger adds logger specifications to scan target
+// WithLogger adds logger specifications to scan target.
 func WithLogger(l zerolog.Logger) func(*Target) error {
 	return func(t *Target) error {
 		return t.setLogger(l)
 	}
 }
 
-// setLogger sets the logger on a target
+// setLogger sets the logger on a target.
 func (t *Target) setLogger(l zerolog.Logger) error {
 	t.logger = l
 	return nil
 }
 
-// Name returns target name
+// Name returns target name.
 func (t *Target) Name() string {
 	return t.name
 }
 
 // Run should be called using `go` and will run forever running the scanning
-// schedule
+// schedule.
 func (t *Target) Run() {
-	// Create trigger channel for scheduler
+	// Create trigger channel for scheduler.
 	trigger := make(chan string, 100)
 	workersCount := t.workers
 
@@ -121,32 +121,32 @@ func (t *Target) Run() {
 	// Start scheduler
 	go t.scheduler(trigger, protoList)
 
-	// Create channel to send jobMsg
+	// Create channel to send jobMsg.
 	jobsChan := make(chan jobMsg, 3*workersCount)
 
-	// Create channel to send scan results
+	// Create channel to send scan results.
 	resChan := make(chan jobMsg, 3*workersCount)
 
-	// postScan allow receiver to send scan results into the redis gouroutine
+	// postScan allow receiver to send scan results into the redis gouroutine.
 	postScan := make(chan metrics.ResMsg, 3*workersCount)
 
-	// scan to metrics goroutine
+	// scan to metrics goroutine.
 	go sendToRedis(postScan)
 
 	// Create receiver that will receive done jobs.
 	go t.receiver(resChan, postScan)
 
-	// Start required number (n) of workers
+	// Start required number (n) of workers.
 	for w := 0; w < workersCount; w++ {
 		go worker(jobsChan, resChan, t.logger)
 	}
 	t.logger.Info().Msgf("%d workers started", workersCount)
 
-	// Infinite loop that wait for trigger
+	// Infinite loop that wait for trigger.
 	for {
 		select {
 		case proto := <-trigger:
-			// Create n jobs containing 1/n of total scan range
+			// Create n jobs containing 1/n of total scan range.
 			jobs, err := t.createJobs(proto)
 			if err != nil {
 				t.logger.Error().Msgf("error creating jobs")
@@ -155,18 +155,17 @@ func (t *Target) Run() {
 
 			jobID := generateRandomString(10)
 
-			// Send jobs to channel
+			// Send jobs to channel.
 			for _, j := range jobs {
 				j.id = jobID
 				j.jobCount = len(jobs)
 				jobsChan <- j
-				// t.logger.Debug().Msgf("appended job %s %s in channel", j.ip, j.protocol)
 			}
 		}
 	}
 }
 
-// receiver is created once
+// receiver is created once.
 // It waits for incoming results (sent by workers when a port is open).
 func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 	// openPorts holds all openPorts for a jobID
@@ -178,12 +177,12 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 		case res := <-resChan:
 			jobsStarted[res.id]++
 
-			// Append ports
+			// Append ports.
 			openPorts[res.id] = append(openPorts[res.id], res.ports...)
 
 			if jobsStarted[res.id] == res.jobCount {
 
-				// results holds all the informations about a finished scan
+				// results holds all the informations about a finished scan.
 				results := metrics.ResMsg{
 					ID:        res.id,
 					IP:        res.ip,
@@ -194,7 +193,7 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 				var unexpectedPorts, closedPorts []string
 				var err error
 
-				// Check diff between expected and open
+				// Check diff between expected and open.
 				if results.Protocol != "icmp" {
 					unexpectedPorts, closedPorts, err = t.checkAccordance(results.Protocol, results.OpenPorts)
 					if err != nil {
@@ -202,13 +201,13 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 					}
 				}
 
-				recap(unexpectedPorts, closedPorts, t.logger)
+				recap(t.Name(), unexpectedPorts, closedPorts, t.logger)
 
 				results.UnexpectedPorts = unexpectedPorts
 				results.ClosedPorts = closedPorts
 
-				postScan <- results
 				// send results to redis channel
+				postScan <- results
 			}
 		}
 	}
@@ -248,13 +247,13 @@ func (t *Target) checkAccordance(proto string, open []string) ([]string, []strin
 // recap logs one-line logs if there is some unexpected or closed ports in the last scan.
 // If the lists are empty, nothing is logged.
 // Logs are written with warn level.
-func recap(unexpected, closed []string, l zerolog.Logger) {
+func recap(name string, unexpected, closed []string, l zerolog.Logger) {
 	if len(unexpected) > 0 {
-		l.Warn().Msgf("%s unexpected", unexpected)
+		l.Warn().Msgf("[%s] %s unexpected", name, unexpected)
 	}
 
 	if len(closed) > 0 {
-		l.Warn().Msgf("%s closed", closed)
+		l.Warn().Msgf("[%s] %s closed", name, closed)
 	}
 }
 
@@ -508,7 +507,7 @@ func udpScan(ip, port string) bool {
 	// if there's any kind of error
 	errorCount := 0
 	for i := 0; i < 3; i++ {
-		buf := []byte("0")
+		buf := []byte{'\000'}
 		_, err := conn.Write(buf)
 		if err != nil {
 			errorCount++

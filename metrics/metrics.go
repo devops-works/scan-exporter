@@ -4,6 +4,7 @@ import (
 	"devops-works/scan-exporter/common"
 	"devops-works/scan-exporter/handlers"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -33,7 +34,7 @@ var (
 	})
 
 	unexpectedPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "scanexporter_unexpected_ports_total",
+		Name: "scanexporter_unexpected_open_ports_total",
 		Help: "Number of ports that are open, and shouldn't be.",
 	},
 		[]string{
@@ -53,7 +54,7 @@ var (
 	)
 
 	closedPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "scanexporter_closed_ports_total",
+		Name: "scanexporter_unexpected_closed_ports_total",
 		Help: "Number of ports that are closed and shouldn't be.",
 	},
 		[]string{
@@ -78,8 +79,9 @@ var (
 
 // Handle receives data from a finished scan. It also receive the number of targets declared in config file.
 func Handle(res ResMsg) {
+	var m sync.Mutex
 	if res.Protocol == "icmp" {
-		icmpNotResponding(res.OpenPorts, res.IP)
+		icmpNotResponding(res.OpenPorts, res.IP, &m)
 		return
 	}
 
@@ -124,13 +126,15 @@ func StartServ(l zerolog.Logger, nTargets int) {
 
 // icmpNotResponding adjust the numOfDownTargets variable depending of the current and the previous
 // status of the target.
-func icmpNotResponding(ports []string, IP string) {
+func icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 	isResponding := true
 	if len(ports) == 0 {
 		isResponding = !isResponding
 	}
 
+	m.Lock()
 	alreadyNotResponding := common.StringInSlice(IP, notRespondingList)
+	m.Unlock()
 
 	if isResponding && alreadyNotResponding {
 		// Wasn't responding, but now is ok
@@ -139,9 +143,11 @@ func icmpNotResponding(ports []string, IP string) {
 		for index := range notRespondingList {
 			if notRespondingList[index] == IP {
 				// Remove the element at index i from a.
+				m.Lock()
 				notRespondingList[index] = notRespondingList[len(notRespondingList)-1]
 				notRespondingList[len(notRespondingList)-1] = ""
 				notRespondingList = notRespondingList[:len(notRespondingList)-1]
+				m.Unlock()
 			}
 		}
 
@@ -150,10 +156,11 @@ func icmpNotResponding(ports []string, IP string) {
 		// Increment the number of down targets.
 		numOfDownTargets.Inc()
 		// Add IP to notRespondingList.
+		m.Lock()
 		notRespondingList = append(notRespondingList, IP)
+		m.Unlock()
 	}
 	// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
-
 }
 
 // writeSet writes items in a Redis dataset called setName.
