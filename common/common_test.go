@@ -13,6 +13,8 @@ func Test_StringInSlice(t *testing.T) {
 	}{
 		{name: "exists", s: "a", sl: []string{"a", "b", "c"}, want: true},
 		{name: "does not exist", s: "z", sl: []string{"a", "b", "c"}, want: false},
+		{name: "empty string", s: "", sl: []string{"a", "b", "c"}, want: false},
+		{name: "empty slice", s: "a", sl: []string{}, want: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
