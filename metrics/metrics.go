@@ -3,7 +3,6 @@ package metrics
 import (
 	"devops-works/scan-exporter/common"
 	"devops-works/scan-exporter/handlers"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -84,6 +83,8 @@ func Handle(res ResMsg) {
 		return
 	}
 
+	setName := res.IP + "/" + res.Protocol
+
 	// Expose the number of unexpected ports.
 	unexpectedPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.UnexpectedPorts)))
 
@@ -93,18 +94,12 @@ func Handle(res ResMsg) {
 	// Expose the number of closed ports.
 	closedPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.ClosedPorts)))
 
-	setName := res.IP + "/" + res.Protocol
-	// Read dataset
-	items := readSet(rdb, setName)
-	fmt.Printf("dataset read from redis : %s\n", items)
-	if len(items) == 0 {
-		writeSet(rdb, setName, res.OpenPorts)
-		diffPorts.WithLabelValues(res.Protocol, res.IP).Set(0)
-	} else {
-		diff := common.CompareStringSlices(items, res.OpenPorts)
-		diffPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(diff))
-		writeSet(rdb, setName, res.OpenPorts)
-	}
+	// Redis
+	prev := readSet(rdb, setName)
+	diff := common.CompareStringSlices(prev, res.OpenPorts)
+	openPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(diff))
+	wipeSet(rdb, setName, prev)
+	writeSet(rdb, setName, res.OpenPorts)
 }
 
 // StartServ starts the prometheus server.
@@ -115,7 +110,7 @@ func StartServ(l zerolog.Logger, nTargets int) {
 	// Set the number of hosts that doesn't respond to ping to 0.
 	numOfDownTargets.Set(0)
 
-	// init rdb
+	// Init Redis client.
 	initRedisClient()
 
 	srv := &http.Server{
@@ -178,6 +173,13 @@ func readSet(rdb *redis.Client, setName string) []string {
 		panic(err)
 	}
 	return items
+}
+
+// wipeSet clear a Redis dataset.
+func wipeSet(rdb *redis.Client, setName string, items []string) {
+	for _, item := range items {
+		rdb.SRem(setName, item)
+	}
 }
 
 // initRedisClient initiates a new Redis client item.

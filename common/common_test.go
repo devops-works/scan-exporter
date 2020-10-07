@@ -44,7 +44,10 @@ func TestCompareStringSlices(t *testing.T) {
 			name: "same content, not same order", sl1: []string{"1", "2", "3"}, sl2: []string{"3", "2", "1"}, want: 0,
 		},
 		{
-			name: "different lists", sl1: []string{"1", "2", "3"}, sl2: []string{"4", "5", "6"}, want: 3,
+			name: "different lists1", sl1: []string{"1", "2", "3"}, sl2: []string{"4", "5", "6"}, want: 6,
+		},
+		{
+			name: "different lists2", sl1: []string{"0", "1", "2", "3"}, sl2: []string{"4", "5", "6"}, want: 7,
 		},
 	}
 	for _, tt := range tests {
@@ -53,5 +56,11 @@ func TestCompareStringSlices(t *testing.T) {
 				t.Errorf("CompareStringSlices() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func BenchmarkCompareStringSlices(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		CompareStringSlices([]string{"0", "1", "2", "3"}, []string{"4", "5", "6"})
 	}
 }
