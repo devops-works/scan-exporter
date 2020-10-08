@@ -19,6 +19,8 @@ WORKDIR /dist
 
 RUN cp /build/main .
 
+RUN cp /build/config.yaml .
+
 EXPOSE 2112
 
-CMD ["/dist/main"]
+CMD [ "/dist/main" ]
