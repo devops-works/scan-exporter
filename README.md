@@ -47,7 +47,7 @@ Scan Exporter reads a YAML configuration file to know which hosts to scan :
 ---
 targets:
   - name: "app1"
-    ip: "89.168.42.229"
+    ip: "215.117.42.229"
     workers: 1000
     tcp:
       period: "12h"
@@ -91,6 +91,22 @@ Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to
 * `expected` is ports that should be opened.
 
 Authorized `range` and `expected` values are any number between 0 and 65535 separated by a coma or a dash. It is possible to mix dashes and comas : `22,80-443,9001` will work.
+
+## :page_with_curl: Metrics
+
+### :compass: Where
+
+The metrics are exposed on `:2112/metrics`. Going elsewhere on the web server returns a 404.
+
+### :question: How
+
+The metrics exposed are :
+* `scanexporter_targets_number_total` : Number of targets detected in config file.
+* `scanexporter_icmp_not_responding_total` : Number of targets that doesn't respond to pings.  
+* `scanexporter_unexpected_open_ports_total` : Number of ports that are open, and shouldn't be.
+* `scanexporter_open_ports_total` : Number of ports that are open.
+* `scanexporter_unexpected_closed_ports_total` : Number of ports that are closed and shouldn't be.
+* `scanexporter_diff_ports_total` : Number of ports that are different from previous scan.
 
 
 ## :ballot_box_with_check: Prerequisites
