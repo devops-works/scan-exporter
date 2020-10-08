@@ -3,7 +3,6 @@ package metrics
 import (
 	"devops-works/scan-exporter/common"
 	"devops-works/scan-exporter/handlers"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -99,9 +98,8 @@ func Handle(res ResMsg) {
 
 	// Redis
 	prev := readSet(rdb, setName)
-	fmt.Printf("prev: %s, actual: %s\n", prev, res.OpenPorts)
 	diff := common.CompareStringSlices(prev, res.OpenPorts)
-	openPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(diff))
+	diffPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(diff))
 	wipeSet(rdb, setName)
 	writeSet(rdb, setName, res.OpenPorts)
 }
