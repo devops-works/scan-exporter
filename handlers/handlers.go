@@ -12,7 +12,7 @@ import (
 func HandleFunc() *mux.Router {
 	r := mux.NewRouter()
 	r.Handle("/metrics", promhttp.Handler())
-
+	r.Handle("/health", http.HandlerFunc(healthCheckPage))
 	r.NotFoundHandler = http.HandlerFunc(notFoundPage)
 
 	return r
@@ -22,4 +22,9 @@ func HandleFunc() *mux.Router {
 func notFoundPage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	fmt.Fprint(w, "<h1>404 page not found</h1>")
+}
+
+func healthCheckPage(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "I'm up !")
 }
