@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:alpine AS builder
 
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
@@ -13,14 +13,16 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o main .
+RUN go build -o scan-exporter .
+
+FROM debian:buster-slim
 
 WORKDIR /dist
 
-RUN cp /build/main .
+COPY --from=builder /build/scan-exporter .
 
-RUN cp /build/config.yaml .
+COPY --from=builder /build/config.yaml .
 
 EXPOSE 2112
 
-CMD [ "/dist/main" ]
+CMD [ "/dist/scan-exporter" ]
