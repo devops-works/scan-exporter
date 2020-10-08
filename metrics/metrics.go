@@ -4,6 +4,7 @@ import (
 	"devops-works/scan-exporter/common"
 	"devops-works/scan-exporter/handlers"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -189,8 +190,12 @@ func wipeSet(rdb *redis.Client, setName string) {
 
 // initRedisClient initiates a new Redis client item.
 func initRedisClient() {
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "localhost"
+	}
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddr + ":6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
