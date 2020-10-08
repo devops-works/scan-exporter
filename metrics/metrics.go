@@ -3,6 +3,7 @@ package metrics
 import (
 	"devops-works/scan-exporter/common"
 	"devops-works/scan-exporter/handlers"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -98,10 +99,16 @@ func Handle(res ResMsg) {
 
 	// Redis
 	prev := readSet(rdb, setName)
+	fmt.Printf("prev: %s, actual: %s\n", prev, res.OpenPorts)
 	diff := common.CompareStringSlices(prev, res.OpenPorts)
+	fmt.Println(diff)
 	openPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(diff))
-	wipeSet(rdb, setName, prev)
+	wipeSet(rdb, setName)
+	fmt.Printf("set after wipe: %s\n", readSet(rdb, setName))
 	writeSet(rdb, setName, res.OpenPorts)
+	fmt.Printf("open ports: %s\n", res.OpenPorts)
+	fmt.Printf("set after writing ports: %s\n", readSet(rdb, setName))
+
 }
 
 // StartServ starts the prometheus server.
@@ -166,7 +173,7 @@ func icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 // writeSet writes items in a Redis dataset called setName.
 func writeSet(rdb *redis.Client, setName string, items []string) {
 	for _, item := range items {
-		err := rdb.SAdd(setName, item, 0).Err()
+		err := rdb.SAdd(setName, item).Err()
 		if err != nil {
 			panic(err) // TODO: change this :/
 		}
@@ -183,10 +190,8 @@ func readSet(rdb *redis.Client, setName string) []string {
 }
 
 // wipeSet clear a Redis dataset.
-func wipeSet(rdb *redis.Client, setName string, items []string) {
-	for _, item := range items {
-		rdb.SRem(setName, item)
-	}
+func wipeSet(rdb *redis.Client, setName string) {
+	rdb.Del(setName)
 }
 
 // initRedisClient initiates a new Redis client item.
