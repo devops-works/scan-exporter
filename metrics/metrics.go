@@ -101,14 +101,9 @@ func Handle(res ResMsg) {
 	prev := readSet(rdb, setName)
 	fmt.Printf("prev: %s, actual: %s\n", prev, res.OpenPorts)
 	diff := common.CompareStringSlices(prev, res.OpenPorts)
-	fmt.Println(diff)
 	openPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(diff))
 	wipeSet(rdb, setName)
-	fmt.Printf("set after wipe: %s\n", readSet(rdb, setName))
 	writeSet(rdb, setName, res.OpenPorts)
-	fmt.Printf("open ports: %s\n", res.OpenPorts)
-	fmt.Printf("set after writing ports: %s\n", readSet(rdb, setName))
-
 }
 
 // StartServ starts the prometheus server.
