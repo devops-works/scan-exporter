@@ -184,7 +184,7 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 
 				// results holds all the informations about a finished scan.
 				results := metrics.ResMsg{
-					ID:        res.id,
+					Name:      t.Name(),
 					IP:        res.ip,
 					Protocol:  res.protocol,
 					OpenPorts: openPorts[res.id],

@@ -14,7 +14,7 @@ import (
 
 // ResMsg holds all the data received from a scan.
 type ResMsg struct {
-	ID              string
+	Name            string
 	IP              string
 	Protocol        string
 	OpenPorts       []string
@@ -39,7 +39,7 @@ var (
 	},
 		[]string{
 			"proto",
-			"ip",
+			"name",
 		},
 	)
 
@@ -49,7 +49,7 @@ var (
 	},
 		[]string{
 			"proto",
-			"ip",
+			"name",
 		},
 	)
 
@@ -59,7 +59,7 @@ var (
 	},
 		[]string{
 			"proto",
-			"ip",
+			"name",
 		},
 	)
 
@@ -69,7 +69,7 @@ var (
 	},
 		[]string{
 			"proto",
-			"ip",
+			"name",
 		},
 	)
 
@@ -88,18 +88,18 @@ func Handle(res ResMsg) {
 	setName := res.IP + "/" + res.Protocol
 
 	// Expose the number of unexpected ports.
-	unexpectedPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.UnexpectedPorts)))
+	unexpectedPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.UnexpectedPorts)))
 
 	// Expose the number of open ports.
-	openPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.OpenPorts)))
+	openPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.OpenPorts)))
 
 	// Expose the number of closed ports.
-	closedPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(len(res.ClosedPorts)))
+	closedPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.ClosedPorts)))
 
 	// Redis
 	prev := readSet(rdb, setName)
 	diff := common.CompareStringSlices(prev, res.OpenPorts)
-	diffPorts.WithLabelValues(res.Protocol, res.IP).Set(float64(diff))
+	diffPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(diff))
 	wipeSet(rdb, setName)
 	writeSet(rdb, setName, res.OpenPorts)
 }
