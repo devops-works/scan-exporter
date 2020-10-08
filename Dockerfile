@@ -1,4 +1,4 @@
-FROM golang:alpine AS builder
+FROM devopsworks/golang-upx:1.15 AS builder
 
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
@@ -13,9 +13,11 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o scan-exporter .
+RUN go build -o scan-exporter . && \
+    strip scan-exporter && \
+    /usr/local/bin/upx -9 scan-exporter
 
-FROM debian:buster-slim
+FROM gcr.io/distroless/base-debian10
 
 WORKDIR /dist
 
