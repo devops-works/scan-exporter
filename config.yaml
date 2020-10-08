@@ -1,12 +1,26 @@
 ---
 targets:
   - name: "laptop"
-    ip: "192.168.101.66"
+    ip: "192.168.42.228"
     workers: 1000
     tcp:
       period: "30s"
       range: "all"
-      expected: "6000"
+      expected: "6000,4455"
+    # udp:
+    #   period: "20s"
+    #   range: "all"
+    #   expected: "22,53"
+    icmp:
+      period: "5s"
+
+  - name: "pc-mur"
+    ip: "192.168.42.229"
+    workers: 1000
+    tcp:
+      period: "30s"
+      range: "reserved"
+      expected: "631"
     # udp:
     #   period: "20s"
     #   range: "all"
