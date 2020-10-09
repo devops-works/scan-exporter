@@ -4,7 +4,6 @@ import (
 	"devops-works/scan-exporter/common"
 	"devops-works/scan-exporter/metrics"
 	"fmt"
-	"math/rand"
 	"net"
 	"strconv"
 	"strings"
@@ -153,7 +152,7 @@ func (t *Target) Run() {
 				return
 			}
 
-			jobID := generateRandomString(10)
+			jobID := common.GenerateRandomString(10)
 
 			// Send jobs to channel.
 			for _, j := range jobs {
@@ -255,20 +254,6 @@ func recap(name string, unexpected, closed []string, l zerolog.Logger) {
 	if len(closed) > 0 {
 		l.Warn().Msgf("[%s] %s closed", name, closed)
 	}
-}
-
-// generateRandomString generates a random string with a lenght of n.
-// It is used to create a random jobID.
-func generateRandomString(n int) string {
-	rand.Seed(time.Now().UnixNano())
-
-	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }
 
 // getWantedProto checks if a protocol is set in config file and returns a slice
