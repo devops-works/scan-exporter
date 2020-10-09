@@ -19,14 +19,15 @@ func main() {
 	flag.Parse()
 
 	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
-
 	lvl, err := zerolog.ParseLevel(logLevel)
+
 	if err != nil {
 		logger.Fatal().Msgf("unable to parse log level %s: %v", logLevel, err)
 	}
 
 	logger = logger.Level(lvl).With().Logger()
 
+	// Read config file.
 	c, err := config.New(confFile)
 	if err != nil {
 		logger.Fatal().Msgf("unable to read config %s: %v", confFile, err)
@@ -63,11 +64,8 @@ func main() {
 		go t.Run()
 	}
 
-	masterLogger := zerolog.New(os.Stderr).With().Timestamp().Logger()
-	masterLogger = masterLogger.Level(lvl).With().Logger()
-
 	// Start Promethus server
-	go metrics.StartServ(masterLogger, len(targetList))
+	go metrics.StartServ(logger, len(targetList))
 
 	// Wait here forever
 	wg.Wait()

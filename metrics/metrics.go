@@ -74,7 +74,7 @@ var (
 		},
 	)
 
-	notRespondingList = []string{} // Improve this with mutex
+	notRespondingList = []string{}
 	rdb               *redis.Client
 )
 

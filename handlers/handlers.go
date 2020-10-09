@@ -24,6 +24,7 @@ func notFoundPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>404 page not found</h1>")
 }
 
+// healthCheckPage handles the /health page.
 func healthCheckPage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "I'm up !")

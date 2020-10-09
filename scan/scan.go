@@ -26,12 +26,14 @@ type Target struct {
 	portsToScan map[string][]string
 }
 
+// protocol holds everything that is given in config file about a specific protocol.
 type protocol struct {
 	period   string
 	rng      string
 	expected string
 }
 
+// jobMsg contains the data which is sent to/by workers.
 type jobMsg struct {
 	id       string
 	jobCount int
@@ -70,6 +72,8 @@ func WithPorts(proto, period, rng, expected string) func(*Target) error {
 	}
 }
 
+// setPorts populates the target's ports arrays. It calls readPortRange to validate
+// port range.
 func (t *Target) setPorts(proto, period, rng, exp string) error {
 	if !common.StringInSlice(proto, []string{"udp", "tcp", "icmp"}) {
 		return fmt.Errorf("unsupported protocol %q for target %s", proto, t.name)
@@ -117,7 +121,7 @@ func (t *Target) Run() {
 
 	protoList := t.getWantedProto()
 
-	// Start scheduler
+	// Start scheduler.
 	go t.scheduler(trigger, protoList)
 
 	// Create channel to send jobMsg.
@@ -457,7 +461,9 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 	}
 }
 
-// sendToRedis is used as an interface between scan and metrics packages
+// sendToRedis is used as an interface between scan and metrics packages.
+// It receives results from the runner, and call metrics.Handle which expose and
+// analyse metrics.
 func sendToRedis(resChan chan metrics.ResMsg, l zerolog.Logger) {
 	for {
 		select {
@@ -534,7 +540,7 @@ func icmpScan(ip string) (bool, error) {
 	return stats.PacketLoss != 100.0, nil
 }
 
-// getDuration transforms a protocol's period into a time.Duration value
+// getDuration transforms a protocol's period into a time.Duration value.
 func getDuration(period string) (time.Duration, error) {
 	// only hours, minutes and seconds are handled by ParseDuration
 	if strings.ContainsAny(period, "hms") {
