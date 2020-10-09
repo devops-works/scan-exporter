@@ -203,18 +203,20 @@ func wipeSet(rdb *redis.Client, setName string) {
 
 // initRedisClient initiates a new Redis client item.
 func initRedisClient() error {
-	redisAddr := os.Getenv("REDIS_ADDR")
-	if redisAddr == "" {
-		redisAddr = "localhost"
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL == "" {
+		redisURL = "redis://localhost:6379/0"
 	}
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     redisAddr + ":6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
 
-	pong, err := rdb.Ping().Result()
-	if pong != "PONG" || err != nil {
+	opt, err := redis.ParseURL(redisURL)
+	if err != nil {
+		return err
+	}
+
+	rdb := redis.NewClient(opt)
+
+	_, err = rdb.Ping().Result()
+	if err != nil {
 		return err
 	}
 	return nil
