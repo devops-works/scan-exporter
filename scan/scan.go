@@ -131,7 +131,7 @@ func (t *Target) Run() {
 	postScan := make(chan metrics.ResMsg, 3*workersCount)
 
 	// scan to metrics goroutine.
-	go sendToRedis(postScan)
+	go sendToRedis(postScan, t.logger)
 
 	// Create receiver that will receive done jobs.
 	go t.receiver(resChan, postScan)
@@ -150,7 +150,7 @@ func (t *Target) Run() {
 			jobs, err := t.createJobs(proto)
 			if err != nil {
 				t.logger.Error().Msgf("error creating jobs")
-				return // TODO:  Handle error somehow
+				return
 			}
 
 			jobID := generateRandomString(10)
@@ -308,25 +308,40 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
 			case "tcp":
 				// Launch TCP scan
 				for _, p := range job.ports {
-					// Fill res.ports with open ports
-					if tcpScan(job.ip, p) {
+					success, err := tcpScan(job.ip, p)
+					if err != nil {
+						l.Warn().Msgf("error while scanning tcp: %v", err)
+						continue
+					}
+					if success {
+						// Fill res.ports with open ports
 						res.ports = append(res.ports, p)
 						l.Debug().Msgf("%s/%s open", p, res.protocol)
 					}
-
 				}
 				resChan <- res
 			case "udp":
 				// Launch UDP scan
 				for _, p := range job.ports {
-					if udpScan(job.ip, p) {
+					success, err := udpScan(job.ip, p)
+					if err != nil {
+						l.Warn().Msgf("error while scanning udp: %v", err)
+						continue
+					}
+					if success {
+						// Fill res.ports with open ports
 						res.ports = append(res.ports, p)
 						l.Debug().Msgf("%s/%s open", p, res.protocol)
 					}
 				}
 				resChan <- res
 			case "icmp":
-				if icmpScan(job.ip) {
+				success, err := icmpScan(job.ip)
+				if err != nil {
+					l.Warn().Msgf("error while scanning tcp: %v", err)
+					continue
+				}
+				if success {
 					res.ports = append(res.ports, "1")
 					l.Debug().Msgf("%s responds", res.protocol)
 				} else {
@@ -458,11 +473,14 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 }
 
 // sendToRedis is used as an interface between scan and metrics packages
-func sendToRedis(resChan chan metrics.ResMsg) {
+func sendToRedis(resChan chan metrics.ResMsg, l zerolog.Logger) {
 	for {
 		select {
 		case res := <-resChan:
-			metrics.Handle(res)
+			err := metrics.Handle(res)
+			if err != nil {
+				l.Error().Msgf("error handling results: %v", err)
+			}
 		}
 	}
 }
@@ -481,25 +499,25 @@ func ticker(trigger chan string, proto string, protTicker *time.Ticker) {
 }
 
 // tcpScan scans an ip and returns true if the port responds.
-func tcpScan(ip, port string) bool {
+func tcpScan(ip, port string) (bool, error) {
 	conn, err := net.DialTimeout("tcp", ip+":"+port, 2*time.Second)
 	if err != nil {
-		return false
+		return false, nil
 	}
 	defer conn.Close()
 
-	return true
+	return true, nil
 }
 
 // udpScan scans an ip and returns true if the port responds.
-func udpScan(ip, port string) bool {
+func udpScan(ip, port string) (bool, error) {
 	serverAddr, err := net.ResolveUDPAddr("udp", ip+":"+port)
 	if err != nil {
-		return false
+		return false, err
 	}
 	conn, err := net.DialUDP("udp", nil, serverAddr)
 	if err != nil {
-		return false
+		return false, err
 	}
 	defer conn.Close()
 
@@ -514,21 +532,21 @@ func udpScan(ip, port string) bool {
 		}
 	}
 	// port is closed
-	return errorCount <= 0
+	return errorCount <= 0, nil
 }
 
 // icmpScan pings a host
-func icmpScan(ip string) bool {
+func icmpScan(ip string) (bool, error) {
 	pinger, err := ping.NewPinger(ip)
 	if err != nil {
-		panic(err) // TODO: need a better error handling
+		return false, err
 	}
 	pinger.Count = 3
 	pinger.Timeout = 2 * time.Second
 	pinger.Run()
 	stats := pinger.Statistics()
 
-	return stats.PacketLoss != 100.0
+	return stats.PacketLoss != 100.0, nil
 }
 
 // getDuration transforms a protocol's period into a time.Duration value

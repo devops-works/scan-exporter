@@ -79,11 +79,11 @@ var (
 )
 
 // Handle receives data from a finished scan. It also receive the number of targets declared in config file.
-func Handle(res ResMsg) {
+func Handle(res ResMsg) error {
 	var m sync.Mutex
 	if res.Protocol == "icmp" {
 		icmpNotResponding(res.OpenPorts, res.IP, &m)
-		return
+		return nil
 	}
 
 	setName := res.IP + "/" + res.Protocol
@@ -98,11 +98,21 @@ func Handle(res ResMsg) {
 	closedPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.ClosedPorts)))
 
 	// Redis
-	prev := readSet(rdb, setName)
+	prev, err := readSet(rdb, setName)
+	if err != nil {
+		return err
+	}
+
 	diff := common.CompareStringSlices(prev, res.OpenPorts)
 	diffPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(diff))
+
 	wipeSet(rdb, setName)
-	writeSet(rdb, setName, res.OpenPorts)
+	err = writeSet(rdb, setName, res.OpenPorts)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // StartServ starts the prometheus server.
@@ -114,7 +124,8 @@ func StartServ(l zerolog.Logger, nTargets int) {
 	numOfDownTargets.Set(0)
 
 	// Init Redis client.
-	initRedisClient()
+	err := initRedisClient()
+	l.Error().Msgf("redis init error : %v", err)
 
 	srv := &http.Server{
 		Addr:         ":2112",
@@ -122,7 +133,7 @@ func StartServ(l zerolog.Logger, nTargets int) {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	l.Error().Msgf("server error : %s", srv.ListenAndServe())
+	l.Error().Msgf("server error : %v", srv.ListenAndServe())
 }
 
 // icmpNotResponding adjust the numOfDownTargets variable depending of the current and the previous
@@ -165,22 +176,24 @@ func icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 }
 
 // writeSet writes items in a Redis dataset called setName.
-func writeSet(rdb *redis.Client, setName string, items []string) {
+func writeSet(rdb *redis.Client, setName string, items []string) error {
 	for _, item := range items {
 		err := rdb.SAdd(setName, item).Err()
 		if err != nil {
-			panic(err) // TODO: change this :/
+			return err
 		}
 	}
+
+	return nil
 }
 
 // readSet reads items from a Redis dataset called setName.
-func readSet(rdb *redis.Client, setName string) []string {
+func readSet(rdb *redis.Client, setName string) ([]string, error) {
 	items, err := rdb.SMembers(setName).Result()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return items
+	return items, nil
 }
 
 // wipeSet clear a Redis dataset.
@@ -189,7 +202,7 @@ func wipeSet(rdb *redis.Client, setName string) {
 }
 
 // initRedisClient initiates a new Redis client item.
-func initRedisClient() {
+func initRedisClient() error {
 	redisAddr := os.Getenv("REDIS_ADDR")
 	if redisAddr == "" {
 		redisAddr = "localhost"
@@ -202,8 +215,9 @@ func initRedisClient() {
 
 	pong, err := rdb.Ping().Result()
 	if pong != "PONG" || err != nil {
-		panic(err) // TODO: change this
+		return err
 	}
+	return nil
 }
 
 // init is called at package initialisation. It initialize prometheus variables.
