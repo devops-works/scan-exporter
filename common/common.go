@@ -17,8 +17,8 @@ func StringInSlice(s string, sl []string) bool {
 // CompareStringSlices checks if two slices are equal.
 // It returns the number of different items.
 func CompareStringSlices(sl1, sl2 []string) int {
-	sort.Sort(sort.StringSlice(sl1))
-	sort.Sort(sort.StringSlice(sl2))
+	sort.Strings(sl1)
+	sort.Strings(sl2)
 
 	newports := []string{}
 	missingports := []string{}
