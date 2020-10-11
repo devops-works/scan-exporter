@@ -5,11 +5,11 @@ import (
 	"os"
 	"sync"
 
-	"devops-works/scan-exporter/config"
-	"devops-works/scan-exporter/metrics"
-	"devops-works/scan-exporter/scan"
-
 	"github.com/rs/zerolog"
+
+	"github.com/devops-works/scan-exporter/config"
+	"github.com/devops-works/scan-exporter/metrics"
+	"github.com/devops-works/scan-exporter/scan"
 )
 
 func main() {

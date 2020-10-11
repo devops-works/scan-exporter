@@ -1,16 +1,17 @@
 package scan
 
 import (
-	"devops-works/scan-exporter/common"
-	"devops-works/scan-exporter/metrics"
 	"fmt"
 	"net"
 	"strconv"
 	"strings"
 	"time"
-
+	
 	"github.com/rs/zerolog"
 	"github.com/sparrc/go-ping"
+	
+	"github.com/devops-works/scan-exporter/common"
+	"github.com/devops-works/scan-exporter/metrics"
 )
 
 // Target holds an IP and a range of ports to scan.

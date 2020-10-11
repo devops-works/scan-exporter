@@ -1,16 +1,17 @@
 package metrics
 
 import (
-	"devops-works/scan-exporter/common"
-	"devops-works/scan-exporter/handlers"
 	"net/http"
 	"os"
 	"sync"
 	"time"
-
+	
 	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
+	
+	"github.com/devops-works/scan-exporter/common"
+	"github.com/devops-works/scan-exporter/handlers"
 )
 
 // ResMsg holds all the data received from a scan.
