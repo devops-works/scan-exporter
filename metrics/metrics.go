@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"sync"
@@ -191,6 +192,7 @@ func writeSet(rdb *redis.Client, setName string, items []string) error {
 
 // readSet reads items from a Redis dataset called setName.
 func readSet(rdb *redis.Client, setName string) ([]string, error) {
+	fmt.Printf("%v\n", rdb) // debug
 	items, err := rdb.SMembers(setName).Result()
 	if err != nil {
 		return nil, err
@@ -215,7 +217,7 @@ func initRedisClient() error {
 		return err
 	}
 
-	rdb := redis.NewClient(opt)
+	rdb = redis.NewClient(opt)
 
 	_, err = rdb.Ping().Result()
 	if err != nil {
