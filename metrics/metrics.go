@@ -5,11 +5,11 @@ import (
 	"os"
 	"sync"
 	"time"
-	
+
 	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
-	
+
 	"github.com/devops-works/scan-exporter/common"
 	"github.com/devops-works/scan-exporter/handlers"
 )
@@ -125,8 +125,9 @@ func StartServ(l zerolog.Logger, nTargets int) {
 	numOfDownTargets.Set(0)
 
 	// Init Redis client.
-	err := initRedisClient()
-	l.Error().Msgf("redis init error : %v", err)
+	if err := initRedisClient(); err != nil {
+		l.Error().Msgf("redis init error : %v", err)
+	}
 
 	srv := &http.Server{
 		Addr:         ":2112",
