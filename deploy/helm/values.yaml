@@ -1,0 +1,16 @@
+scanexporter:
+    name: scan-exporter
+    replicaCount: 1
+    container:
+        image: ez3kiel/scan-exporter:latest
+        port: 2112
+    secrets: regcred
+
+redis:
+    name: redis
+    usePassword: false
+    replicaCount: 1
+    db: 0
+    container:
+        image: redis:latest
+        port: 6379

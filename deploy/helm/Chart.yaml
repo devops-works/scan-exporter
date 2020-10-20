@@ -1,0 +1,11 @@
+apiVersion: v2
+name: scan-exporter-chart
+description: A Helm chart to depliy scan-exporter in Kubernetes
+type: application
+version: 0.1.0
+appVersion: 0.1.0
+
+dependencies:
+    - name: redis
+      version: 11.2.1
+      repository: https://charts.bitnami.com/bitnami
