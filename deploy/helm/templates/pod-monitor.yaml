@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Values.scanexporter.name }}
+spec:
+    podMetricsEndpoints:
+      - interval: 10s
+        scrapeTimeout: 10s
+        port: "{{ .Values.scanexporter.container.port }}"
+        path: /metrics
+    selector:
+      matchLabels:
+          app: {{ .Values.scanexporter.name }}

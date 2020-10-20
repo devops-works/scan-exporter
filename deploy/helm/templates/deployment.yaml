@@ -13,14 +13,32 @@ spec:
         metadata:
             labels:
                 app: {{ .Values.scanexporter.name }}
-        spec:
+        spec:                
             containers:
                 - name: {{ .Values.scanexporter.name }}
                   image: {{ .Values.scanexporter.container.image }}
+                  args: ["/dist/scan-exporter", "-config", "/etc/scan-exporter/config.yaml"]
+                  volumeMounts:
+                    - name: config
+                      mountPath: "/etc/scan-exporter"
+                      readOnly: true
+                  resources:
+{{ toYaml .Values.scanexporter.resources | indent 20 }}
+                  livenessProbe:
+                      httpGet:
+                          path: {{ .Values.scanexporter.liveness.path }}
+                          port: {{ .Values.scanexporter.container.port }}
+                      initialDelaySeconds: {{ .Values.scanexporter.liveness.period }}
+                      periodSeconds: {{ .Values.scanexporter.liveness.period }}
                   env:
                       - name: REDIS_URL
                         value: redis://{{ .Release.Name }}-{{ .Values.redis.name }}-master/{{ .Values.redis.db }}
                   ports:
-                      - containerPort: {{ .Values.scanexporter.container.port }}
+                      - containerPort:
+                            {{ .Values.scanexporter.container.port }}
+            volumes:
+              - name: config
+                configMap:
+                    name: scan-exporter-config
             imagePullSecrets:
                 - name: {{ .Values.scanexporter.secrets }}
