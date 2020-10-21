@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: {{ .Values.scanexporter.name }}
+    name: {{ include "scanexporter.fullname" . }}
     labels:
-        app: {{ .Values.scanexporter.name }}
+        app: {{ include "scanexporter.fullname" . }}
 spec:
     replicas: {{ .Values.scanexporter.replicaCount }}
     selector:
         matchLabels:
-            app: {{ .Values.scanexporter.name }}
+            app: {{ include "scanexporter.fullname" . }}
     template:
         metadata:
             labels:
-                app: {{ .Values.scanexporter.name }}
+                app: {{ include "scanexporter.fullname" . }}
         spec:                
             containers:
-                - name: {{ .Values.scanexporter.name }}
+                - name: {{ include "scanexporter.fullname" . }}
                   image: {{ .Values.scanexporter.container.image }}
                   args: ["/dist/scan-exporter", "-config", "/etc/scan-exporter/config.yaml"]
                   volumeMounts:
