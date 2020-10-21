@@ -24,3 +24,10 @@ redis:
     container:
         image: redis:latest
         port: 6379
+
+nameOverride: ""
+fullnameOverride: ""
+
+podMonitor: 
+    enabled: false
+    path: /metrics
