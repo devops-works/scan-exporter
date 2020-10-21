@@ -1,0 +1,26 @@
+scanexporter:
+    name: scan-exporter
+    replicaCount: 1
+    liveness:
+        period: 3
+        path: /health
+    container:
+        image: ez3kiel/scan-exporter:latest
+        port: 2112
+    secrets: regcred
+    resources:
+        limits:
+            cpu: 100m
+            memory: 64Mi
+        requests:
+            cpu: 100m
+            memory: 64Mi
+
+redis:
+    name: redis
+    usePassword: false
+    replicaCount: 1
+    db: 0
+    container:
+        image: redis:latest
+        port: 6379

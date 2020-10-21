@@ -4,3 +4,4 @@ todo
 config.yaml
 dashboard.json
 docker-compose.yaml
+/deploy/helm/Chart.lock
