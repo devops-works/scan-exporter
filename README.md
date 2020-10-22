@@ -12,6 +12,8 @@ To fully use this tool, you will need some tools (`helm`, `kubectl`, `minikube` 
 
 /* Give some juicy infos about what's inside for those who are too lazy to read the code */
 
+![internals](docs/internals_v2.jpg)
+
 ## Getting started
 
 Firstly, clone this repo :
