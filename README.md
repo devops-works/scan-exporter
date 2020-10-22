@@ -146,7 +146,7 @@ If you plan to use Scan Exporter in Kubernetes, you definitely should configure 
 /* Add details when implementation is finished */
 
 ## References
-
+* [Prometheus](https://prometheus.io/)
 * [Docker](https://docs.docker.com/)
 * [Kubernetes](https://kubernetes.io)
 * [Helm](https://helm.sh)
