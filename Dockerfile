@@ -17,6 +17,8 @@ RUN go build -o scan-exporter . && \
     strip scan-exporter && \
     /usr/local/bin/upx -9 scan-exporter
 
+RUN setcap cap_net_raw+ep scan-exporter
+
 FROM gcr.io/distroless/base-debian10
 
 WORKDIR /dist

@@ -533,6 +533,7 @@ func icmpScan(ip string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	pinger.SetPrivileged(true)
 	pinger.Count = 3
 	pinger.Timeout = 2 * time.Second
 	pinger.Run()
