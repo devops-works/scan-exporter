@@ -60,15 +60,17 @@ or your can build it locally :
 $ docker build -t <image tag> .
 ```
 
-**NOTE 1** Please bear in mind that to work properly, a Redis container in the same network and with the port 6379 listening is needed.
+To work properly, a Redis container in the same network and with the port 6379 listening is needed.
 
-**NOTE 2** Also, the config file is copied inside the image while creating the docker image. It is not possible to change it once the image is built.
+Best practice is to create a docker-compose, else you can run both locally and bind their ports to 127.0.0.1.
+
+**NOTE 1** The config file is copied inside the image while creating the docker image. It is not possible to change it once the image is built.
 
 ### Run it in Kubernetes
 
 Thanks to the Helm chart provided in the repo (deploy/helm), it is really easy to deploy the application inside a Kubernetes cluster. The following example will use Kind to create a cluster locally. If you don't have `helm`, `kubectl` or `kind`, you should try [binenv](https://github.com/devops-works/binenv) ;)
 
-First, create the Kubernetes cluster :
+First, create the Kubernetes cluster (here, with `kind`):
 ```
 $ kind create cluster
 ```
