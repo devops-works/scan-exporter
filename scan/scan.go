@@ -206,7 +206,7 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 					}
 				}
 
-				recap(t.Name(), unexpectedPorts, closedPorts, t.logger)
+				t.recap(t.Name(), unexpectedPorts, closedPorts, t.logger)
 
 				results.UnexpectedPorts = unexpectedPorts
 				results.ClosedPorts = closedPorts
@@ -252,13 +252,13 @@ func (t *Target) checkAccordance(proto string, open []string) ([]string, []strin
 // recap logs one-line logs if there is some unexpected or closed ports in the last scan.
 // If the lists are empty, nothing is logged.
 // Logs are written with warn level.
-func recap(name string, unexpected, closed []string, l zerolog.Logger) {
+func (t *Target) recap(name string, unexpected, closed []string, l zerolog.Logger) {
 	if len(unexpected) > 0 {
-		l.Warn().Msgf("[%s] %s unexpected", name, unexpected)
+		t.logger.Warn().Msgf("[%s] %s unexpected", name, unexpected)
 	}
 
 	if len(closed) > 0 {
-		l.Warn().Msgf("[%s] %s closed", name, closed)
+		t.logger.Warn().Msgf("[%s] %s closed", name, closed)
 	}
 }
 
