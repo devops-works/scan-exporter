@@ -2,17 +2,24 @@ package metrics
 
 import (
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
-	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rs/zerolog"
 
 	"github.com/devops-works/scan-exporter/common"
 	"github.com/devops-works/scan-exporter/handlers"
+	"github.com/devops-works/scan-exporter/storage"
 )
+
+// Server holds a metrics server configuration
+type Server struct {
+	storage                                            storage.ListManager
+	notRespondingList                                  []string
+	metricsPort                                        string
+	numOfTargets, numOfDownTargets                     prometheus.Gauge
+	unexpectedPorts, openPorts, closedPorts, diffPorts *prometheus.GaugeVec
+}
 
 // ResMsg holds all the data received from a scan.
 type ResMsg struct {
@@ -24,91 +31,78 @@ type ResMsg struct {
 	ClosedPorts     []string
 }
 
-var (
-	numOfTargets = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "scanexporter_targets_number_total",
-		Help: "Number of targets detected in config file.",
-	})
+// New instance of server
+func New(store storage.ListManager) *Server {
+	s := Server{
+		storage: store,
+		numOfTargets: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "scanexporter_targets_number_total",
+			Help: "Number of targets detected in config file.",
+		}),
 
-	numOfDownTargets = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "scanexporter_icmp_not_responding_total",
-		Help: "Number of targets that doesn't respond to pings.",
-	})
+		numOfDownTargets: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "scanexporter_icmp_not_responding_total",
+			Help: "Number of targets that doesn't respond to pings.",
+		}),
+		unexpectedPorts: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "scanexporter_unexpected_open_ports_total",
+			Help: "Number of ports that are open, and shouldn't be.",
+		}, []string{"proto", "name"}),
+		openPorts: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "scanexporter_open_ports_total",
+			Help: "Number of ports that are open.",
+		}, []string{"proto", "name"}),
 
-	unexpectedPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "scanexporter_unexpected_open_ports_total",
-		Help: "Number of ports that are open, and shouldn't be.",
-	},
-		[]string{
-			"proto",
-			"name",
-		},
-	)
+		closedPorts: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "scanexporter_unexpected_closed_ports_total",
+			Help: "Number of ports that are closed and shouldn't be.",
+		}, []string{"proto", "name"}),
 
-	openPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "scanexporter_open_ports_total",
-		Help: "Number of ports that are open.",
-	},
-		[]string{
-			"proto",
-			"name",
-		},
-	)
+		diffPorts: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "scanexporter_diff_ports_total",
+			Help: "Number of ports that are different from previous scan.",
+		}, []string{"proto", "name"}),
+	}
 
-	closedPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "scanexporter_unexpected_closed_ports_total",
-		Help: "Number of ports that are closed and shouldn't be.",
-	},
-		[]string{
-			"proto",
-			"name",
-		},
-	)
+	prometheus.MustRegister(s.numOfTargets)
+	prometheus.MustRegister(s.numOfDownTargets)
+	prometheus.MustRegister(s.unexpectedPorts)
+	prometheus.MustRegister(s.openPorts)
+	prometheus.MustRegister(s.closedPorts)
+	prometheus.MustRegister(s.diffPorts)
 
-	diffPorts = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "scanexporter_diff_ports_total",
-		Help: "Number of ports that are different from previous scan.",
-	},
-		[]string{
-			"proto",
-			"name",
-		},
-	)
-
-	notRespondingList = []string{}
-	rdb               *redis.Client
-)
+	return &s
+}
 
 // Handle receives data from a finished scan. It also receive the number of targets declared in config file.
-func Handle(res ResMsg) error {
+func (s *Server) Handle(res ResMsg) error {
 	var m sync.Mutex
 	if res.Protocol == "icmp" {
-		icmpNotResponding(res.OpenPorts, res.IP, &m)
+		s.icmpNotResponding(res.OpenPorts, res.IP, &m)
 		return nil
 	}
 
-	setName := res.IP + "/" + res.Protocol
+	setName := res.IP + ":" + res.Protocol
 
 	// Expose the number of unexpected ports.
-	unexpectedPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.UnexpectedPorts)))
+	s.unexpectedPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.UnexpectedPorts)))
 
 	// Expose the number of open ports.
-	openPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.OpenPorts)))
+	s.openPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.OpenPorts)))
 
 	// Expose the number of closed ports.
-	closedPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.ClosedPorts)))
+	s.closedPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(len(res.ClosedPorts)))
 
 	// Redis
-	prev, err := readSet(rdb, setName)
+	prev, err := s.storage.ReadList(setName)
 	if err != nil {
 		return err
 	}
 
 	diff := common.CompareStringSlices(prev, res.OpenPorts)
-	diffPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(diff))
+	s.diffPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(diff))
 
-	wipeSet(rdb, setName)
-	err = writeSet(rdb, setName, res.OpenPorts)
+	err = s.storage.ReplaceList(setName, res.OpenPorts)
 	if err != nil {
 		return err
 	}
@@ -117,17 +111,12 @@ func Handle(res ResMsg) error {
 }
 
 // StartServ starts the prometheus server.
-func StartServ(l zerolog.Logger, nTargets int) {
+func (s *Server) StartServ(nTargets int) error {
 	// Set the number of targets. This is done once.
-	numOfTargets.Set(float64(nTargets))
+	s.numOfTargets.Set(float64(nTargets))
 
 	// Set the number of hosts that doesn't respond to ping to 0.
-	numOfDownTargets.Set(0)
-
-	// Init Redis client.
-	if err := initRedisClient(); err != nil {
-		l.Error().Msgf("redis init error : %v", err)
-	}
+	s.numOfDownTargets.Set(0)
 
 	srv := &http.Server{
 		Addr:         ":2112",
@@ -135,32 +124,32 @@ func StartServ(l zerolog.Logger, nTargets int) {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	l.Error().Msgf("server error : %v", srv.ListenAndServe())
+	return srv.ListenAndServe()
 }
 
 // icmpNotResponding adjust the numOfDownTargets variable depending of the current and the previous
 // status of the target.
-func icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
+func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 	isResponding := true
 	if len(ports) == 0 {
 		isResponding = !isResponding
 	}
 
 	m.Lock()
-	alreadyNotResponding := common.StringInSlice(IP, notRespondingList)
+	alreadyNotResponding := common.StringInSlice(IP, s.notRespondingList)
 	m.Unlock()
 
 	if isResponding && alreadyNotResponding {
 		// Wasn't responding, but now is ok
-		numOfDownTargets.Dec()
+		s.numOfDownTargets.Dec()
 
-		for index := range notRespondingList {
-			if notRespondingList[index] == IP {
+		for index := range s.notRespondingList {
+			if s.notRespondingList[index] == IP {
 				// Remove the element at index i from a.
 				m.Lock()
-				notRespondingList[index] = notRespondingList[len(notRespondingList)-1]
-				notRespondingList[len(notRespondingList)-1] = ""
-				notRespondingList = notRespondingList[:len(notRespondingList)-1]
+				s.notRespondingList[index] = s.notRespondingList[len(s.notRespondingList)-1]
+				s.notRespondingList[len(s.notRespondingList)-1] = ""
+				s.notRespondingList = s.notRespondingList[:len(s.notRespondingList)-1]
 				m.Unlock()
 			}
 		}
@@ -168,68 +157,11 @@ func icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 	} else if !isResponding && !alreadyNotResponding {
 		// First time it doesn't respond.
 		// Increment the number of down targets.
-		numOfDownTargets.Inc()
+		s.numOfDownTargets.Inc()
 		// Add IP to notRespondingList.
 		m.Lock()
-		notRespondingList = append(notRespondingList, IP)
+		s.notRespondingList = append(s.notRespondingList, IP)
 		m.Unlock()
 	}
 	// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
-}
-
-// writeSet writes items in a Redis dataset called setName.
-func writeSet(rdb *redis.Client, setName string, items []string) error {
-	for _, item := range items {
-		err := rdb.SAdd(setName, item).Err()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// readSet reads items from a Redis dataset called setName.
-func readSet(rdb *redis.Client, setName string) ([]string, error) {
-	items, err := rdb.SMembers(setName).Result()
-	if err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-// wipeSet clear a Redis dataset.
-func wipeSet(rdb *redis.Client, setName string) {
-	rdb.Del(setName)
-}
-
-// initRedisClient initiates a new Redis client item.
-func initRedisClient() error {
-	redisURL := os.Getenv("REDIS_URL")
-	if redisURL == "" {
-		redisURL = "redis://localhost:6379/0"
-	}
-
-	opt, err := redis.ParseURL(redisURL)
-	if err != nil {
-		return err
-	}
-
-	rdb = redis.NewClient(opt)
-
-	_, err = rdb.Ping().Result()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// init is called at package initialisation. It initialize prometheus variables.
-func init() {
-	prometheus.MustRegister(numOfTargets)
-	prometheus.MustRegister(numOfDownTargets)
-	prometheus.MustRegister(unexpectedPorts)
-	prometheus.MustRegister(openPorts)
-	prometheus.MustRegister(closedPorts)
-	prometheus.MustRegister(diffPorts)
 }

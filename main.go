@@ -3,24 +3,33 @@ package main
 import (
 	"flag"
 	"os"
-	"sync"
 
 	"github.com/rs/zerolog"
 
 	"github.com/devops-works/scan-exporter/config"
 	"github.com/devops-works/scan-exporter/metrics"
 	"github.com/devops-works/scan-exporter/scan"
+	"github.com/devops-works/scan-exporter/storage/redis"
 )
 
 func main() {
-	var confFile, logLevel string
+	var confFile, logLevel, redisURL string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&logLevel, "loglevel", "info", "log level to use")
+	flag.StringVar(&redisURL, "redisurl", "", "Redis URL (default: redis://127.0.0.1:6379/0)")
 	flag.Parse()
+
+	// Priority to flags
+	if redisEnv := os.Getenv("REDIS_URL"); redisEnv != "" && redisURL == "" {
+		redisURL = redisEnv
+	}
+	// If nothing is provided in both env and flag, set a default value
+	if redisURL == "" {
+		redisURL = "redis://127.0.0.1:6379/0"
+	}
 
 	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 	lvl, err := zerolog.ParseLevel(logLevel)
-
 	if err != nil {
 		logger.Fatal().Msgf("unable to parse log level %s: %v", logLevel, err)
 	}
@@ -47,16 +56,12 @@ func main() {
 			scan.WithPorts("icmp", target.ICMP.Period, target.ICMP.Range, target.ICMP.Expected),
 			scan.WithLogger(logger),
 		)
-
 		if err != nil {
 			logger.Fatal().Msgf("error with target %q: %v", target.Name, err)
 		}
 
 		targetList = append(targetList, t)
 	}
-	// This waitgroup never ends
-	var wg sync.WaitGroup
-	wg.Add(1)
 
 	for i := 0; i < len(targetList); i++ {
 		t := targetList[i]
@@ -64,9 +69,13 @@ func main() {
 		go t.Run()
 	}
 
-	// Start Promethus server
-	go metrics.StartServ(logger, len(targetList))
+	storage, err := redis.New(redisURL)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("error while initializing redis")
+	}
 
-	// Wait here forever
-	wg.Wait()
+	// Start Promethus server and wait forever
+	m := metrics.New(storage)
+	err = m.StartServ(len(targetList))
+	logger.Error().Err(err).Msg("error while running metric server")
 }

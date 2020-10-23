@@ -465,17 +465,17 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 // sendToRedis is used as an interface between scan and metrics packages.
 // It receives results from the runner, and call metrics.Handle which expose and
 // analyse metrics.
-func sendToRedis(resChan chan metrics.ResMsg, l zerolog.Logger) {
-	for {
-		select {
-		case res := <-resChan:
-			err := metrics.Handle(res)
-			if err != nil {
-				l.Error().Msgf("error handling results: %v", err)
-			}
-		}
-	}
-}
+// func sendToRedis(resChan chan metrics.ResMsg, l zerolog.Logger) {
+// 	for {
+// 		select {
+// 		case res := <-resChan:
+// 			err := metrics.Handle(res)
+// 			if err != nil {
+// 				l.Error().Msgf("error handling results: %v", err)
+// 			}
+// 		}
+// 	}
+// }
 
 // ticker handles a protocol ticker, and send the protocol in a channel when the ticker ticks
 func ticker(trigger chan string, proto string, protTicker *time.Ticker) {
