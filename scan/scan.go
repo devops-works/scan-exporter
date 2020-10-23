@@ -155,7 +155,7 @@ func (t *Target) Run() {
 	for {
 		select {
 		case proto := <-trigger:
-			if !t.startTime[proto].IsZero() {
+			if t.startTime[proto].IsZero() {
 				t.logger.Warn().Msgf("%s: a scan already started", t.name)
 				break
 			}
@@ -196,6 +196,7 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 			if jobsStarted[res.id] == res.jobCount {
 				t.logger.Info().Msgf("%s/%s scan duration %s", t.name, res.protocol, time.Now().Sub(t.startTime[res.protocol]))
 				t.setTimeTo(res.protocol, time.Time{})
+
 				// results holds all the informations about a finished scan.
 				results := metrics.ResMsg{
 					Name:      t.Name(),
