@@ -194,7 +194,10 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 			openPorts[res.id] = append(openPorts[res.id], res.ports...)
 
 			if jobsStarted[res.id] == res.jobCount {
-				t.logger.Info().Msgf("%s/%s scan duration %s", t.name, res.protocol, time.Now().Sub(t.startTime[res.protocol]))
+				// Do not log ICMP scan duration
+				if res.protocol != "icmp" {
+					t.logger.Info().Msgf("%s/%s scan duration %s", t.name, res.protocol, time.Now().Sub(t.startTime[res.protocol]))
+				}
 				t.setTimeTo(res.protocol, time.Time{})
 
 				// results holds all the informations about a finished scan.
