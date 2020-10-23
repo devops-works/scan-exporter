@@ -5,19 +5,30 @@ import (
 	"os"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/devops-works/scan-exporter/config"
 	"github.com/devops-works/scan-exporter/metrics/prometheus"
+	"github.com/devops-works/scan-exporter/pprof"
 	"github.com/devops-works/scan-exporter/scan"
 	"github.com/devops-works/scan-exporter/storage/redis"
 )
 
 func main() {
-	var confFile, logLevel, redisURL string
+	var confFile, logLevel, redisURL, pprofAddr string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
-	flag.StringVar(&logLevel, "loglevel", "info", "log level to use")
-	flag.StringVar(&redisURL, "redisurl", "", "Redis URL (default: redis://127.0.0.1:6379/0)")
+	flag.StringVar(&logLevel, "log.level", "info", "log level to use")
+	flag.StringVar(&redisURL, "redis.url", "", "Redis URL (default: redis://127.0.0.1:6379/0)")
+	flag.StringVar(&pprofAddr, "pprof.addr", "127.0.0.1:6060", "pprof addr")
 	flag.Parse()
+
+	pprofServer, err := pprof.New(pprofAddr)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to create pprof server")
+	}
+	log.Info().Msgf("pprof started on 'http://%s'", pprofServer.Addr)
+
+	go pprofServer.Run()
 
 	// Priority to flags
 	if redisEnv := os.Getenv("REDIS_URL"); redisEnv != "" && redisURL == "" {
