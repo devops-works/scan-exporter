@@ -20,8 +20,8 @@ type Target struct {
 	ip      string
 	workers int
 	protos  map[string]protocol
-
-	logger zerolog.Logger
+	metrics metrics.MetricsManager
+	logger  zerolog.Logger
 
 	// those maps hold the protocol and the ports.
 	portsToScan map[string][]string
@@ -44,7 +44,7 @@ type jobMsg struct {
 }
 
 // New checks that target specification is valid, and if target is responding.
-func New(name, ip string, workers int, o ...func(*Target) error) (*Target, error) {
+func New(name, ip string, workers int, m metrics.MetricsManager, o ...func(*Target) error) (*Target, error) {
 	if i := net.ParseIP(ip); i == nil {
 		return nil, fmt.Errorf("unable to parse IP address %s", ip)
 	}
@@ -53,6 +53,7 @@ func New(name, ip string, workers int, o ...func(*Target) error) (*Target, error
 		name:        name,
 		ip:          ip,
 		workers:     workers,
+		metrics:     m,
 		protos:      make(map[string]protocol),
 		portsToScan: make(map[string][]string),
 	}
@@ -135,14 +136,14 @@ func (t *Target) Run() {
 	postScan := make(chan metrics.ResMsg, 3*workersCount)
 
 	// scan to metrics goroutine.
-	go sendToRedis(postScan, t.logger)
+	go t.sendResults(postScan)
 
 	// Create receiver that will receive done jobs.
 	go t.receiver(resChan, postScan)
 
 	// Start required number (n) of workers.
 	for w := 0; w < workersCount; w++ {
-		go worker(jobsChan, resChan, t.logger)
+		go t.worker(jobsChan, resChan)
 	}
 	t.logger.Info().Msgf("%d workers started", workersCount)
 
@@ -283,7 +284,7 @@ func (t *Target) getWantedProto() []string {
 // worker is a neverending goroutine which waits for incoming jobs.
 // Depending of the job's protocol, it launches different kinds of scans.
 // If a scan is successful, it sends a resMsg to the receiver.
-func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
+func (t *Target) worker(jobsChan chan jobMsg, resChan chan jobMsg) {
 	for {
 		select {
 		case job := <-jobsChan:
@@ -300,13 +301,13 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
 				for _, p := range job.ports {
 					success, err := tcpScan(job.ip, p)
 					if err != nil {
-						l.Warn().Msgf("error while scanning tcp: %v", err)
+						t.logger.Warn().Msgf("error while scanning tcp: %v", err)
 						continue
 					}
 					if success {
 						// Fill res.ports with open ports
 						res.ports = append(res.ports, p)
-						l.Debug().Msgf("%s/%s open", p, res.protocol)
+						t.logger.Debug().Msgf("%s/%s open", p, res.protocol)
 					}
 				}
 				resChan <- res
@@ -315,27 +316,27 @@ func worker(jobsChan chan jobMsg, resChan chan jobMsg, l zerolog.Logger) {
 				for _, p := range job.ports {
 					success, err := udpScan(job.ip, p)
 					if err != nil {
-						l.Warn().Msgf("error while scanning udp: %v", err)
+						t.logger.Warn().Msgf("error while scanning udp: %v", err)
 						continue
 					}
 					if success {
 						// Fill res.ports with open ports
 						res.ports = append(res.ports, p)
-						l.Debug().Msgf("%s/%s open", p, res.protocol)
+						t.logger.Debug().Msgf("%s/%s open", p, res.protocol)
 					}
 				}
 				resChan <- res
 			case "icmp":
 				success, err := icmpScan(job.ip)
 				if err != nil {
-					l.Warn().Msgf("error while scanning tcp: %v", err)
+					t.logger.Warn().Msgf("error while scanning tcp: %v", err)
 					continue
 				}
 				if success {
 					res.ports = append(res.ports, "1")
-					l.Debug().Msgf("%s responds", res.protocol)
+					t.logger.Debug().Msgf("%s responds", res.protocol)
 				} else {
-					l.Debug().Msgf("%s doesn't responds", res.protocol)
+					t.logger.Debug().Msgf("%s doesn't responds", res.protocol)
 				}
 				resChan <- res
 			}
@@ -465,17 +466,17 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 // sendToRedis is used as an interface between scan and metrics packages.
 // It receives results from the runner, and call metrics.Handle which expose and
 // analyse metrics.
-// func sendToRedis(resChan chan metrics.ResMsg, l zerolog.Logger) {
-// 	for {
-// 		select {
-// 		case res := <-resChan:
-// 			err := metrics.Handle(res)
-// 			if err != nil {
-// 				l.Error().Msgf("error handling results: %v", err)
-// 			}
-// 		}
-// 	}
-// }
+func (t *Target) sendResults(resChan chan metrics.ResMsg) {
+	for {
+		select {
+		case res := <-resChan:
+			err := t.metrics.ReceiveResults(res)
+			if err != nil {
+				t.logger.Error().Err(err).Msg("error handling results")
+			}
+		}
+	}
+}
 
 // ticker handles a protocol ticker, and send the protocol in a channel when the ticker ticks
 func ticker(trigger chan string, proto string, protTicker *time.Ticker) {

@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/devops-works/scan-exporter/config"
-	"github.com/devops-works/scan-exporter/metrics"
+	"github.com/devops-works/scan-exporter/metrics/prometheus"
 	"github.com/devops-works/scan-exporter/scan"
 	"github.com/devops-works/scan-exporter/storage/redis"
 )
@@ -44,6 +44,12 @@ func main() {
 
 	logger.Info().Msgf("%d target(s) found in %s", len(c.Targets), confFile)
 
+	storage, err := redis.New(redisURL)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("error while initializing redis")
+	}
+	m := prometheus.New(storage)
+
 	// targetList is an array that will contain each instance of up target found in conf file
 	targetList := []*scan.Target{}
 	for _, target := range c.Targets {
@@ -51,6 +57,7 @@ func main() {
 			target.Name,
 			target.IP,
 			target.Workers,
+			m,
 			scan.WithPorts("tcp", target.TCP.Period, target.TCP.Range, target.TCP.Expected),
 			scan.WithPorts("udp", target.UDP.Period, target.UDP.Range, target.UDP.Expected),
 			scan.WithPorts("icmp", target.ICMP.Period, target.ICMP.Range, target.ICMP.Expected),
@@ -69,13 +76,7 @@ func main() {
 		go t.Run()
 	}
 
-	storage, err := redis.New(redisURL)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("error while initializing redis")
-	}
-
-	// Start Promethus server and wait forever
-	m := metrics.New(storage)
+	// Start Prometheus server and wait forever
 	err = m.StartServ(len(targetList))
 	logger.Error().Err(err).Msg("error while running metric server")
 }
