@@ -5,6 +5,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -16,12 +17,14 @@ import (
 
 // Target holds an IP and a range of ports to scan.
 type Target struct {
-	name    string
-	ip      string
-	workers int
-	protos  map[string]protocol
-	metrics metrics.MetricsManager
-	logger  zerolog.Logger
+	name      string
+	ip        string
+	workers   int
+	protos    map[string]protocol
+	metrics   metrics.MetricsManager
+	logger    zerolog.Logger
+	startTime map[string]time.Time
+	timeMutex sync.Mutex
 
 	// those maps hold the protocol and the ports.
 	portsToScan map[string][]string
@@ -56,6 +59,7 @@ func New(name, ip string, workers int, m metrics.MetricsManager, o ...func(*Targ
 		metrics:     m,
 		protos:      make(map[string]protocol),
 		portsToScan: make(map[string][]string),
+		startTime:   make(map[string]time.Time),
 	}
 
 	for _, f := range o {
@@ -151,6 +155,10 @@ func (t *Target) Run() {
 	for {
 		select {
 		case proto := <-trigger:
+			if !t.startTime[proto].IsZero() {
+				t.logger.Warn().Msgf("%s: a scan already started", t.name)
+				break
+			}
 			// Create n jobs containing 1/n of total scan range.
 			jobs, err := t.createJobs(proto)
 			if err != nil {
@@ -186,7 +194,8 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 			openPorts[res.id] = append(openPorts[res.id], res.ports...)
 
 			if jobsStarted[res.id] == res.jobCount {
-
+				t.logger.Info().Msgf("%s/%s scan duration %s", t.name, res.protocol, time.Now().Sub(t.startTime[res.protocol]))
+				t.setTimeTo(res.protocol, time.Time{})
 				// results holds all the informations about a finished scan.
 				results := metrics.ResMsg{
 					Name:      t.Name(),
@@ -442,7 +451,7 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 			}
 			tcpTicker = time.NewTicker(tcpFreq)
 			// starts its own ticker
-			go ticker(trigger, proto, tcpTicker)
+			go t.ticker(trigger, proto, tcpTicker)
 		case "udp":
 			udpFreq, err := getDuration(t.protos[proto].period)
 			if err != nil {
@@ -450,7 +459,7 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 			}
 			udpTicker = time.NewTicker(udpFreq)
 			// starts its own ticker
-			go ticker(trigger, proto, udpTicker)
+			go t.ticker(trigger, proto, udpTicker)
 		case "icmp":
 			icmpFreq, err := getDuration(t.protos[proto].period)
 			if err != nil {
@@ -458,7 +467,7 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 			}
 			icmpTicker = time.NewTicker(icmpFreq)
 			// starts its own ticker
-			go ticker(trigger, proto, icmpTicker)
+			go t.ticker(trigger, proto, icmpTicker)
 		}
 	}
 }
@@ -478,14 +487,22 @@ func (t *Target) sendResults(resChan chan metrics.ResMsg) {
 	}
 }
 
+func (t *Target) setTimeTo(proto string, time time.Time) {
+	t.timeMutex.Lock()
+	t.startTime[proto] = time
+	t.timeMutex.Unlock()
+}
+
 // ticker handles a protocol ticker, and send the protocol in a channel when the ticker ticks
-func ticker(trigger chan string, proto string, protTicker *time.Ticker) {
+func (t *Target) ticker(trigger chan string, proto string, protTicker *time.Ticker) {
 	// First scan at the start
+	t.setTimeTo(proto, time.Now())
 	trigger <- proto
 
 	for {
 		select {
 		case <-protTicker.C:
+			t.setTimeTo(proto, time.Now())
 			trigger <- proto
 		}
 	}
