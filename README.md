@@ -10,8 +10,6 @@ To fully use this tool, you will need some tools (`helm`, `kubectl`, `minikube` 
 
 ([Go to Getting started](#getting-started))
 
-/* Give some juicy infos about what's inside for those who are too lazy to read the code */
-
 ![internals](docs/internals_v2.jpg)
 
 ## Getting started
@@ -51,7 +49,7 @@ OPTIONS:
 -pprof.addr <ip:port>
     pprof server address. pprof will expose it's metrics on this address.
     Default: 127.0.0.1:6060
-    
+
 -redis.url <url>
     Redis database URL.
     Default: redis://127.0.0.1:6379/0
@@ -151,7 +149,7 @@ When using Docker, the configuration file will be copied during the image build.
 
 If you plan to use Scan Exporter in Kubernetes, you definitely should configure your targets in the Helm chart.
 
-/* Add details when implementation is finished */
+For now, they are defined in the config-map, but it will be shortly moved to values.yaml.
 
 ## References
 * [Prometheus](https://prometheus.io/)
