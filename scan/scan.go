@@ -196,7 +196,7 @@ func (t *Target) receiver(resChan chan jobMsg, postScan chan metrics.ResMsg) {
 			if jobsStarted[res.id] == res.jobCount {
 				// Do not log ICMP scan duration
 				if res.protocol != "icmp" {
-					t.logger.Info().Msgf("%s/%s scan duration %s", t.name, res.protocol, time.Now().Sub(t.startTime[res.protocol]))
+					t.logger.Info().Msgf("%s/%s scan duration %s", t.name, res.protocol, time.Since(t.startTime[res.protocol]))
 				}
 				t.setTimeTo(res.protocol, time.Time{})
 

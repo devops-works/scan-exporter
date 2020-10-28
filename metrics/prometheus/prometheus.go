@@ -17,7 +17,6 @@ import (
 type Server struct {
 	storage                                            storage.ListManager
 	notRespondingList                                  []string
-	metricsPort                                        string
 	numOfTargets, numOfDownTargets                     prometheus.Gauge
 	unexpectedPorts, openPorts, closedPorts, diffPorts *prometheus.GaugeVec
 }
