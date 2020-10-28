@@ -44,9 +44,17 @@ OPTIONS:
     Path to config file.
     Default: config.yaml (in the current directory).
 
--loglevel {info|warn|error}
+-log.level {info|warn|error}
     Log level.
     Default: info
+
+-pprof.addr <ip:port>
+    pprof server address. pprof will expose it's metrics on this address.
+    Default: 127.0.0.1:6060
+    
+-redis.url <url>
+    Redis database URL.
+    Default: redis://127.0.0.1:6379/0
 ```
 
 **NOTE 1** Note that ICMP can fail if you don't have `root` permissions. However, it will not prevent other scans from being realised.
