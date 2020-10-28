@@ -40,30 +40,6 @@ func CompareStringSlices(sl1, sl2 []string) int {
 	return len(newports) + len(missingports)
 }
 
-// CompareStringSlices2 checks if two slices are equal.
-// It returns the number of different items.
-func CompareStringSlices2(sl1, sl2 []string) int {
-	diffCounter := 0
-
-	if len(sl1) <= len(sl2) {
-		for _, val := range sl1 {
-			if !StringInSlice(val, sl2) {
-				diffCounter++
-			}
-		}
-		diffCounter += len(sl2) - len(sl1)
-	} else {
-		for _, val := range sl2 {
-			if !StringInSlice(val, sl1) {
-				diffCounter++
-			}
-		}
-		diffCounter += len(sl1) - len(sl2)
-	}
-
-	return diffCounter
-}
-
 // GenerateRandomString generates a random string with a lenght of n.
 func GenerateRandomString(n int) string {
 	rand.Seed(time.Now().UnixNano())
