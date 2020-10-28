@@ -16,12 +16,7 @@ func TestInstance_ReplaceList(t *testing.T) {
 		items   []string
 		wantErr bool
 	}{
-		{
-			name:    "test1",
-			setName: "super-name",
-			items:   []string{"item1", "item2", "item3"},
-			wantErr: false,
-		},
+		{name: "test1", setName: "super-name", items: []string{"item1", "item2", "item3"}, wantErr: false},
 	}
 	mr, err := miniredis.Run()
 	if err != nil {
@@ -52,20 +47,8 @@ func TestInstance_ReadList(t *testing.T) {
 		dataToWrite []string
 		wantErr     bool
 	}{
-		{
-			name:        "test1",
-			setName:     "super-name",
-			dataToWrite: []string{"item1", "item2"},
-			want:        []string{"item1", "item2"},
-			wantErr:     false,
-		},
-		{
-			name:        "test2",
-			setName:     "super-name",
-			dataToWrite: []string{"some", "thing", "else"},
-			want:        []string{"else", "some", "thing"},
-			wantErr:     false,
-		},
+		{name: "test1", setName: "super-name", dataToWrite: []string{"item1", "item2"}, want: []string{"item1", "item2"}, wantErr: false},
+		{name: "test2", setName: "super-name", dataToWrite: []string{"some", "thing", "else"}, want: []string{"else", "some", "thing"}, wantErr: false},
 	}
 
 	mr, err := miniredis.Run()
