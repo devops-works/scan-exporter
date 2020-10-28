@@ -12,6 +12,12 @@ To fully use this tool, you will need some tools (`helm`, `kubectl`, `minikube` 
 
 ![internals](docs/internals_v2.jpg)
 
+## Technical decisions
+
+We have decided to go with Prometheus and Redis because those technologies fit our requirements. However, thanks to the `storage` and `metrics` interfaces, you are free to use whatever you want to replace them, as long as those interfaces are implemented.
+
+Obviously, PR to implement others datastores and metrics handlers are welcomed !
+
 ## Getting started
 
 Firstly, clone this repo :
