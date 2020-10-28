@@ -93,8 +93,7 @@ func (s *Server) ReceiveResults(res metrics.ResMsg) error {
 	diff := common.CompareStringSlices(prev, res.OpenPorts)
 	s.diffPorts.WithLabelValues(res.Protocol, res.Name).Set(float64(diff))
 
-	err = s.storage.ReplaceList(setName, res.OpenPorts)
-	if err != nil {
+	if err = s.storage.ReplaceList(setName, res.OpenPorts); err != nil {
 		return err
 	}
 
