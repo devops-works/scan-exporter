@@ -17,7 +17,6 @@ func New(url string) (*Instance, error) {
 		url: url,
 	}
 
-	// TODO: Initialize & test connection
 	if err := i.init(); err != nil {
 		return nil, err
 	}
