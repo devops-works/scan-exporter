@@ -39,11 +39,7 @@ func (i *Instance) ReplaceList(setName string, items []string) error {
 
 // ReadList reads items from a Redis dataset called setName.
 func (i *Instance) ReadList(setName string) ([]string, error) {
-	items, err := i.rdb.SMembers(setName).Result()
-	if err != nil {
-		return nil, err
-	}
-	return items, nil
+	return i.rdb.SMembers(setName).Result()
 }
 
 // init initiates a new Redis client item.
