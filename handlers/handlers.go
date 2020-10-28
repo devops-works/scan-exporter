@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// HandleFunc handles /metrics and not found path.
+// HandleFunc fills the router.
 func HandleFunc() *mux.Router {
 	r := mux.NewRouter()
 	r.Handle("/metrics", promhttp.Handler())
@@ -27,5 +27,6 @@ func notFoundPage(w http.ResponseWriter, r *http.Request) {
 // healthCheckPage handles the /health page.
 func healthCheckPage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "I'm up !")
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"alive": true}`)
 }
