@@ -312,11 +312,7 @@ func (t *Target) worker(jobsChan chan jobMsg, resChan chan jobMsg) {
 			case "tcp":
 				// Launch TCP scan
 				for _, p := range job.ports {
-					success, err := tcpScan(job.ip, p)
-					if err != nil {
-						t.logger.Warn().Msgf("error while scanning tcp: %v", err)
-						continue
-					}
+					success := tcpScan(job.ip, p)
 					if success {
 						// Fill res.ports with open ports
 						res.ports = append(res.ports, p)
@@ -513,14 +509,14 @@ func (t *Target) ticker(trigger chan string, proto string, protTicker *time.Tick
 }
 
 // tcpScan scans an ip and returns true if the port responds.
-func tcpScan(ip, port string) (bool, error) {
+func tcpScan(ip, port string) bool {
 	conn, err := net.DialTimeout("tcp", ip+":"+port, 2*time.Second)
 	if err != nil {
-		return false, nil
+		return false
 	}
 	defer conn.Close()
 
-	return true, nil
+	return true
 }
 
 // udpScan scans an ip and returns true if the port responds.
@@ -561,7 +557,10 @@ func icmpScan(ip string) (bool, error) {
 	pinger.Run()
 	stats := pinger.Statistics()
 
-	return stats.PacketLoss != 100.0, nil
+	if stats.PacketLoss != 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
 // getDuration transforms a protocol's period into a time.Duration value.

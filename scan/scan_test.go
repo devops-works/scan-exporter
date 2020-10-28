@@ -96,6 +96,27 @@ func TestTarget_setPorts(t *testing.T) {
 		})
 	}
 }
+
+func TestTarget_Name(t *testing.T) {
+	tests := []struct {
+		name  string
+		tName string
+		want  string
+	}{
+		{name: "test", tName: "myApp", want: "myApp"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tar := &Target{
+				name: tt.tName,
+			}
+			if got := tar.Name(); got != tt.want {
+				t.Errorf("Target.Name() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestTarget_checkAccordance(t *testing.T) {
 	type fields struct {
 		protos map[string]protocol
