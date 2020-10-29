@@ -371,34 +371,25 @@ func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 		}, nil
 	}
 
-	step := (len(t.portsToScan[proto]) + t.workers - 1) / t.workers
+	defSize := len(t.portsToScan[proto]) / t.workers
+	numBigger := len(t.portsToScan[proto]) - defSize*t.workers
 
-	for i := 0; i < len(t.portsToScan[proto]); i += step {
-		batch := t.portsToScan[proto][i:min(i+step, len(t.portsToScan[proto]))]
-
+	size := defSize + 1
+	for i, idx := 0, 0; i < t.workers; i++ {
+		if i == numBigger {
+			size--
+			if size == 0 {
+				break // 0 ports left to scan
+			}
+		}
 		jobs = append(jobs, jobMsg{
 			ip:       t.ip,
 			protocol: proto,
-			ports:    batch,
+			ports:    t.portsToScan[proto][idx : idx+size],
 		})
+		idx += size
 	}
-
-	// for i := 0; i < len(t.portsToScan[proto]); i += step {
-	// 	right := i + step
-	// 	// Check right boundary for slice
-	// 	if right > len(t.portsToScan[proto]) {
-	// 		right = len(t.portsToScan[proto])
-	// 	}
-
 	return jobs, nil
-}
-
-// move to commons package
-func min(a, b int) int {
-	if a <= b {
-		return a
-	}
-	return b
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of
