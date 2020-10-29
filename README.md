@@ -6,12 +6,6 @@ However, Kubernetes is not necessary and you can run it locally too (see [Run it
 
 To fully use this tool, you will need some tools (`helm`, `kubectl`, `minikube` or `kind`, `k9s`...). If you didn't installed them yet, we have [something for you](https://github.com/devops-works/binenv).
 
-## What's inside
-
-([Go to Getting started](#getting-started))
-
-![internals](docs/internals_v2.jpg)
-
 ## Technical decisions
 
 We have decided to go with Prometheus and Redis because those technologies fit our requirements. However, thanks to the `storage` and `metrics` interfaces, you are free to use whatever you want to replace them, as long as those interfaces are implemented.
