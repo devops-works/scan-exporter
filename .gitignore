@@ -2,3 +2,7 @@ scan-exporter
 *.log
 todo
 config.yaml
+dashboard.json
+docker-compose.yaml
+/deploy/helm/Chart.lock
+*.prof

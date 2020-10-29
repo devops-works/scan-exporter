@@ -1,119 +1,190 @@
 # Scan Exporter
 
-Export ports scans to [Prometheus](https://prometheus.io/).
+Scan Exporter is tool designed to scan TCP open ports and send ICMP requests to a targets list from a [Kubernetes](https://kubernetes.io) cluster and export the results to [Prometheus](https://prometheus.io/) for monitoring.
 
-## :space_invader: Cool zone
+However, Kubernetes is not necessary and you can run it locally too (see [Run it locally](#run-it-locally)) !
+
+To fully use this tool, you will need some tools (`helm`, `kubectl`, `minikube` or `kind`, `k9s`...). If you didn't installed them yet, we have [something for you](https://github.com/devops-works/binenv).
+
+## What's inside
+
+([Go to Getting started](#getting-started))
+
+![internals](docs/internals_v2.jpg)
+
+## Technical decisions
+
+We have decided to go with Prometheus and Redis because those technologies fit our requirements. However, thanks to the `storage` and `metrics` interfaces, you are free to use whatever you want to replace them, as long as those interfaces are implemented.
+
+Obviously, PR to implement others datastores and metrics handlers are welcomed !
+
+## Getting started
+
+Firstly, clone this repo :
+
+```
+$ git clone https://github.com/devops-works/scan-exporter.git
+```
+
+and enter inside the fresh new folder :
+
+```
+$ cd scan-exporter/
+```
+
+Once inside, you should check [this section](#configure-targets) to learn how to configure your targets before continuing.
+
+### Run it locally
+
+Golang is needed to build the program. See [Install Golang](https://golang.org/doc/install).
+
+```
+$ go build .
+$ ./scan-exporter [OPTIONS]
+```
+
+The differents options are :
+
+```
+OPTIONS:
+
+-config <path/to/config/file.yaml>
+    Path to config file.
+    Default: config.yaml (in the current directory).
+
+-log.level {info|warn|error}
+    Log level.
+    Default: info
+
+-pprof.addr <ip:port>
+    pprof server address. pprof will expose it's metrics on this address.
+    Default: 127.0.0.1:6060
+
+-redis.url <url>
+    Redis database URL.
+    Default: redis://127.0.0.1:6379/0
+```
+
+**NOTE 1** Note that ICMP can fail if you don't have `root` permissions. However, it will not prevent other scans from being realised.
+
+### Run it in Docker
+
+You can get the Docker image online : /* to be done */
+
+or your can build it locally :
+
+```
+$ docker build -t <image tag> .
+```
+
+To work properly, a Redis container in the same network and with the port 6379 listening is needed.
+
+Best practice is to create a docker-compose, else you can run both locally and bind their ports to 127.0.0.1.
+
+**NOTE 1** The config file is copied inside the image while creating the docker image. It is not possible to change it once the image is built.
+
+### Run it in Kubernetes
+
+Thanks to the Helm chart provided in the repo (deploy/helm), it is really easy to deploy the application inside a Kubernetes cluster. The following example will use Kind to create a cluster locally. If you don't have `helm`, `kubectl` or `kind`, you should try [binenv](https://github.com/devops-works/binenv) ;)
+
+First, create the Kubernetes cluster (here, with `kind`):
+
+```
+$ kind create cluster
+```
+
+Next, use `helm` to install your chart. Before that, you have to make sure that you are using the right cluster :
+
+```
+$ kubectl config use-context kind-kind      # or whatever your context is called
+Switched to context "kind-kind".
+$ helm install <your release name> deploy/helm/
+```
+
+If everything went good, you should see something like this :
+
+```
+NAME: <your release name>
+LAST DEPLOYED: Wed Oct 21 14:51:52 2020
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+You just installed...
+
+                    ▓▓▓▓▓▓
+                  ██░░░░░░██
+                ▒▒░░░░░░░░░░▓▓▓▓
+              ▓▓░░░░░░░░░░░░░░▒▒▓▓
+          ████▒▒░░░░░░░░░░░░░░░░▓▓
+    ▓▓▓▓▓▓░░░░░░▒▒░░░░░░░░░░░░▒▒▓▓▓▓▓▓
+  ▓▓▒▒░░░░░░░░░░░░▒▒░░░░░░░░▒▒░░░░░░▒▒▓▓
+  ██▒▒▒▒░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░▒▒██
+    ▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██
+      ██▓▓▓▓▓▓██▓▓▓▓▓▓████▓▓▓▓▓▓▓▓▓▓▓▓██
+
+          ==========================
+          |scan-exporter Helm chart|
+          ==========================
+
+Your current release is named `<your release name>`.
+
+To get more information about this release, try:
+
+    $ helm status <your release name>
+    $ helm get all <your release name>
+```
+
+To verify that everything is up in your cluster, try :
+
+```
+$ kubectl get pods
+NAME                                                       READY   STATUS      RESTARTS   AGE
+<your release name>-redis-master-0                         1/1     Running     0          97s
+<your release name>-redis-slave-0                          1/1     Running     0          97s
+<your release name>-redis-slave-1                          1/1     Running     0          58s
+<your release name>-scan-exporter-chart-6c967b8847-vk5fq   1/1     Running     0          97s
+```
+
+## Configure targets
+
+With Scan Exporter, there is multiple ways to configure your targets depending on how you will use it.
+
+### Locally/Docker
+
+You can rename config-sample.yaml which is provided in this repo to config.yaml :
+
+```
+$ mv config-sample.yaml config.yaml
+```
+
+and then use this file to describe all the targets you want to scan. The config file sample provided contains everything you can configure about a target.
+
+You can give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)), both locally and or Docker.
+
+### Kubernetes
+
+If you plan to use Scan Exporter in Kubernetes, you definitely should configure your targets in the Helm chart.
+
+For now, they are defined in the config-map, but it will be shortly moved to values.yaml.
+
+## References
+
+* [Prometheus](https://prometheus.io/)
+* [Docker](https://docs.docker.com/)
+* [Kubernetes](https://kubernetes.io)
+* [Helm](https://helm.sh)
+* [Kind](https://kind.sigs.k8s.io/)
+* [The last binary you'll ever install](https://github.com/devops-works/binenv)
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
+## Swag zone
 
 [![forthebadge](https://forthebadge.com/images/badges/made-with-go.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/open-source.svg)](https://forthebadge.com)
-
-## :footprints: Getting started
-
-Clone this repository and build the binary with Go :
-
-```
-$ git clone https://github.com/devops-works/scan-exporter.git
-$ cd scan-exporter
-$ go build .
-```
-
-## :computer_mouse: Usage
-
-### Basic usage
-
-```
-$ sudo ./scan-exporter
-```
-
-### :triangular_flag_on_post: Flags
-
-Scan Exporter accepts some flags :
-```
-FLAGS
-    - config </path/to/conf/file>
-        path to config file
-        default: config.yaml
-
-    - loglevel <info|debug|warn>
-        log level to use
-        default: info
-```
-## :gear: Internals
-
-Scan Exporter reads a YAML configuration file to know which hosts to scan :
-
-```yaml
----
-targets:
-  - name: "app1"
-    ip: "215.117.42.229"
-    workers: 1000
-    tcp:
-      period: "12h"
-      range: "reserved"
-      expected: "22,80,443"
-    udp:
-      period: "1d"
-      range: "all"
-      expected: "22,53"
-    icmp:
-      period: "1m"
-```
-
-By default, `config.yaml` is expected to be at the root of the folder. But you can specify a configuration file path via the flags (see Usage).
-
-### :dart: Targets
-A target has a minimum of 4 fields : `name`, `ip`, `workers` and a protocol (`tcp`, `udp`, `icmp`) and a maximum of 6.
-
-* `name` is for readability : it doesn't play any major role ;
-* `ip` is the IP of the host you want to scan ;
-* `workers` is the size of the workers pool for each target (see below) ;
-* protocol (see below).
-  
-### :wrench: Workers
-
-Scan Exporter starts a pool of workers responsible of the scans that never ends. There is one pool of workers for each target. The number of workers of each pool is set in the configuration file. It must be an int.
-
-### :speech_balloon: Protocol
-
-Supported protocols are `tcp`, `udp` and `icmp`. For every protocol, you have to specify a scanning period. For `tcp` and `udp`, you have to add a `range` of ports to scan, and `expected`, which will hold which ports are supposed to be opened.
-
-:warning: As long as `udp` requests don't have any payloads (at least for known ports, e.g. 53), it is not accurate !
-
-### :clock230: Period
-
-`period` is the period between each scan. Authorized `period` values are any number followed by `s`, `m`, `h` or `d` (respectively seconds, minutes, hours and days).
-
-### :arrows_counterclockwise: Range and expected
-
-* `range` is the ports range to scan ;
-* `expected` is ports that should be opened.
-
-Authorized `range` and `expected` values are any number between 0 and 65535 separated by a coma or a dash. It is possible to mix dashes and comas : `22,80-443,9001` will work.
-
-## :page_with_curl: Metrics
-
-### :compass: Where
-
-The metrics are exposed on `:2112/metrics`. Going elsewhere on the web server returns a 404.
-
-### :question: How
-
-The metrics exposed are :
-* `scanexporter_targets_number_total` : Number of targets detected in config file.
-* `scanexporter_icmp_not_responding_total` : Number of targets that doesn't respond to pings.  
-* `scanexporter_unexpected_open_ports_total` : Number of ports that are open, and shouldn't be.
-* `scanexporter_open_ports_total` : Number of ports that are open.
-* `scanexporter_unexpected_closed_ports_total` : Number of ports that are closed and shouldn't be.
-* `scanexporter_diff_ports_total` : Number of ports that are different from previous scan.
-
-
-## :ballot_box_with_check: Prerequisites
-
-* [Golang](https://golang.org/) (version >= 1.14 recommended)
-* root privileges
-
-## :copyright: License
-
-[MIT](https://choosealicense.com/licenses/mit/)
+[![forthebadge](https://forthebadge.com/images/badges/powered-by-black-magic.svg)](https://forthebadge.com)

@@ -1,0 +1,15 @@
+{{- if .Values.podMonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "scanexporter.fullname" . }}
+spec:
+    podMetricsEndpoints:
+      - interval: 10s
+        scrapeTimeout: 10s
+        port: "{{ .Values.scanexporter.container.port }}"
+        path: {{ .Values.podMonitor.path }}
+    selector:
+      matchLabels:
+          app: {{ include "scanexporter.fullname" . }}
+{{- end }}

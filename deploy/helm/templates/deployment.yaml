@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ include "scanexporter.fullname" . }}
+    labels:
+        app: {{ include "scanexporter.fullname" . }}
+spec:
+    replicas: {{ .Values.scanexporter.replicaCount }}
+    selector:
+        matchLabels:
+            app: {{ include "scanexporter.fullname" . }}
+    template:
+        metadata:
+            labels:
+                app: {{ include "scanexporter.fullname" . }}
+        spec:                
+            containers:
+                - name: {{ include "scanexporter.fullname" . }}
+                  image: {{ .Values.scanexporter.container.image }}
+                  args: ["-config", "/etc/scan-exporter/config.yaml"]
+                  volumeMounts:
+                    - name: config
+                      mountPath: "/etc/scan-exporter"
+                      readOnly: true
+                  resources:
+{{ toYaml .Values.scanexporter.resources | indent 20 }}
+                  livenessProbe:
+                      httpGet:
+                          path: {{ .Values.scanexporter.liveness.path }}
+                          port: {{ .Values.scanexporter.container.port }}
+                      initialDelaySeconds: {{ .Values.scanexporter.liveness.period }}
+                      periodSeconds: {{ .Values.scanexporter.liveness.period }}
+                  env:
+                      - name: REDIS_URL
+                        value: redis://{{ .Release.Name }}-{{ .Values.redis.name }}-master/{{ .Values.redis.db }}
+                  ports:
+                      - containerPort:
+                            {{ .Values.scanexporter.container.port }}
+            volumes:
+              - name: config
+                configMap:
+                    name: scan-exporter-config
+            imagePullSecrets:
+                - name: {{ .Values.scanexporter.secrets }}
