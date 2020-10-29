@@ -63,7 +63,7 @@ OPTIONS:
 
 ### Run it in Docker
 
-You can get the Docker image online : /* to be done */
+You can get the Docker image online : `devopsworks/scan-exporter`
 
 or your can build it locally :
 
