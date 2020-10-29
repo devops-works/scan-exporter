@@ -353,35 +353,52 @@ func (t *Target) worker(jobsChan chan jobMsg, resChan chan jobMsg) {
 	}
 }
 
-// createJobs split portsToScan from a specified protocol into an even number
+// createJobs split portsToScan from a specified protocol into an equal number
 // of jobs that will be returned.
 func (t *Target) createJobs(proto string) ([]jobMsg, error) {
+	// init jobs slice
 	jobs := []jobMsg{}
+
+	// check protocol accordance
+	if _, ok := t.portsToScan[proto]; !ok {
+		return nil, fmt.Errorf("no such protocol %q in current protocol list", proto)
+	}
+
+	// if proto is ICMP, we do not need to scan ports
 	if proto == "icmp" {
 		return []jobMsg{
 			jobMsg{ip: t.ip, protocol: proto},
 		}, nil
 	}
-	if _, ok := t.portsToScan[proto]; !ok {
-		return nil, fmt.Errorf("no such protocol %q in current protocol list", proto)
-	}
+
 	step := (len(t.portsToScan[proto]) + t.workers - 1) / t.workers
 
 	for i := 0; i < len(t.portsToScan[proto]); i += step {
-		right := i + step
-		// Check right boundary for slice
-		if right > len(t.portsToScan[proto]) {
-			right = len(t.portsToScan[proto])
-		}
+		batch := t.portsToScan[proto][i:min(i+step, len(t.portsToScan[proto]))]
 
 		jobs = append(jobs, jobMsg{
 			ip:       t.ip,
 			protocol: proto,
-			ports:    t.portsToScan[proto][i:right],
+			ports:    batch,
 		})
-		// t.logger.Debug().Msgf("a job for %s has been appended", proto)
 	}
+
+	// for i := 0; i < len(t.portsToScan[proto]); i += step {
+	// 	right := i + step
+	// 	// Check right boundary for slice
+	// 	if right > len(t.portsToScan[proto]) {
+	// 		right = len(t.portsToScan[proto])
+	// 	}
+
 	return jobs, nil
+}
+
+// move to commons package
+func min(a, b int) int {
+	if a <= b {
+		return a
+	}
+	return b
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of

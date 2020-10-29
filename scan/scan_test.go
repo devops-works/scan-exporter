@@ -268,16 +268,37 @@ func TestTarget_createJobs(t *testing.T) {
 		workersCount int
 		wantErr      bool
 	}{
-		{name: "5-1", pts: map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}}, workersCount: 1},
-		{name: "5-2", pts: map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}}, workersCount: 2},
-		{name: "5-3", pts: map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}}, workersCount: 3},
-		{name: "5-4", pts: map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}}, workersCount: 4},
-		{name: "5-5", pts: map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}}, workersCount: 5},
+		{
+			name:         "5-1",
+			pts:          map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}},
+			workersCount: 1,
+		},
+		{
+			name:         "5-2",
+			pts:          map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}},
+			workersCount: 2,
+		},
+		{
+			name:         "5-3",
+			pts:          map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}},
+			workersCount: 3,
+		},
+		{
+			name:         "5-4",
+			pts:          map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}},
+			workersCount: 4,
+		},
+		{
+			name:         "5-5",
+			pts:          map[string][]string{"tcp": []string{"1", "2", "3", "4", "5"}},
+			workersCount: 5,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tg := &Target{
 				portsToScan: tt.pts,
+				workers:     tt.workersCount,
 			}
 			got, err := tg.createJobs("tcp")
 			if (err != nil) != tt.wantErr {
