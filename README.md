@@ -1,6 +1,6 @@
 # Scan Exporter
 
-Scan Exporter is tool designed to scan TCP open ports and send ICMP requests to a targets pool from a [Kubernetes](https://kubernetes.io) cluster and export the results to [Prometheus](https://prometheus.io/) for monitoring.
+Scan Exporter is tool designed to scan TCP open ports and send ICMP requests to a targets list from a [Kubernetes](https://kubernetes.io) cluster and export the results to [Prometheus](https://prometheus.io/) for monitoring.
 
 However, Kubernetes is not necessary and you can run it locally too (see [Run it locally](#run-it-locally)) !
 
@@ -161,7 +161,7 @@ $ mv config-sample.yaml config.yaml
 
 and then use this file to describe all the targets you want to scan. The config file sample provided contains everything you can configure about a target.
 
-You can give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)).
+You can give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)), both locally and or Docker.
 
 ### Kubernetes
 
