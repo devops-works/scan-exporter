@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -14,6 +15,11 @@ import (
 	"github.com/devops-works/scan-exporter/storage/redis"
 )
 
+var (
+	Version   string
+	BuildDate string
+)
+
 func main() {
 	var confFile, logLevel, redisURL, pprofAddr string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
@@ -21,6 +27,8 @@ func main() {
 	flag.StringVar(&redisURL, "redis.url", "", "Redis URL (default: redis://127.0.0.1:6379/0)")
 	flag.StringVar(&pprofAddr, "pprof.addr", "127.0.0.1:6060", "pprof addr")
 	flag.Parse()
+
+	fmt.Printf("scan-exporter version %s (built %s)\n", Version, BuildDate)
 
 	pprofServer, err := pprof.New(pprofAddr)
 	if err != nil {
