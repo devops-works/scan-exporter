@@ -14,7 +14,7 @@ Obviously, PR to implement others datastores and metrics handlers are welcomed !
 
 ## Getting started
 
-Firstly, clone this repo :
+You can clone this repo :
 
 ```
 $ git clone https://github.com/devops-works/scan-exporter.git
@@ -27,6 +27,8 @@ $ cd scan-exporter/
 ```
 
 Once inside, you should check [this section](#configure-targets) to learn how to configure your targets before continuing.
+
+You can also get it already built from the releases.
 
 ### Run it locally
 
