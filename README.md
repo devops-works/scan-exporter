@@ -161,9 +161,7 @@ $ mv config-sample.yaml config.yaml
 
 and then use this file to describe all the targets you want to scan. The config file sample provided contains everything you can configure about a target.
 
-It is also possible to give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)).
-
-When using Docker, the configuration file will be copied during the image build. As said in [this section](#run-it-in-docker), once the image is built you can not change the configuration file.
+You can give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)).
 
 ### Kubernetes
 
