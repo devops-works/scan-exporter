@@ -1,7 +1,7 @@
 ---
 targets:
   - name: "app1"
-    ip: "215.117.42.229"
+    ip: "127.0.0.1"
     workers: 1000
     tcp:
       period: "12h"

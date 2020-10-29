@@ -17,7 +17,7 @@ spec:
             containers:
                 - name: {{ include "scanexporter.fullname" . }}
                   image: {{ .Values.scanexporter.container.image }}
-                  args: ["/dist/scan-exporter", "-config", "/etc/scan-exporter/config.yaml"]
+                  args: ["-config", "/etc/scan-exporter/config.yaml"]
                   volumeMounts:
                     - name: config
                       mountPath: "/etc/scan-exporter"

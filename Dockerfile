@@ -21,12 +21,12 @@ RUN setcap cap_net_raw+ep scan-exporter
 
 FROM gcr.io/distroless/base-debian10
 
-WORKDIR /dist
+WORKDIR /app
 
 COPY --from=builder /build/scan-exporter .
 
-COPY --from=builder /build/config.yaml .
+COPY --from=builder /build/config-sample.yaml config.yaml
 
 EXPOSE 2112
 
-CMD [ "/dist/scan-exporter" ]
+ENTRYPOINT [ "/app/scan-exporter" ]

@@ -21,10 +21,13 @@ Obviously, PR to implement others datastores and metrics handlers are welcomed !
 ## Getting started
 
 Firstly, clone this repo :
+
 ```
 $ git clone https://github.com/devops-works/scan-exporter.git
 ```
+
 and enter inside the fresh new folder :
+
 ```
 $ cd scan-exporter/
 ```
@@ -41,6 +44,7 @@ $ ./scan-exporter [OPTIONS]
 ```
 
 The differents options are :
+
 ```
 OPTIONS:
 
@@ -68,6 +72,7 @@ OPTIONS:
 You can get the Docker image online : /* to be done */
 
 or your can build it locally :
+
 ```
 $ docker build -t <image tag> .
 ```
@@ -83,16 +88,21 @@ Best practice is to create a docker-compose, else you can run both locally and b
 Thanks to the Helm chart provided in the repo (deploy/helm), it is really easy to deploy the application inside a Kubernetes cluster. The following example will use Kind to create a cluster locally. If you don't have `helm`, `kubectl` or `kind`, you should try [binenv](https://github.com/devops-works/binenv) ;)
 
 First, create the Kubernetes cluster (here, with `kind`):
+
 ```
 $ kind create cluster
 ```
+
 Next, use `helm` to install your chart. Before that, you have to make sure that you are using the right cluster :
+
 ```
 $ kubectl config use-context kind-kind      # or whatever your context is called
 Switched to context "kind-kind".
 $ helm install <your release name> deploy/helm/
 ```
+
 If everything went good, you should see something like this :
+
 ```
 NAME: <your release name>
 LAST DEPLOYED: Wed Oct 21 14:51:52 2020
@@ -125,7 +135,9 @@ To get more information about this release, try:
     $ helm status <your release name>
     $ helm get all <your release name>
 ```
+
 To verify that everything is up in your cluster, try :
+
 ```
 $ kubectl get pods
 NAME                                                       READY   STATUS      RESTARTS   AGE
@@ -142,9 +154,11 @@ With Scan Exporter, there is multiple ways to configure your targets depending o
 ### Locally/Docker
 
 You can rename config-sample.yaml which is provided in this repo to config.yaml :
+
 ```
 $ mv config-sample.yaml config.yaml
 ```
+
 and then use this file to describe all the targets you want to scan. The config file sample provided contains everything you can configure about a target.
 
 It is also possible to give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)).
@@ -158,6 +172,7 @@ If you plan to use Scan Exporter in Kubernetes, you definitely should configure 
 For now, they are defined in the config-map, but it will be shortly moved to values.yaml.
 
 ## References
+
 * [Prometheus](https://prometheus.io/)
 * [Docker](https://docs.docker.com/)
 * [Kubernetes](https://kubernetes.io)
