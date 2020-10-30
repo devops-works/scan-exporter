@@ -12,7 +12,9 @@ We have decided to go with Prometheus and Redis because those technologies fit o
 
 Obviously, PR to implement others datastores and metrics handlers are welcomed !
 
-## Getting started
+## Installation
+
+There is 2 ways to install scan-exporter.
 
 You can clone this repo :
 
@@ -20,22 +22,20 @@ You can clone this repo :
 $ git clone https://github.com/devops-works/scan-exporter.git
 ```
 
-and enter inside the fresh new folder :
+and build the source file :
 
 ```
 $ cd scan-exporter/
+$ go build .
 ```
 
-Once inside, you should check [this section](#configure-targets) to learn how to configure your targets before continuing.
-
-You can also get it already built from the releases.
+Or you can get the binary in the releases. It is available for Linux, Mac and Windows.
 
 ### Run it locally
 
-Golang is needed to build the program. See [Install Golang](https://golang.org/doc/install).
+You should check [this section](#configure-targets) to learn how to configure your targets before continuing.
 
 ```
-$ go build .
 $ ./scan-exporter [OPTIONS]
 ```
 
