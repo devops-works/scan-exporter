@@ -5,7 +5,7 @@ scanexporter:
         period: 3
         path: /health
     container:
-        image: ez3kiel/scan-exporter:latest
+        image: devopsworks/scan-exporter:0.0.3
         port: 2112
     secrets: regcred
     resources:
