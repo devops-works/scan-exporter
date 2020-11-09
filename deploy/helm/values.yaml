@@ -31,3 +31,23 @@ fullnameOverride: ""
 podMonitor: 
     enabled: false
     path: /metrics
+
+targets: |-
+        targets:       
+            - name: "app1"
+              ip: "10.11.12.13"
+              workers: 750
+              tcp:
+                period: "10s"
+                range: "reserved"
+                expected: "53"
+
+            - name: "app2"
+              ip: "110.111.112.113"
+              workers: 1000
+              tcp:
+                period: "1m"
+                range: "all"
+                expected: "22,443"
+              icmp:
+                period: "30s"
