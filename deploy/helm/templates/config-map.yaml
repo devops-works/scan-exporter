@@ -1,35 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 data:
-    config.yaml: |-
-        targets:
-            - name: "laptop"
-              ip: "192.168.42.228"
-              workers: 1000
-              tcp:
-                period: "30s"
-                range: "all"
-                expected: "6000,4455"
-              icmp:
-                period: "5s"
-            
-            - name: "pc-mur"
-              ip: "192.168.42.253"
-              workers: 1000
-              tcp:
-                period: "30s"
-                range: "reserved"
-                expected: "631"
-              icmp:
-                period: "5s"
-
-            - name: "google-dns"
-              ip: "8.8.8.8"
-              workers: 750
-              tcp:
-                period: "10s"
-                range: "reserved"
-                expected: "53"
+    config.yaml: {{ toYaml .Values.targets | indent 8}}
+    
 metadata:
     labels:
         app: scan-exporter # utiliser nom templatisé (helper)
