@@ -16,7 +16,9 @@ import (
 )
 
 var (
-	Version   string
+	// Version holds the build version
+	Version string
+	// BuildDate holds the build date
 	BuildDate string
 )
 
