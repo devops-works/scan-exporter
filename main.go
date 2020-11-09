@@ -21,10 +21,10 @@ var (
 )
 
 func main() {
-	var confFile, logLevel, redisURL, pprofAddr string
+	var confFile, logLevel, dbURL, pprofAddr string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&logLevel, "log.level", "info", "log level to use")
-	flag.StringVar(&redisURL, "redis.url", "", "Redis URL (default: redis://127.0.0.1:6379/0)")
+	flag.StringVar(&dbURL, "db.url", "", "database URL (default: redis://127.0.0.1:6379/0)")
 	flag.StringVar(&pprofAddr, "pprof.addr", "127.0.0.1:6060", "pprof addr")
 	flag.Parse()
 
@@ -39,12 +39,12 @@ func main() {
 	go pprofServer.Run()
 
 	// Priority to flags
-	if redisEnv := os.Getenv("REDIS_URL"); redisEnv != "" && redisURL == "" {
-		redisURL = redisEnv
+	if redisEnv := os.Getenv("REDIS_URL"); redisEnv != "" && dbURL == "" {
+		dbURL = redisEnv
 	}
 	// If nothing is provided in both env and flag, set a default value
-	if redisURL == "" {
-		redisURL = "redis://127.0.0.1:6379/0"
+	if dbURL == "" {
+		dbURL = "redis://127.0.0.1:6379/0"
 	}
 
 	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
@@ -63,7 +63,7 @@ func main() {
 
 	logger.Info().Msgf("%d target(s) found in %s", len(c.Targets), confFile)
 
-	storage, err := redis.New(redisURL)
+	storage, err := redis.New(dbURL)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("error while initializing redis")
 	}
