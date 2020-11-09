@@ -56,8 +56,8 @@ OPTIONS:
     pprof server address. pprof will expose it's metrics on this address.
     Default: 127.0.0.1:6060
 
--redis.url <url>
-    Redis database URL.
+-db.url <url>
+    Database URL.
     Default: redis://127.0.0.1:6379/0
 ```
 
