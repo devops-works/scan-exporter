@@ -345,7 +345,7 @@ func (t *Target) worker(jobsChan chan jobMsg, resChan chan jobMsg) {
 					res.ports = append(res.ports, "1")
 					t.logger.Debug().Msgf("%s responds", res.protocol)
 				} else {
-					t.logger.Debug().Msgf("%s doesn't responds", res.protocol)
+					t.logger.Warn().Msgf("%s/%s doesn't responds", t.name, res.protocol)
 				}
 				resChan <- res
 			}
@@ -480,9 +480,8 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 	}
 }
 
-// sendToRedis is used as an interface between scan and metrics packages.
-// It receives results from the runner, and call metrics.Handle which expose and
-// analyse metrics.
+// sendREsults is used as an interface between scan and metrics packages.
+// It receives results from the runner, and call metrics.ReceiveResults interface.
 func (t *Target) sendResults(resChan chan metrics.ResMsg) {
 	for {
 		select {

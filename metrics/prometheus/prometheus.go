@@ -16,13 +16,13 @@ import (
 // Server holds a metrics server configuration
 type Server struct {
 	storage                                            storage.ListManager
-	notRespondingList                                  []string
+	notRespondingList                                  map[string]bool
 	numOfTargets, numOfDownTargets                     prometheus.Gauge
 	unexpectedPorts, openPorts, closedPorts, diffPorts *prometheus.GaugeVec
 }
 
 // New instance of server
-func New(store storage.ListManager) *Server {
+func New(store storage.ListManager, numOfTargets int) *Server {
 	s := Server{
 		storage: store,
 		numOfTargets: prometheus.NewGauge(prometheus.GaugeOpts{
@@ -60,6 +60,9 @@ func New(store storage.ListManager) *Server {
 	prometheus.MustRegister(s.openPorts)
 	prometheus.MustRegister(s.closedPorts)
 	prometheus.MustRegister(s.diffPorts)
+
+	// Initialize the map
+	s.notRespondingList = make(map[string]bool)
 
 	return &s
 }
@@ -119,38 +122,37 @@ func (s *Server) StartServ(nTargets int) error {
 // icmpNotResponding adjust the numOfDownTargets variable depending of the current and the previous
 // status of the target.
 func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
-	isResponding := true
-	if len(ports) == 0 {
-		isResponding = !isResponding
+	m.Lock()
+	defer m.Unlock()
+
+	// Check if the IP is already in the map.
+	_, ok := s.notRespondingList[IP]
+	if !ok {
+		// If not, add it as responding.
+		s.notRespondingList[IP] = false
 	}
 
-	m.Lock()
-	alreadyNotResponding := common.StringInSlice(IP, s.notRespondingList)
-	m.Unlock()
+	var isResponding bool
+	// When a target responds, the ports array contains a value.
+	if len(ports) == 0 {
+		isResponding = false
+	} else {
+		isResponding = true
+	}
+
+	// Check if the target didn't respond in the previous scan.
+	alreadyNotResponding := s.notRespondingList[IP]
 
 	if isResponding && alreadyNotResponding {
 		// Wasn't responding, but now is ok
 		s.numOfDownTargets.Dec()
-
-		for index := range s.notRespondingList {
-			if s.notRespondingList[index] == IP {
-				// Remove the element at index i from a.
-				m.Lock()
-				s.notRespondingList[index] = s.notRespondingList[len(s.notRespondingList)-1]
-				s.notRespondingList[len(s.notRespondingList)-1] = ""
-				s.notRespondingList = s.notRespondingList[:len(s.notRespondingList)-1]
-				m.Unlock()
-			}
-		}
+		s.notRespondingList[IP] = false
 
 	} else if !isResponding && !alreadyNotResponding {
 		// First time it doesn't respond.
 		// Increment the number of down targets.
 		s.numOfDownTargets.Inc()
-		// Add IP to notRespondingList.
-		m.Lock()
-		s.notRespondingList = append(s.notRespondingList, IP)
-		m.Unlock()
+		s.notRespondingList[IP] = true
 	}
 	// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
 }
