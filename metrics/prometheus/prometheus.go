@@ -122,28 +122,26 @@ func (s *Server) StartServ(nTargets int) error {
 // icmpNotResponding adjust the numOfDownTargets variable depending of the current and the previous
 // status of the target.
 func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
-	isResponding := true
-
-	// When a target responds, the ports array contains at least one port.
-	if len(ports) == 0 {
-		isResponding = !isResponding
-	}
-
 	m.Lock()
 	defer m.Unlock()
+
 	// Check if the IP is already in the map.
 	_, ok := s.notRespondingList[IP]
 	if !ok {
-		// If not, add it as not responding.
-		s.notRespondingList[IP] = true
+		// If not, add it as responding.
+		s.notRespondingList[IP] = false
+	}
+
+	var isResponding bool
+	// When a target responds, the ports array contains at least one port.
+	if len(ports) == 0 {
+		isResponding = false
+	} else {
+		isResponding = true
 	}
 
 	// Check if the target didn't respond in the previous scan.
 	alreadyNotResponding := s.notRespondingList[IP]
-
-	// m.Lock()
-	// alreadyNotResponding := common.StringInSlice(IP, s.notRespondingList)
-	// m.Unlock()
 
 	if isResponding && alreadyNotResponding {
 		// Wasn't responding, but now is ok

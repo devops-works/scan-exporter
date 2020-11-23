@@ -36,7 +36,7 @@ func main() {
 
 	fmt.Printf("scan-exporter version %s (built %s)\n", Version, BuildDate)
 
-	runtime.GOMAXPROCS(2)
+	runtime.GOMAXPROCS(procs)
 
 	pprofServer, err := pprof.New(pprofAddr)
 	if err != nil {

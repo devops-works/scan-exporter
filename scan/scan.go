@@ -345,7 +345,7 @@ func (t *Target) worker(jobsChan chan jobMsg, resChan chan jobMsg) {
 					res.ports = append(res.ports, "1")
 					t.logger.Debug().Msgf("%s responds", res.protocol)
 				} else {
-					t.logger.Debug().Msgf("%s doesn't responds", res.protocol)
+					t.logger.Warn().Msgf("%s doesn't responds", res.protocol)
 				}
 				resChan <- res
 			}
