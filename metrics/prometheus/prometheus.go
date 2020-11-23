@@ -16,13 +16,13 @@ import (
 // Server holds a metrics server configuration
 type Server struct {
 	storage                                            storage.ListManager
-	notRespondingList                                  []string
+	notRespondingList                                  map[string]bool
 	numOfTargets, numOfDownTargets                     prometheus.Gauge
 	unexpectedPorts, openPorts, closedPorts, diffPorts *prometheus.GaugeVec
 }
 
 // New instance of server
-func New(store storage.ListManager) *Server {
+func New(store storage.ListManager, numOfTargets int) *Server {
 	s := Server{
 		storage: store,
 		numOfTargets: prometheus.NewGauge(prometheus.GaugeOpts{
@@ -60,6 +60,9 @@ func New(store storage.ListManager) *Server {
 	prometheus.MustRegister(s.openPorts)
 	prometheus.MustRegister(s.closedPorts)
 	prometheus.MustRegister(s.diffPorts)
+
+	// Initialize the map
+	s.notRespondingList = make(map[string]bool)
 
 	return &s
 }
@@ -120,13 +123,17 @@ func (s *Server) StartServ(nTargets int) error {
 // status of the target.
 func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 	isResponding := true
+
+	// When a target responds, the ports array contains at least one port.
 	if len(ports) == 0 {
 		isResponding = !isResponding
 	}
 
+	// Check if the target didn't respond in the previous scan.
 	m.Lock()
+	defer m.Unlock()
 	alreadyNotResponding := common.StringInSlice(IP, s.notRespondingList)
-	m.Unlock()
+	// m.Unlock()
 
 	if isResponding && alreadyNotResponding {
 		// Wasn't responding, but now is ok
@@ -135,11 +142,11 @@ func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 		for index := range s.notRespondingList {
 			if s.notRespondingList[index] == IP {
 				// Remove the element at index i from a.
-				m.Lock()
+				// m.Lock()
 				s.notRespondingList[index] = s.notRespondingList[len(s.notRespondingList)-1]
 				s.notRespondingList[len(s.notRespondingList)-1] = ""
 				s.notRespondingList = s.notRespondingList[:len(s.notRespondingList)-1]
-				m.Unlock()
+				// m.Unlock()
 			}
 		}
 
@@ -148,9 +155,9 @@ func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 		// Increment the number of down targets.
 		s.numOfDownTargets.Inc()
 		// Add IP to notRespondingList.
-		m.Lock()
+		// m.Lock()
 		s.notRespondingList = append(s.notRespondingList, IP)
-		m.Unlock()
+		// m.Unlock()
 	}
 	// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
 }

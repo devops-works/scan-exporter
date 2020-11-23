@@ -47,7 +47,7 @@ type jobMsg struct {
 }
 
 // New checks that target specification is valid, and if target is responding.
-func New(name, ip string, workers int, m metrics.MetricsManager, o ...func(*Target) error) (*Target, error) {
+func New(name, ip string, workers int, m metrics.MetricsManager, f int, o ...func(*Target) error) (*Target, error) {
 	if i := net.ParseIP(ip); i == nil {
 		return nil, fmt.Errorf("unable to parse IP address %s", ip)
 	}
@@ -57,6 +57,7 @@ func New(name, ip string, workers int, m metrics.MetricsManager, o ...func(*Targ
 		ip:          ip,
 		workers:     workers,
 		metrics:     m,
+		friends:     f,
 		protos:      make(map[string]protocol),
 		portsToScan: make(map[string][]string),
 		startTime:   make(map[string]time.Time),
@@ -480,9 +481,8 @@ func (t *Target) scheduler(trigger chan string, protocols []string) {
 	}
 }
 
-// sendToRedis is used as an interface between scan and metrics packages.
-// It receives results from the runner, and call metrics.Handle which expose and
-// analyse metrics.
+// sendREsults is used as an interface between scan and metrics packages.
+// It receives results from the runner, and call metrics.ReceiveResults interface.
 func (t *Target) sendResults(resChan chan metrics.ResMsg) {
 	for {
 		select {

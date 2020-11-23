@@ -69,7 +69,7 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("error while initializing redis")
 	}
-	m := prometheus.New(storage)
+	m := prometheus.New(storage, len(c.Targets))
 
 	// targetList is an array that will contain each instance of up target found in conf file
 	targetList := []*scan.Target{}
