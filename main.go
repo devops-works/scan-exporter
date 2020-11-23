@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -24,13 +25,18 @@ var (
 
 func main() {
 	var confFile, logLevel, dbURL, pprofAddr string
+	var procs int
+
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&logLevel, "log.level", "info", "log level to use")
 	flag.StringVar(&dbURL, "db.url", "", "database URL (default: redis://127.0.0.1:6379/0)")
 	flag.StringVar(&pprofAddr, "pprof.addr", "127.0.0.1:6060", "pprof addr")
+	flag.IntVar(&procs, "procs", 2, "max procs to use")
 	flag.Parse()
 
 	fmt.Printf("scan-exporter version %s (built %s)\n", Version, BuildDate)
+
+	runtime.GOMAXPROCS(2)
 
 	pprofServer, err := pprof.New(pprofAddr)
 	if err != nil {
