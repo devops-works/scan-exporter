@@ -187,6 +187,8 @@ The metrics exposed by Scan Exporter itself are the following:
 
 * `scanexporter_diff_ports_total`: Number of ports that are in a different state from previous scan, for each target.
 
+You can also fetch metrics from Go, promhttp etc...
+
 ## References
 
 * [Prometheus](https://prometheus.io/)
