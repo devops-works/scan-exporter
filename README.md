@@ -171,15 +171,15 @@ For now, they are defined in the config-map, but it will be shortly moved to val
 
 ## Metrics exposed
 
-Number of targets detected in configuration file.
+The metrics exposed by Scan Exporter itself are the following:
 
 * `scanexporter_uptime_sec`
-  
-The metrics exposed by Scan Exporter itself are the following:
+
+Scan Exporter uptime, in seconds. The minimal resolution is 5 seconds. 
 
 * `scanexporter_targets_number_total`
 
-Scan Exporter uptime, in seconds. The minimal resolution is 5 seconds. 
+Number of targets detected in configuration file.
 
 * `scanexporter_icmp_not_responding_total`
 
