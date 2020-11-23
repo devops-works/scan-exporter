@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -36,6 +38,21 @@ func main() {
 	fmt.Printf("scan-exporter version %s (built %s)\n", Version, BuildDate)
 
 	runtime.GOMAXPROCS(procs)
+
+	// Implement graceful shutdown
+	var gracefulStop = make(chan os.Signal)
+
+	signal.Notify(gracefulStop, syscall.SIGTERM) // Kubernetes sends SIGTERM
+	signal.Notify(gracefulStop, syscall.SIGINT)  // CTRL+C sends SIGINT
+
+	// SIG detection goroutine
+	go func() {
+		select {
+		case sig := <-gracefulStop:
+			fmt.Printf("%s received. Exiting...\n", sig)
+			os.Exit(0)
+		}
+	}()
 
 	pprofServer, err := pprof.New(pprofAddr)
 	if err != nil {
