@@ -59,6 +59,10 @@ OPTIONS:
 -db.url <url>
     Database URL.
     Default: redis://127.0.0.1:6379/0
+
+-procs <int>
+    Sets GOMAXPROCS
+    Default: 2
 ```
 
 **NOTE 1** Note that ICMP can fail if you don't have `root` permissions. However, it will not prevent other scans from being realised.
