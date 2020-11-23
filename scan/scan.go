@@ -47,7 +47,7 @@ type jobMsg struct {
 }
 
 // New checks that target specification is valid, and if target is responding.
-func New(name, ip string, workers int, m metrics.MetricsManager, f int, o ...func(*Target) error) (*Target, error) {
+func New(name, ip string, workers int, m metrics.MetricsManager, o ...func(*Target) error) (*Target, error) {
 	if i := net.ParseIP(ip); i == nil {
 		return nil, fmt.Errorf("unable to parse IP address %s", ip)
 	}
@@ -57,7 +57,6 @@ func New(name, ip string, workers int, m metrics.MetricsManager, f int, o ...fun
 		ip:          ip,
 		workers:     workers,
 		metrics:     m,
-		friends:     f,
 		protos:      make(map[string]protocol),
 		portsToScan: make(map[string][]string),
 		startTime:   make(map[string]time.Time),

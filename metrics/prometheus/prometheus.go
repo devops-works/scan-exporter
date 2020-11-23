@@ -129,35 +129,32 @@ func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 		isResponding = !isResponding
 	}
 
-	// Check if the target didn't respond in the previous scan.
 	m.Lock()
 	defer m.Unlock()
-	alreadyNotResponding := common.StringInSlice(IP, s.notRespondingList)
+	// Check if the IP is already in the map.
+	_, ok := s.notRespondingList[IP]
+	if !ok {
+		// If not, add it as not responding.
+		s.notRespondingList[IP] = true
+	}
+
+	// Check if the target didn't respond in the previous scan.
+	alreadyNotResponding := s.notRespondingList[IP]
+
+	// m.Lock()
+	// alreadyNotResponding := common.StringInSlice(IP, s.notRespondingList)
 	// m.Unlock()
 
 	if isResponding && alreadyNotResponding {
 		// Wasn't responding, but now is ok
 		s.numOfDownTargets.Dec()
-
-		for index := range s.notRespondingList {
-			if s.notRespondingList[index] == IP {
-				// Remove the element at index i from a.
-				// m.Lock()
-				s.notRespondingList[index] = s.notRespondingList[len(s.notRespondingList)-1]
-				s.notRespondingList[len(s.notRespondingList)-1] = ""
-				s.notRespondingList = s.notRespondingList[:len(s.notRespondingList)-1]
-				// m.Unlock()
-			}
-		}
+		s.notRespondingList[IP] = false
 
 	} else if !isResponding && !alreadyNotResponding {
 		// First time it doesn't respond.
 		// Increment the number of down targets.
 		s.numOfDownTargets.Inc()
-		// Add IP to notRespondingList.
-		// m.Lock()
-		s.notRespondingList = append(s.notRespondingList, IP)
-		// m.Unlock()
+		s.notRespondingList[IP] = true
 	}
 	// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
 }
