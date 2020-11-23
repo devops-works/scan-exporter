@@ -25,11 +25,7 @@ var (
 
 func main() {
 	var confFile, logLevel, dbURL, pprofAddr string
-<<<<<<< HEAD
-=======
 	var procs int
-
->>>>>>> bf-index-range-icmp
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&logLevel, "log.level", "info", "log level to use")
 	flag.StringVar(&dbURL, "db.url", "", "database URL (default: redis://127.0.0.1:6379/0)")
