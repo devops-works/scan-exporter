@@ -133,7 +133,7 @@ func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 	}
 
 	var isResponding bool
-	// When a target responds, the ports array contains at least one port.
+	// When a target responds, the ports array contains a value.
 	if len(ports) == 0 {
 		isResponding = false
 	} else {
