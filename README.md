@@ -173,33 +173,19 @@ For now, they are defined in the config-map, but it will be shortly moved to val
 
 The metrics exposed by Scan Exporter itself are the following:
 
-* `scanexporter_uptime_sec`
+* `scanexporter_uptime_sec`: Scan Exporter uptime, in seconds. The minimal resolution is 5 seconds. 
 
-Scan Exporter uptime, in seconds. The minimal resolution is 5 seconds. 
+* `scanexporter_targets_number_total`: Number of targets detected in configuration file.
 
-* `scanexporter_targets_number_total`
+* `scanexporter_icmp_not_responding_total`: Number of targets that doesn't respond to ICMP ping requests. 
 
-Number of targets detected in configuration file.
+* `scanexporter_open_ports_total`: Number of ports that are open for each target.
 
-* `scanexporter_icmp_not_responding_total`
+* `scanexporter_unexpected_open_ports_total`: Number of ports that are open, and shouldn't be, for each target.
 
-Number of targets that doesn't respond to ICMP ping requests. 
+* `scanexporter_unexpected_closed_ports_total`: Number of ports that are closed, and shouldn't be, for each target.
 
-* `scanexporter_open_ports_total`
-
-Number of ports that are open for each target.
-
-* `scanexporter_unexpected_open_ports_total`
-
-Number of ports that are open, and shouldn't be, for each target.
-
-* `scanexporter_unexpected_closed_ports_total`
-
-Number of ports that are closed, and shouldn't be, for each target.
-
-* `scanexporter_diff_ports_total`
-
-Number of ports that are in a different state from previous scan, for each target.
+* `scanexporter_diff_ports_total`: Number of ports that are in a different state from previous scan, for each target.
 
 ## References
 
