@@ -17,7 +17,7 @@ import (
 type Server struct {
 	storage                                            storage.ListManager
 	notRespondingList                                  map[string]bool
-	numOfTargets, numOfDownTargets                     prometheus.Gauge
+	numOfTargets, numOfDownTargets, uptime             prometheus.Gauge
 	unexpectedPorts, openPorts, closedPorts, diffPorts *prometheus.GaugeVec
 }
 
@@ -28,6 +28,11 @@ func New(store storage.ListManager, numOfTargets int) *Server {
 		numOfTargets: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "scanexporter_targets_number_total",
 			Help: "Number of targets detected in config file.",
+		}),
+
+		uptime: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "scanexporter_uptime_sec",
+			Help: "Scan exporter uptime, in seconds.",
 		}),
 
 		numOfDownTargets: prometheus.NewGauge(prometheus.GaugeOpts{
@@ -55,6 +60,7 @@ func New(store storage.ListManager, numOfTargets int) *Server {
 	}
 
 	prometheus.MustRegister(s.numOfTargets)
+	prometheus.MustRegister(s.uptime)
 	prometheus.MustRegister(s.numOfDownTargets)
 	prometheus.MustRegister(s.unexpectedPorts)
 	prometheus.MustRegister(s.openPorts)
@@ -63,6 +69,9 @@ func New(store storage.ListManager, numOfTargets int) *Server {
 
 	// Initialize the map
 	s.notRespondingList = make(map[string]bool)
+
+	// Start uptime counter
+	go s.uptimeCounter()
 
 	return &s
 }
@@ -155,4 +164,12 @@ func (s *Server) icmpNotResponding(ports []string, IP string, m *sync.Mutex) {
 		s.notRespondingList[IP] = true
 	}
 	// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
+}
+
+// uptime metric
+func (s *Server) uptimeCounter() {
+	for {
+		s.uptime.Add(5)
+		time.Sleep(5 * time.Second)
+	}
 }
