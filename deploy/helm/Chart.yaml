@@ -3,7 +3,7 @@ name: scan-exporter-chart
 description: A Helm chart to deploy scan-exporter in Kubernetes
 type: application
 version: 1.0.0
-appVersion: "0.6.1"
+appVersion: "v0.0.0"
 home: https://github.com/devops-works/scan-exporter
 sources:
   - https://github.com/devops-works/scan-exporter

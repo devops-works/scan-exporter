@@ -24,23 +24,22 @@ podMonitor:
     enabled: false
     path: /metrics
 
-# Add targets to scan-exporter by uncommenting this section. 
-# targets: |-
-#         targets:       
-#             - name: "app1"
-#               ip: "128.66.0.1"
-#               workers: 750
-#               tcp:
-#                 period: "10s"
-#                 range: "reserved"
-#                 expected: "53"
-
-#             - name: "app2"
-#               ip: "128.66.0.2"
-#               workers: 1000
-#               tcp:
-#                 period: "1m"
-#                 range: "all"
-#                 expected: "22,443"
-#               icmp:
-#                 period: "30s"
+#  Add targets to scan-exporter by uncommenting this section. 
+targets: |-
+         targets:       
+             - name: "app1"
+               ip: "128.66.0.1"
+               workers: 750
+               tcp:
+                 period: "10s"
+                 range: "reserved"
+                 expected: "53"
+             - name: "app2"
+               ip: "128.66.0.2"
+               workers: 1000
+               tcp:
+                 period: "1m"
+                 range: "all"
+                 expected: "22,443"
+               icmp:
+                 period: "30s"
