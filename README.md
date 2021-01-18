@@ -87,6 +87,8 @@ Best practice is to create a docker-compose, else you can run both locally and b
 
 Thanks to the Helm chart provided in the repo (deploy/helm), it is really easy to deploy the application inside a Kubernetes cluster. The following example will use Kind to create a cluster locally. If you don't have `helm`, `kubectl` or `kind`, you should try [binenv](https://github.com/devops-works/binenv) ;)
 
+**Note**: The always-up-to-date Helm charts are [in our Helm charts repo](https://github.com/devops-works/helm-charts).
+
 First, create the Kubernetes cluster (here, with `kind`):
 
 ```
