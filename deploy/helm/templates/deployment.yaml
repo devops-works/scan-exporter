@@ -4,6 +4,10 @@ metadata:
     name: {{ include "scanexporter.fullname" . }}
     labels:
         app: {{ include "scanexporter.fullname" . }}
+           app.kubernetes.io/name: {{ include "echoip.name" . }}
+            helm.sh/chart: {{ include "echoip.chart" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
     replicas: {{ .Values.scanexporter.replicaCount }}
     selector:

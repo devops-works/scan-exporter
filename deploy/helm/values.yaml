@@ -5,16 +5,8 @@ scanexporter:
         period: 3
         path: /health
     container:
-        image: devopsworks/scan-exporter:0.0.3
+        image: devopsworks/scan-exporter:0.6.1
         port: 2112
-    secrets: regcred
-    resources:
-        limits:
-            cpu: 100m
-            memory: 64Mi
-        requests:
-            cpu: 100m
-            memory: 64Mi
 
 redis:
     name: redis
@@ -32,22 +24,23 @@ podMonitor:
     enabled: false
     path: /metrics
 
-targets: |-
-        targets:       
-            - name: "app1"
-              ip: "10.11.12.13"
-              workers: 750
-              tcp:
-                period: "10s"
-                range: "reserved"
-                expected: "53"
+# Add targets to scan-exporter by uncommenting this section. 
+# targets: |-
+#         targets:       
+#             - name: "app1"
+#               ip: "128.66.0.1"
+#               workers: 750
+#               tcp:
+#                 period: "10s"
+#                 range: "reserved"
+#                 expected: "53"
 
-            - name: "app2"
-              ip: "110.111.112.113"
-              workers: 1000
-              tcp:
-                period: "1m"
-                range: "all"
-                expected: "22,443"
-              icmp:
-                period: "30s"
+#             - name: "app2"
+#               ip: "128.66.0.2"
+#               workers: 1000
+#               tcp:
+#                 period: "1m"
+#                 range: "all"
+#                 expected: "22,443"
+#               icmp:
+#                 period: "30s"
