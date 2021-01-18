@@ -28,14 +28,14 @@ podMonitor:
 targets: |-
          targets:       
              - name: "app1"
-               ip: "128.66.0.1"
+               ip: "198.51.100.1"
                workers: 750
                tcp:
                  period: "10s"
                  range: "reserved"
                  expected: "53"
              - name: "app2"
-               ip: "128.66.0.2"
+               ip: "198.51.100.2"
                workers: 1000
                tcp:
                  period: "1m"
