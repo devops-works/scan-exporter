@@ -31,7 +31,7 @@ func main() {
 	var procs int
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&logLevel, "log.level", "info", "log level to use")
-	flag.StringVar(&dbURL, "db.url", "", "database URL (default: redis://127.0.0.1:6379/0)")
+	flag.StringVar(&dbURL, "db.url", "", "datastore URL (default: redis://127.0.0.1:6379/0)")
 	flag.StringVar(&pprofAddr, "pprof.addr", "127.0.0.1:6060", "pprof addr")
 	flag.IntVar(&procs, "procs", 2, "max procs to use")
 	flag.Parse()
@@ -64,8 +64,8 @@ func main() {
 	go pprofServer.Run()
 
 	// Priority to flags
-	if redisEnv := os.Getenv("REDIS_URL"); redisEnv != "" && dbURL == "" {
-		dbURL = redisEnv
+	if dbEnv := os.Getenv("SCAN-EXPORTER_DB_URL"); dbEnv != "" && dbURL == "" {
+		dbURL = dbEnv
 	}
 	// If nothing is provided in both env and flag, set a default value
 	if dbURL == "" {
