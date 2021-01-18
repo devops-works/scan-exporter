@@ -30,6 +30,13 @@ spec:
                           port: {{ .Values.scanexporter.container.port }}
                       initialDelaySeconds: {{ .Values.scanexporter.liveness.period }}
                       periodSeconds: {{ .Values.scanexporter.liveness.period }}
+                  readinessProbe:
+                      httpGet:
+                          path: {{ .Values.scanexporter.liveness.path }}
+                          port: {{ .Values.scanexporter.container.port }}
+                      failureThreshold: 3
+                      initialDelaySeconds: {{ .Values.scanexporter.liveness.period }}
+                      periodSeconds: 5
                   env:
                       - name: REDIS_URL
                         value: redis://{{ .Release.Name }}-{{ .Values.redis.name }}-master/{{ .Values.redis.db }}
