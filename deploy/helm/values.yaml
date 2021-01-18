@@ -5,7 +5,7 @@ scanexporter:
         period: 3
         path: /health
     container:
-        image: devopsworks/scan-exporter:0.6.1
+        image: devopsworks/scan-exporter:0.6.2
         port: 2112
 
 redis:

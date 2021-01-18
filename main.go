@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -87,9 +88,23 @@ func main() {
 
 	logger.Info().Msgf("%d target(s) found in %s", len(c.Targets), confFile)
 
-	storage, err := redis.New(dbURL)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("error while initializing redis")
+	// Incremental waiting loop for the datastore, in order to avoid multiple
+	// restarts when deploying in kubernetes.
+	var storage *redis.Instance
+	waittime := time.Second * 2
+	for {
+		storage, err = redis.New(dbURL)
+		if err == nil {
+			break
+		}
+		logger.Error().Err(err).Msgf("error while initializing datastore. Retrying in %s", waittime)
+		time.Sleep(waittime)
+		waittime = waittime * 2
+
+		// If the next waiting time exceed 2 minutes, just give up.
+		if waittime > time.Minute*2 {
+			logger.Fatal().Err(err).Msg("could not find datastore")
+		}
 	}
 	m := prometheus.New(storage, len(c.Targets))
 
