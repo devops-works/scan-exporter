@@ -167,7 +167,7 @@ You can give the path of the config file with the `-config` flag. (See [Run it l
 
 ### Kubernetes
 
-If you plan to use Scan Exporter in Kubernetes, you definitely should configure your targets in the `values.yaml` file in the Helm Chart.
+If you plan to use Scan Exporter in Kubernetes, you must configure your targets in the `values.yaml` file in the Helm Chart, as `config.yaml` will be overwritten.
 
 ## Metrics exposed
 
