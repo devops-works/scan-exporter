@@ -24,7 +24,6 @@ podMonitor:
     enabled: false
     path: /metrics
 
-#  Add targets to scan-exporter by uncommenting this section. 
 targets: |-
          targets:       
              - name: "app1"
