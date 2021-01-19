@@ -3,6 +3,7 @@ package scan
 import (
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -267,11 +268,20 @@ func (t *Target) checkAccordance(proto string, open []string) ([]string, []strin
 // Logs are written with warn level.
 func (t *Target) recap(name string, unexpected, closed []string, l zerolog.Logger) {
 	if len(unexpected) > 0 {
-		t.logger.Warn().Msgf("[%s] %s unexpected", name, unexpected)
+		sorted, err := sortPorts(unexpected)
+		if err != nil {
+			t.logger.Error().Msgf("[%s] error sorting unexpected ports", name)
+		}
+		t.logger.Warn().Msgf("[%s] %s unexpected", name, sorted)
 	}
 
 	if len(closed) > 0 {
-		t.logger.Warn().Msgf("[%s] %s closed", name, closed)
+		sorted, err := sortPorts(closed)
+		if err != nil {
+			t.logger.Error().Msgf("[%s] error sorting closed ports", name)
+			sorted = closed
+		}
+		t.logger.Warn().Msgf("[%s] %s closed", name, sorted)
 	}
 }
 
@@ -589,4 +599,26 @@ func getDuration(period string) (time.Duration, error) {
 
 	t := time.Duration(days) * time.Hour * 24
 	return t, nil
+}
+
+func sortPorts(ports []string) ([]string, error) {
+	var sorted []string
+	var holder []int
+
+	for _, p := range ports {
+		pint, err := strconv.Atoi(p)
+		if err != nil {
+			return nil, err
+		}
+
+		holder = append(holder, pint)
+	}
+
+	sort.Ints(holder)
+
+	for _, pint := range holder {
+		sorted = append(sorted, strconv.Itoa(pint))
+	}
+
+	return sorted, nil
 }

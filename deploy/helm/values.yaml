@@ -2,11 +2,13 @@ scanexporter:
     name: scan-exporter
     replicaCount: 1
     liveness:
+        initialDelay: 20
         period: 3
         path: /health
     container:
         image: devopsworks/scan-exporter:0.6.2
         port: 2112
+    secrets: "regcred"
 
 redis:
     name: redis
