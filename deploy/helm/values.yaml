@@ -26,13 +26,20 @@ podMonitor:
     path: /metrics
 
 targets: |-
-         targets:       
-             - name: "website"
-               ip: "34.90.142.99"
+         targets:
+             - name: "app1"
+               ip: "198.51.100.1"
+               workers: 750
+               tcp:
+                 period: "10s"
+                 range: "reserved"
+                 expected: "53"
+             - name: "app2"
+               ip: "198.51.100.2"
                workers: 1000
                tcp:
-                 period: "30s"
+                 period: "1m"
                  range: "all"
-                 expected: "80,443"
+                 expected: "22,443"
                icmp:
-                 period: "5s"
+                 period: "30s"
