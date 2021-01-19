@@ -8,6 +8,13 @@ scanexporter:
     container:
         image: devopsworks/scan-exporter:0.6.3
         port: 2112
+    resources:
+        requests:
+            memory: "100Mi"
+            cpu: "200m"
+        limits:
+            memory: "150Mi"
+            cpu: "375m"
 
 redis:
     name: redis
