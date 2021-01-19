@@ -3,6 +3,7 @@ package scan
 import (
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -267,11 +268,11 @@ func (t *Target) checkAccordance(proto string, open []string) ([]string, []strin
 // Logs are written with warn level.
 func (t *Target) recap(name string, unexpected, closed []string, l zerolog.Logger) {
 	if len(unexpected) > 0 {
-		t.logger.Warn().Msgf("[%s] %s unexpected", name, unexpected)
+		t.logger.Warn().Msgf("[%s] %s unexpected", name, sort.Strings(unexpected))
 	}
 
 	if len(closed) > 0 {
-		t.logger.Warn().Msgf("[%s] %s closed", name, closed)
+		t.logger.Warn().Msgf("[%s] %s closed", name, sort.Strings(closed))
 	}
 }
 
