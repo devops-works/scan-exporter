@@ -529,7 +529,14 @@ func (t *Target) ticker(trigger chan string, proto string, protTicker *time.Tick
 func tcpScan(ip, port string) bool {
 	conn, err := net.DialTimeout("tcp", ip+":"+port, 2*time.Second)
 	if err != nil {
-		return false
+		if strings.Contains(err.Error(), "too many open files") {
+			// Wait and retry to scan the port by calling the same function
+			// recursively and returning it's return value.
+			time.Sleep(2 * time.Second)
+			return tcpScan(ip, port)
+		} else {
+			return false
+		}
 	}
 	defer conn.Close()
 
