@@ -26,7 +26,7 @@ podMonitor:
     path: /metrics
 
 targets: |-
-         targets:       
+         targets:
              - name: "app1"
                ip: "198.51.100.1"
                workers: 750
