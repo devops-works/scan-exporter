@@ -375,3 +375,28 @@ func Test_getDuration(t *testing.T) {
 		})
 	}
 }
+
+func Test_sortPorts(t *testing.T) {
+	tests := []struct {
+		name    string
+		ports   []string
+		want    []string
+		wantErr bool
+	}{
+		{name: "shuffled", ports: []string{"443", "22", "1000"}, want: []string{"22", "443", "1000"}, wantErr: false},
+		{name: "ordered", ports: []string{"22", "443", "1000"}, want: []string{"22", "443", "1000"}, wantErr: false},
+		{name: "empty", ports: []string{""}, want: []string{}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := sortPorts(tt.ports)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sortPorts() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("sortPorts() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

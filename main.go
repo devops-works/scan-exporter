@@ -64,7 +64,7 @@ func main() {
 	go pprofServer.Run()
 
 	// Priority to flags
-	if dbEnv := os.Getenv("SCAN-EXPORTER_DB_URL"); dbEnv != "" && dbURL == "" {
+	if dbEnv := os.Getenv("REDIS_URL"); dbEnv != "" && dbURL == "" {
 		dbURL = dbEnv
 	}
 	// If nothing is provided in both env and flag, set a default value
