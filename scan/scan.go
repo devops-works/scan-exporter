@@ -403,7 +403,7 @@ func (t *Target) createJobs(proto string) ([]jobMsg, error) {
 }
 
 // readPortsRange transforms a range of ports given in conf to an array of
-// effective ports
+// effective ports.
 func readPortsRange(ranges string) ([]string, error) {
 	ports := []string{}
 
@@ -538,8 +538,8 @@ func tcpScan(ip, port string) bool {
 			return false
 		}
 	}
-	defer conn.Close()
 
+	conn.Close()
 	return true
 }
 
@@ -608,6 +608,8 @@ func getDuration(period string) (time.Duration, error) {
 	return t, nil
 }
 
+// sortPorts sorts the ports in a string slice in numerical order. For example,
+// 22 will be before 1337, which is not the case when using sort.Strings.
 func sortPorts(ports []string) ([]string, error) {
 	var sorted []string
 	var holder []int

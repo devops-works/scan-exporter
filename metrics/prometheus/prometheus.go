@@ -59,6 +59,7 @@ func New(store storage.ListManager, numOfTargets int) *Server {
 		}, []string{"proto", "name"}),
 	}
 
+	// Set the metrics to initial values
 	prometheus.MustRegister(s.numOfTargets)
 	prometheus.MustRegister(s.uptime)
 	prometheus.MustRegister(s.numOfDownTargets)
