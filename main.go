@@ -97,7 +97,7 @@ func main() {
 		if err == nil {
 			break
 		}
-		logger.Error().Err(err).Msgf("error while initializing datastore. Retrying in %s", waittime)
+		logger.Error().Err(err).Msgf("error while connecting datastore. Retrying in %s", waittime)
 		time.Sleep(waittime)
 		waittime = waittime * 2
 
