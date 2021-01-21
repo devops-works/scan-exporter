@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"math/rand"
 	"net"
 	"os"
 	"time"
@@ -16,7 +17,13 @@ func (t *target) ping(timeout time.Duration) {
 		log.Fatal().Err(err).Msgf("cannot parse duration %s", t.icmpPeriod)
 	}
 
-	ticker := time.NewTicker(p)
+	// Randomize period to avoid listening override.
+	// The random time added will be between 1 and 1.5s
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(500) + 1000
+	randPeriod := p + (time.Duration(n) * time.Millisecond)
+
+	ticker := time.NewTicker(randPeriod)
 
 	for {
 		select {
