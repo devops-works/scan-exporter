@@ -7,14 +7,13 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// target holds an IP and a range of ports to scan
-type target struct {
-	Name    string   `yaml:"name"`
-	IP      string   `yaml:"ip"`
-	Workers int      `yaml:"workers"`
-	TCP     protocol `yaml:"tcp"`
-	UDP     protocol `yaml:"udp"`
-	ICMP    protocol `yaml:"icmp"`
+// Target holds an IP and a range of ports to scan
+type Target struct {
+	IP    string   `yaml:"ip"`
+	Name  string   `yaml:"name"`
+	Range string   `yaml:"range"`
+	TCP   protocol `yaml:"tcp"`
+	ICMP  protocol `yaml:"icmp"`
 }
 
 type protocol struct {
@@ -25,7 +24,9 @@ type protocol struct {
 
 // Conf holds configuration
 type Conf struct {
-	Targets []target `yaml:"targets"`
+	Timeout int      `yaml:"timeout"`
+	Limit   int      `yaml:"limit"`
+	Targets []Target `yaml:"targets"`
 }
 
 // New reads config from file and returns a config struct
