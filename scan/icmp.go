@@ -69,11 +69,11 @@ func (t *target) ping(timeout time.Duration) {
 			if destAddr.String() == SourceIP.String() && n > 0 {
 
 				rtt := time.Since(start)
-				log.Info().Msgf("%s (%s) ICMP rtt: %s", t.name, t.ip, rtt)
+				log.Info().Str("rtt", rtt.String()).Msgf("%s (%s) responds to ICMP requests", t.name, t.ip)
 
 				break
 			}
-			log.Warn().Msgf("%s (%s) does not respond to ICMP requests", t.name, t.ip)
+			log.Warn().Str("rtt", "0µs").Msgf("%s (%s) does not respond to ICMP requests", t.name, t.ip)
 		}
 	}
 }
