@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/devops-works/scan-exporter/config"
+	"github.com/devops-works/scan-exporter/metrics"
 	"github.com/devops-works/scan-exporter/pprof"
 	"github.com/devops-works/scan-exporter/scan"
 	"github.com/rs/zerolog/log"
@@ -52,6 +53,10 @@ func run(args []string, stdout io.Writer) error {
 	if err != nil {
 		log.Fatal().Msgf("error reading %s: %s", confFile, err)
 	}
+
+	// Start HTTP server
+	m := metrics.New(len(c.Targets))
+	go m.StartServ(len(c.Targets))
 
 	if err := scan.Start(c); err != nil {
 		return err
