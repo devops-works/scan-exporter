@@ -61,8 +61,11 @@ func New(numOfTargets int) *Server {
 	prometheus.MustRegister(s.closedPorts)
 	prometheus.MustRegister(s.diffPorts)
 
-	// Initialize the map
+	// Initialize the notResponding map
 	s.notRespondingList = make(map[string]bool)
+
+	// Start uptime counter
+	go s.uptimeCounter()
 
 	return &s
 }
@@ -84,5 +87,13 @@ func (s *Server) StartServ(nTargets int) {
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatal().Err(err).Msg("http server failed")
+	}
+}
+
+// uptime metric
+func (s *Server) uptimeCounter() {
+	for {
+		s.uptime.Add(5)
+		time.Sleep(5 * time.Second)
 	}
 }
