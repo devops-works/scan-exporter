@@ -105,7 +105,7 @@ func Start(c *config.Conf) error {
 	// Start the receiver
 	go receiver(scanIsOver, singleResult)
 
-	// Infinite for loop that waits for signals
+	// Wait for triggers, build the scanner and run it
 	for {
 		select {
 		case triggeredIP := <-trigger:
@@ -146,7 +146,7 @@ func (ps *scanner) run(scanIsOver, singleResult chan string) error {
 	return nil
 }
 
-// scanPOrt scans a single port and sends the result through singleResult.
+// scanPort scans a single port and sends the result through singleResult.
 // There is 2 formats: when a port is open, it sends ip:port:OK, and when it is
 // closed, it sends ip:port:NOP
 func (ps *scanner) scanPort(port int, singleResult chan string) {
@@ -201,7 +201,7 @@ func receiver(scanIsOver, singleResult chan string) {
 		case ipEnded := <-scanIsOver:
 			log.Info().Msgf("%s open ports: %s", ipEnded, openPorts[ipEnded])
 
-			// TODO: send to datastore
+			// TODO: send to datastore ?
 
 			// Clear slices
 			openPorts[ipEnded] = nil
