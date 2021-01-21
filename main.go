@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/devops-works/scan-exporter/config"
 	"github.com/devops-works/scan-exporter/pprof"
@@ -18,6 +20,13 @@ var (
 )
 
 func main() {
+	if err := run(os.Args, os.Stdout); err != nil {
+		log.Fatal().Err(err).Msgf("error running %s", os.Args[0])
+		os.Exit(1)
+	}
+}
+
+func run(args []string, stdout io.Writer) error {
 	var confFile, logLevel, dbURL, pprofAddr string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&logLevel, "log.level", "info", "log level to use")
@@ -45,6 +54,7 @@ func main() {
 	}
 
 	if err := scan.Start(c); err != nil {
-		log.Fatal().Err(err).Msg("error with scanner")
+		return err
 	}
+	return nil
 }
