@@ -146,6 +146,9 @@ func (ps *scanner) run(scanIsOver, singleResult chan string) error {
 	return nil
 }
 
+// scanPOrt scans a single port and sends the result through singleResult.
+// There is 2 formats: when a port is open, it sends ip:port:OK, and when it is
+// closed, it sends ip:port:NOP
 func (ps *scanner) scanPort(port int, singleResult chan string) {
 	target := fmt.Sprintf("%s:%d", ps.ip, port)
 	conn, err := net.DialTimeout("tcp", target, ps.shared.timeout)
@@ -154,13 +157,14 @@ func (ps *scanner) scanPort(port int, singleResult chan string) {
 			time.Sleep(ps.shared.timeout)
 			ps.scanPort(port, singleResult)
 		}
+		// The result follows the format ip:port:NOP
+		singleResult <- ps.ip + ":" + strconv.Itoa(port) + ":NOP"
 		return
 	}
 
 	conn.Close()
-	// The result follows the format ip:port
-	singleResult <- ps.ip + ":" + strconv.Itoa(port)
-	// fmt.Printf("%s:%d/tcp  \topen\n", ps.ip, port) // debug
+	// The result follows the format ip:port:OK
+	singleResult <- ps.ip + ":" + strconv.Itoa(port) + ":OK"
 }
 
 // scheduler create tickers for each protocol given and when they tick,
@@ -187,22 +191,35 @@ func (t *target) scheduler(trigger chan string) {
 }
 
 func receiver(scanIsOver, singleResult chan string) {
-	// results holds the ports that are open for each target
-	results := make(map[string][]string)
+	// openPorts holds the ports that are open for each target
+	openPorts := make(map[string][]string)
+	// closedPorts holds the ports that are closed
+	closedPorts := make(map[string][]string)
 
 	for {
 		select {
 		case ipEnded := <-scanIsOver:
-			log.Info().Msgf("%s open ports: %s", ipEnded, results[ipEnded])
+			log.Info().Msgf("%s open ports: %s", ipEnded, openPorts[ipEnded])
+
 			// TODO: send to datastore
-			// Clear the slice
-			results[ipEnded] = nil
+
+			// Clear slices
+			openPorts[ipEnded] = nil
+			closedPorts[ipEnded] = nil
 		case res := <-singleResult:
 			split := strings.Split(res, ":")
 			// Useless allocations, but it's easier to read
 			ip := string(split[0])
 			port := string(split[1])
-			results[ip] = append(results[ip], port)
+			status := string(split[2])
+
+			if status == "OK" {
+				openPorts[ip] = append(openPorts[ip], port)
+			} else if status == "NOP" {
+				closedPorts[ip] = append(closedPorts[ip], port)
+			} else {
+				log.Fatal().Msgf("port status not recognised: %s (%s)", status, ip)
+			}
 		}
 	}
 }
