@@ -98,6 +98,7 @@ func Start(c *config.Conf) error {
 
 	// Start scheduler for each target
 	for _, t := range targetList {
+		t := t
 		go t.scheduler(trigger)
 	}
 
@@ -167,7 +168,6 @@ func (ps *scanner) scanPort(port int, singleResult chan string) {
 // feeder that a scan must be started.
 func (t *target) scheduler(trigger chan string) {
 	var ticker *time.Ticker
-
 	tcpFreq, err := getDuration(t.tcpPeriod)
 	if err != nil {
 		log.Error().Msgf("error getting TCP frequency in scheduler: %s", err)
@@ -175,9 +175,8 @@ func (t *target) scheduler(trigger chan string) {
 	ticker = time.NewTicker(tcpFreq)
 	// starts its own ticker
 	go func(trigger chan string, ticker *time.Ticker, ip string) {
-		// First scan at the start
+		// Start scan at launch
 		trigger <- t.ip
-
 		for {
 			select {
 			case <-ticker.C:
@@ -188,7 +187,6 @@ func (t *target) scheduler(trigger chan string) {
 }
 
 func receiver(scanIsOver, singleResult chan string) {
-	// Create map here
 	// results holds the ports that are open for each target
 	results := make(map[string][]string)
 
