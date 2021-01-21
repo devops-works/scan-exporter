@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/devops-works/scan-exporter/common"
 	"github.com/devops-works/scan-exporter/config"
 	"github.com/devops-works/scan-exporter/storage"
 	"github.com/rs/zerolog/log"
@@ -205,12 +206,12 @@ func receiver(scanIsOver, singleResult chan string) {
 		case ipEnded := <-scanIsOver:
 			log.Info().Msgf("%s open ports: %s", ipEnded, openPorts[ipEnded])
 
-			// Compare stored results with current results
-			// Get the delta
-			// Update the datastore
+			// Compare stored results with current results and get the delta
+			delta := common.CompareStringSlices(store.Get(ipEnded), openPorts[ipEnded])
+			fmt.Println(ipEnded, delta)
 
+			// Update the store
 			store.Update(ipEnded, openPorts[ipEnded])
-			fmt.Println(store.Get(ipEnded)) // debug
 
 			// Clear slices
 			openPorts[ipEnded] = nil

@@ -80,24 +80,3 @@ func readPortsRange(ranges string) ([]int, error) {
 
 	return ports, nil
 }
-
-// compareSlices returns the number of items that are different between sl1 and
-// sl2.
-func compareSlices(sl1, sl2 []string) int {
-	var diff int
-	for _, str := range sl1 {
-		if !stringInSlice(str, sl2) {
-			diff++
-		}
-	}
-	return diff
-}
-
-func stringInSlice(str string, sl []string) bool {
-	for _, k := range sl {
-		if str == k {
-			return true
-		}
-	}
-	return false
-}
