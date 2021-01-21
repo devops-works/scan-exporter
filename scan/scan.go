@@ -149,8 +149,8 @@ func (ps *scanner) run(scanIsOver, singleResult chan string) error {
 }
 
 // scanPort scans a single port and sends the result through singleResult.
-// There is 2 formats: when a port is open, it sends ip:port:OK, and when it is
-// closed, it sends ip:port:NOP
+// There is 2 formats: when a port is open, it sends `ip:port:OK`, and when it is
+// closed, it sends `ip:port:NOP`
 func (ps *scanner) scanPort(port int, singleResult chan string) {
 	target := fmt.Sprintf("%s:%d", ps.ip, port)
 	conn, err := net.DialTimeout("tcp", target, ps.shared.timeout)
@@ -208,7 +208,7 @@ func receiver(scanIsOver, singleResult chan string) {
 
 			// Compare stored results with current results and get the delta
 			delta := common.CompareStringSlices(store.Get(ipEnded), openPorts[ipEnded])
-			fmt.Println(ipEnded, delta)
+			fmt.Println(ipEnded, delta) // debug
 
 			// Update the store
 			store.Update(ipEnded, openPorts[ipEnded])
