@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -87,22 +88,33 @@ func Start(c *config.Conf) error {
 
 	trigger := make(chan string, len(targetList))
 
+	// scanIsOver is used by s.run() to notify the receiver that all the ports
+	// fave been scanned
+	scanIsOver := make(chan string, len(targetList))
+
+	// singleResult is used by s.scanPort() to send an open port to the receiver.
+	// The format is ip:port
+	singleResult := make(chan string, c.Limit)
+
+	// Start scheduler for each target
 	for _, t := range targetList {
 		go t.scheduler(trigger)
 	}
 
-	// infinite for loop that waits for signals
+	// Start the receiver
+	go receiver(scanIsOver, singleResult)
+
+	// Infinite for loop that waits for signals
 	for {
 		select {
 		case triggeredIP := <-trigger:
-			fmt.Println(triggeredIP)
 			for _, t := range targetList {
 				if t.ip == triggeredIP {
 					s.ip = t.ip
 					s.name = t.name
 					s.ports = t.ports
 
-					s.run()
+					s.run(scanIsOver, singleResult)
 				}
 			}
 		}
@@ -110,7 +122,7 @@ func Start(c *config.Conf) error {
 }
 
 // Run runs the portScanner.
-func (ps *scanner) run() error {
+func (ps *scanner) run(scanIsOver, singleResult chan string) error {
 	wg := sync.WaitGroup{}
 
 	ports, err := readPortsRange(ps.ports)
@@ -124,26 +136,30 @@ func (ps *scanner) run() error {
 		go func(port int) {
 			defer ps.shared.lock.Release(1)
 			defer wg.Done()
-			ps.scanPort(port)
+			ps.scanPort(port, singleResult)
 		}(p)
 	}
 	wg.Wait()
+	// Inform the receiver that the scan for the target is over
+	scanIsOver <- ps.ip
 	return nil
 }
 
-func (ps *scanner) scanPort(port int) {
+func (ps *scanner) scanPort(port int, singleResult chan string) {
 	target := fmt.Sprintf("%s:%d", ps.ip, port)
 	conn, err := net.DialTimeout("tcp", target, ps.shared.timeout)
 	if err != nil {
 		if strings.Contains(err.Error(), "too many open files") {
 			time.Sleep(ps.shared.timeout)
-			ps.scanPort(port)
+			ps.scanPort(port, singleResult)
 		}
 		return
 	}
 
 	conn.Close()
-	fmt.Printf("%s:%d/tcp  \topen\n", ps.ip, port)
+	// The result follows the format ip:port
+	singleResult <- ps.ip + ":" + strconv.Itoa(port)
+	// fmt.Printf("%s:%d/tcp  \topen\n", ps.ip, port) // debug
 }
 
 // scheduler create tickers for each protocol given and when they tick,
@@ -169,4 +185,26 @@ func (t *target) scheduler(trigger chan string) {
 			}
 		}
 	}(trigger, ticker, t.ip)
+}
+
+func receiver(scanIsOver, singleResult chan string) {
+	// Create map here
+	// results holds the ports that are open for each target
+	results := make(map[string][]string)
+
+	for {
+		select {
+		case ipEnded := <-scanIsOver:
+			log.Info().Msgf("%s open ports: %s", ipEnded, results[ipEnded])
+			// TODO: send to datastore
+			// Clear the slice
+			results[ipEnded] = nil
+		case res := <-singleResult:
+			split := strings.Split(res, ":")
+			// Useless allocations, but it's easier to read
+			ip := string(split[0])
+			port := string(split[1])
+			results[ip] = append(results[ip], port)
+		}
+	}
 }

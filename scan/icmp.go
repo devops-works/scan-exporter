@@ -11,7 +11,6 @@ import (
 )
 
 func (t *target) ping(timeout time.Duration) {
-	// Parse duration
 	p, err := getDuration(t.icmpPeriod)
 	if err != nil {
 		log.Fatal().Err(err).Msgf("cannot parse duration %s", t.icmpPeriod)
