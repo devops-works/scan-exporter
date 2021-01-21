@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/devops-works/scan-exporter/config"
+	"github.com/devops-works/scan-exporter/storage"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/semaphore"
 )
@@ -196,12 +197,20 @@ func receiver(scanIsOver, singleResult chan string) {
 	// closedPorts holds the ports that are closed
 	closedPorts := make(map[string][]string)
 
+	// Create the store for the values
+	store := storage.Create()
+
 	for {
 		select {
 		case ipEnded := <-scanIsOver:
 			log.Info().Msgf("%s open ports: %s", ipEnded, openPorts[ipEnded])
 
-			// TODO: send to datastore ?
+			// Compare stored results with current results
+			// Get the delta
+			// Update the datastore
+
+			store.Update(ipEnded, openPorts[ipEnded])
+			fmt.Println(store.Get(ipEnded)) // debug
 
 			// Clear slices
 			openPorts[ipEnded] = nil
