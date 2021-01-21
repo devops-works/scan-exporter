@@ -27,10 +27,8 @@ func main() {
 }
 
 func run(args []string, stdout io.Writer) error {
-	var confFile, logLevel, dbURL, pprofAddr string
+	var confFile, pprofAddr string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
-	flag.StringVar(&logLevel, "log.level", "info", "log level to use")
-	flag.StringVar(&dbURL, "db.url", "", "datastore URL (default: redis://127.0.0.1:6379/0)")
 	flag.StringVar(&pprofAddr, "pprof.addr", "", "pprof addr")
 	flag.Parse()
 
