@@ -158,6 +158,8 @@ The metrics exposed by Scan Exporter itself are the following:
 
 * `scanexporter_targets_number_total`: Number of targets detected in configuration file.
 
+* `scanexporter_pending_scans`: Number of scans that are in the waiting line.
+
 * `scanexporter_icmp_not_responding_total`: Number of targets that doesn't respond to ICMP ping requests. 
 
 * `scanexporter_open_ports_total`: Number of ports that are open for each target.
