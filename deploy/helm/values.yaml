@@ -6,7 +6,7 @@ scanexporter:
         period: 3
         path: /health
     container:
-        image: devopsworks/scan-exporter:1.1.0
+        image: devopsworks/scan-exporter:1.1.1
         port: 2112
     resources:
         requests:
