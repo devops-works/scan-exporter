@@ -17,6 +17,7 @@ type Server struct {
 
 // NewMetrics is the type that will transit between scan and metrics
 type NewMetrics struct {
+	Name string
 	IP   string
 	Diff int
 }
@@ -41,21 +42,21 @@ func Init() *Server {
 		unexpectedPorts: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "scanexporter_unexpected_open_ports_total",
 			Help: "Number of ports that are open, and shouldn't be.",
-		}, []string{"proto", "name"}),
+		}, []string{"name", "ip"}),
 		openPorts: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "scanexporter_open_ports_total",
 			Help: "Number of ports that are open.",
-		}, []string{"proto", "name"}),
+		}, []string{"name", "ip"}),
 
 		closedPorts: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "scanexporter_unexpected_closed_ports_total",
 			Help: "Number of ports that are closed and shouldn't be.",
-		}, []string{"proto", "name"}),
+		}, []string{"name", "ip"}),
 
 		diffPorts: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "scanexporter_diff_ports_total",
 			Help: "Number of ports that are different from previous scan.",
-		}, []string{"proto", "name"}),
+		}, []string{"name", "ip"}),
 	}
 
 	prometheus.MustRegister(s.numOfTargets)
@@ -97,7 +98,7 @@ func (s *Server) Updater(metChan chan NewMetrics) {
 	for {
 		select {
 		case nm := <-metChan:
-			s.diffPorts.WithLabelValues().Set(float64(nm.Diff))
+			s.diffPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(nm.Diff))
 		}
 	}
 }
