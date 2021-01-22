@@ -44,6 +44,8 @@ func motd() string {
 		"Seek cake now",
 		"How can you ensure yourself that a hairdresser isn't a robot?",
 		"Accept a monkey",
+		"Reject humanity, return to monke",
+		"Did you drink enough water today ?",
 	}
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Intn(len(messages))
