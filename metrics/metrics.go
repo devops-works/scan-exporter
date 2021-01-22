@@ -12,9 +12,9 @@ import (
 
 // Server is the metrics server. It contains all the Prometheus metrics
 type Server struct {
-	notRespondingList                                  map[string]bool
-	numOfTargets, numOfDownTargets, uptime             prometheus.Gauge
-	unexpectedPorts, openPorts, closedPorts, diffPorts *prometheus.GaugeVec
+	notRespondingList                                    map[string]bool
+	numOfTargets, pendingScans, numOfDownTargets, uptime prometheus.Gauge
+	unexpectedPorts, openPorts, closedPorts, diffPorts   *prometheus.GaugeVec
 }
 
 // NewMetrics is the type that will transit between scan and metrics. It carries
@@ -42,6 +42,11 @@ func Init() *Server {
 		numOfTargets: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "scanexporter_targets_number_total",
 			Help: "Number of targets detected in config file.",
+		}),
+
+		pendingScans: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "scanexporter_pending_scans",
+			Help: "Number of scans in the waiting line.",
 		}),
 
 		uptime: prometheus.NewGauge(prometheus.GaugeOpts{
@@ -74,6 +79,7 @@ func Init() *Server {
 	}
 
 	prometheus.MustRegister(s.numOfTargets)
+	prometheus.MustRegister(s.pendingScans)
 	prometheus.MustRegister(s.uptime)
 	prometheus.MustRegister(s.numOfDownTargets)
 	prometheus.MustRegister(s.unexpectedPorts)
@@ -108,7 +114,7 @@ func (s *Server) StartServ(nTargets int) error {
 }
 
 // Updater updates metrics
-func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo) {
+func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pending chan int) {
 	var unexpectedPorts, closedPorts []string
 	for {
 		select {
@@ -176,6 +182,8 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo) {
 				s.notRespondingList[pm.IP] = true
 			}
 			// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
+		case pending := <-pending:
+			s.pendingScans.Set(float64(pending))
 		}
 	}
 }

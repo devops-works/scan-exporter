@@ -129,6 +129,18 @@ func Start(c *config.Conf) error {
 	// Create channel for communication with metrics server
 	mchan := make(chan metrics.NewMetrics, len(targetList)*2)
 
+	// Channel that will hold the number of scans in the waiting line (len of
+	// the trigger chan)
+	pendingchan := make(chan int, len(targetList))
+
+	// Goroutine that will send to metrics the number of pendings scan
+	go func() {
+		for {
+			time.Sleep(500 * time.Millisecond)
+			pendingchan <- len(trigger)
+		}
+	}()
+
 	// Init and start the metrics server
 	mserver := metrics.Init()
 	go func(nt int) {
@@ -136,7 +148,7 @@ func Start(c *config.Conf) error {
 			log.Fatal().Err(err).Msg("metrics server failed critically")
 		}
 	}(len(targetList))
-	go mserver.Updater(mchan, pchan)
+	go mserver.Updater(mchan, pchan, pendingchan)
 
 	// Start the receiver
 	go receiver(scanIsOver, singleResult, pchan, mchan)
