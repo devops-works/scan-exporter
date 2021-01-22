@@ -51,6 +51,7 @@ func run(args []string, stdout io.Writer) error {
 		log.Fatal().Msgf("error reading %s: %s", confFile, err)
 	}
 
+	log.Info().Msgf("%d target(s) found in %s", len(c.Targets), confFile)
 	if err := scan.Start(c); err != nil {
 		return err
 	}
