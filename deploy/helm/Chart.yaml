@@ -7,10 +7,6 @@ appVersion: "v0.0.0"
 home: https://github.com/devops-works/scan-exporter
 sources:
   - https://github.com/devops-works/scan-exporter
-dependencies:
-    - name: redis
-      version: 11.2.1
-      repository: https://charts.bitnami.com/bitnami
 maintainers:
 - name: devopsworks
   email: support@devops.works

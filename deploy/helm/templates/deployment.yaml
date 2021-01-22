@@ -30,9 +30,6 @@ spec:
                           port: {{ .Values.scanexporter.container.port }}
                       initialDelaySeconds: {{ .Values.scanexporter.liveness.initialDelay }}
                       periodSeconds: {{ .Values.scanexporter.liveness.period }}
-                  env:
-                      - name: REDIS_URL
-                        value: redis://{{ .Release.Name }}-{{ .Values.redis.name }}-master/{{ .Values.redis.db }}
                   ports:
                       - containerPort:
                             {{ .Values.scanexporter.container.port }}
