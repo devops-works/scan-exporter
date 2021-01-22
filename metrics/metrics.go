@@ -28,6 +28,14 @@ type NewMetrics struct {
 	Expected []string
 }
 
+// PingInfo holds the ping update of a specific target
+type PingInfo struct {
+	Name         string
+	IP           string
+	IsResponding bool
+	RTT          time.Duration
+}
+
 // Init initialize the metrics
 func Init() *Server {
 	s := Server{
@@ -100,13 +108,14 @@ func (s *Server) StartServ(nTargets int) error {
 }
 
 // Updater updates metrics
-func (s *Server) Updater(metChan chan NewMetrics) {
+func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo) {
 	var unexpectedPorts, closedPorts []string
 	for {
 		select {
 		case nm := <-metChan:
 			s.diffPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(nm.Diff))
 			log.Info().Msgf("%s (%s) open ports: %s", nm.Name, nm.IP, nm.Open)
+
 			s.openPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(nm.Open)))
 
 			// If the port is open but not expected
@@ -116,10 +125,12 @@ func (s *Server) Updater(metChan chan NewMetrics) {
 				}
 			}
 			s.unexpectedPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(unexpectedPorts)))
-			// Log only if there is something to log
-			if len(unexpectedPorts) != 0 {
+			if len(unexpectedPorts) > 0 {
+				log.Warn().Msgf("%s (%s) unexpected open ports: %s", nm.Name, nm.IP, unexpectedPorts)
+			} else {
 				log.Info().Msgf("%s (%s) unexpected open ports: %s", nm.Name, nm.IP, unexpectedPorts)
 			}
+
 			unexpectedPorts = nil
 
 			// If the port is expected but not open
@@ -129,11 +140,42 @@ func (s *Server) Updater(metChan chan NewMetrics) {
 				}
 			}
 			s.closedPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(closedPorts)))
-			// Log only if there is something to log
-			if len(closedPorts) != 0 {
+			if len(closedPorts) > 0 {
+				log.Warn().Msgf("%s (%s) unexpected closed ports: %s", nm.Name, nm.IP, closedPorts)
+			} else {
 				log.Info().Msgf("%s (%s) unexpected closed ports: %s", nm.Name, nm.IP, closedPorts)
 			}
+
 			closedPorts = nil
+		case pm := <-pingChan:
+			if pm.IsResponding {
+				log.Info().Str("rtt", pm.RTT.String()).Msgf("%s (%s) responds to ICMP requests", pm.Name, pm.IP)
+			} else {
+				log.Warn().Str("rtt", "nil").Msgf("%s (%s) does not respond to ICMP requests", pm.Name, pm.IP)
+			}
+
+			// Check if the IP is already in the map.
+			_, ok := s.notRespondingList[pm.IP]
+			if !ok {
+				// If not, add it as responding.
+				s.notRespondingList[pm.IP] = false
+			}
+
+			// Check if the target didn't respond in the previous scan.
+			alreadyNotResponding := s.notRespondingList[pm.IP]
+
+			if pm.IsResponding && alreadyNotResponding {
+				// Wasn't responding, but now is ok
+				s.numOfDownTargets.Dec()
+				s.notRespondingList[pm.IP] = false
+
+			} else if !pm.IsResponding && !alreadyNotResponding {
+				// First time it doesn't respond.
+				// Increment the number of down targets.
+				s.numOfDownTargets.Inc()
+				s.notRespondingList[pm.IP] = true
+			}
+			// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
 		}
 	}
 }

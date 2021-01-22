@@ -54,6 +54,9 @@ func Start(c *config.Conf) error {
 		log.Fatal().Msgf("no limit provided in configuration file")
 	}
 
+	// ping channel to send ICMP update to metrics
+	pchan := make(chan metrics.PingInfo, len(c.Targets)*2)
+
 	// Configure local target objects
 	for _, t := range c.Targets {
 		target := target{
@@ -99,7 +102,7 @@ func Start(c *config.Conf) error {
 
 		// Launch target's ping goroutine. It embeds its own ticker
 		if target.doPing {
-			go target.ping(time.Duration(c.Timeout) * time.Second)
+			go target.ping(time.Duration(c.Timeout)*time.Second, pchan)
 		}
 
 		if target.doTCP {
@@ -124,7 +127,7 @@ func Start(c *config.Conf) error {
 	}
 
 	// Start the receiver
-	go receiver(scanIsOver, singleResult, len(targetList))
+	go receiver(scanIsOver, singleResult, len(targetList), pchan)
 
 	// Wait for triggers, build the scanner and run it
 	for {
@@ -207,7 +210,7 @@ func (t *target) scheduler(trigger chan string) {
 	}(trigger, ticker, t.ip)
 }
 
-func receiver(scanIsOver chan target, singleResult chan string, nt int) {
+func receiver(scanIsOver chan target, singleResult chan string, nt int, pchan chan metrics.PingInfo) {
 
 	// Init and start the metrics server
 	mserver := metrics.Init()
@@ -219,7 +222,7 @@ func receiver(scanIsOver chan target, singleResult chan string, nt int) {
 
 	// Create channel for communication with metrics server
 	mchan := make(chan metrics.NewMetrics, nt*2)
-	go mserver.Updater(mchan)
+	go mserver.Updater(mchan, pchan)
 
 	// openPorts holds the ports that are open for each target
 	openPorts := make(map[string][]string)
