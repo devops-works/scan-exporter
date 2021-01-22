@@ -110,7 +110,7 @@ func Start(c *config.Conf) error {
 		}
 	}
 
-	trigger := make(chan string, len(targetList))
+	trigger := make(chan string, len(targetList)*2)
 
 	// scanIsOver is used by s.run() to notify the receiver that all the ports
 	// fave been scanned
