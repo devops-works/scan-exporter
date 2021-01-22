@@ -73,6 +73,9 @@ func getIP() (string, error) {
 func readPortsRange(ranges string) ([]int, error) {
 	ports := []int{}
 
+	// Remove spaces
+	ranges = strings.Replace(ranges, " ", "", -1)
+
 	parts := strings.Split(ranges, ",")
 
 	for _, spec := range parts {
