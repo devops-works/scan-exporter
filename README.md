@@ -47,7 +47,7 @@ OPTIONS:
     Default: 127.0.0.1:6060
 ```
 
-**Note**: ICMP can fail if you don't have `root` permissions. However, it will not prevent other scans from being realised.
+**Note**: ICMP can fail if you don't have `root` permissions. However, it will not prevent scans from being realised.
 
 ### Run it in Docker
 
@@ -125,7 +125,7 @@ To verify that everything is up in your cluster, try :
 ```
 $ kubectl get pods
 NAME                                                       READY   STATUS      RESTARTS   AGE
-<your release name>-scan-exporter-chart-6c967b8847-vk5fq   1/1     Running     0          97s
+<your release name>-scan-exporter-chart-6d4d75dfcb-52zfp   1/1     Running     0          97s
 ```
 
 ## Configure targets
