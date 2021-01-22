@@ -1,9 +1,7 @@
 package common
 
 import (
-	"math/rand"
 	"sort"
-	"time"
 )
 
 // StringInSlice checks if a string appears in a slice.
@@ -38,17 +36,4 @@ func CompareStringSlices(sl1, sl2 []string) int {
 	}
 
 	return len(newports) + len(missingports)
-}
-
-// GenerateRandomString generates a random string with a lenght of n.
-func GenerateRandomString(n int) string {
-	rand.Seed(time.Now().UnixNano())
-
-	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }

@@ -28,7 +28,7 @@ type target struct {
 	ip         string
 	name       string
 	ports      string
-	expected   string
+	expected   []string
 	doTCP      bool
 	doPing     bool
 	tcpPeriod  string
@@ -62,7 +62,15 @@ func Start(c *config.Conf) error {
 			tcpPeriod:  t.TCP.Period,
 			icmpPeriod: t.ICMP.Period,
 			ports:      t.TCP.Range,
-			expected:   t.TCP.Expected,
+		}
+
+		exp, err := readPortsRange(t.TCP.Expected)
+		if err != nil {
+			return err
+		}
+
+		for _, port := range exp {
+			target.expected = append(target.expected, strconv.Itoa(port))
 		}
 
 		target.shared.timeout = time.Second * time.Duration(c.Timeout)
@@ -85,7 +93,7 @@ func Start(c *config.Conf) error {
 
 		// If TCP period or ports range has been provided, it means that we want
 		// to do TCP scan on the target
-		if target.tcpPeriod != "" || target.ports != "" || target.expected != "" {
+		if target.tcpPeriod != "" || target.ports != "" || len(target.expected) != 0 {
 			target.doTCP = true
 		}
 
@@ -124,10 +132,6 @@ func Start(c *config.Conf) error {
 		case triggeredIP := <-trigger:
 			for _, t := range targetList {
 				if t.ip == triggeredIP {
-					t.ip = t.ip
-					t.name = t.name
-					t.ports = t.ports
-
 					t.run(scanIsOver, singleResult)
 				}
 			}
@@ -235,9 +239,12 @@ func receiver(scanIsOver chan target, singleResult chan string, nt int) {
 
 			// Update metrics
 			updatedMetrics := metrics.NewMetrics{
-				Name: t.name,
-				IP:   t.ip,
-				Diff: delta,
+				Name:     t.name,
+				IP:       t.ip,
+				Diff:     delta,
+				Open:     openPorts[t.ip],
+				Closed:   closedPorts[t.ip],
+				Expected: t.expected,
 			}
 
 			// Send new metrics

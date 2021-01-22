@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/devops-works/scan-exporter/common"
 	"github.com/devops-works/scan-exporter/handlers"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -15,11 +16,15 @@ type Server struct {
 	unexpectedPorts, openPorts, closedPorts, diffPorts *prometheus.GaugeVec
 }
 
-// NewMetrics is the type that will transit between scan and metrics
+// NewMetrics is the type that will transit between scan and metrics. It carries
+// informations that will be used for calculation, such as expected ports.
 type NewMetrics struct {
-	Name string
-	IP   string
-	Diff int
+	Name     string
+	IP       string
+	Diff     int
+	Open     []string
+	Closed   []string
+	Expected []string
 }
 
 // Init initialize the metrics
@@ -95,10 +100,30 @@ func (s *Server) StartServ(nTargets int) error {
 
 // Updater updates metrics
 func (s *Server) Updater(metChan chan NewMetrics) {
+	var unexpectedPorts, closedPorts []string
 	for {
 		select {
 		case nm := <-metChan:
 			s.diffPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(nm.Diff))
+			s.openPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(nm.Open)))
+
+			// If the port is open but not expected
+			for _, port := range nm.Open {
+				if !common.StringInSlice(port, nm.Expected) {
+					unexpectedPorts = append(unexpectedPorts, port)
+				}
+			}
+			s.unexpectedPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(unexpectedPorts)))
+			unexpectedPorts = nil
+
+			// If the port is expected but not open
+			for _, port := range nm.Expected {
+				if !common.StringInSlice(port, nm.Open) {
+					closedPorts = append(closedPorts, port)
+				}
+			}
+			s.closedPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(closedPorts)))
+			closedPorts = nil
 		}
 	}
 }
