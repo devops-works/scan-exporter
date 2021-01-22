@@ -54,6 +54,11 @@ func Start(c *config.Conf) error {
 		log.Fatal().Msgf("no limit provided in configuration file")
 	}
 
+	// If an ICMP period has been provided, it means that we want to ping the
+	// target. But before, we need to check if we have enough privileges
+	if os.Getenv("SUDO_USER") == "" {
+		log.Warn().Msgf("scan-exporter not launched as superuser, ICMP requests can fail")
+	}
 	// ping channel to send ICMP update to metrics
 	pchan := make(chan metrics.PingInfo, len(c.Targets)*2)
 
@@ -85,12 +90,7 @@ func Start(c *config.Conf) error {
 			continue
 		}
 
-		// If an ICMP period has been provided, it means that we want to ping the
-		// target. But before, we need to check if we have enough privileges
-		if os.Getenv("SUDO_USER") == "" {
-			log.Warn().Msgf("not enough privileges, ping has been disabled for %s (%s)", target.name, target.ip)
-			target.doPing = false
-		} else if target.icmpPeriod != "" {
+		if target.icmpPeriod != "" {
 			target.doPing = true
 		}
 
