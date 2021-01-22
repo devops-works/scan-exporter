@@ -41,11 +41,14 @@ func motd() string {
 	messages := []string{
 		"Who the f*ck is Jeff, and why does he have nuclear weapons ?",
 		"Working as a dancing monkey doesn't make you an anarchist.",
-		"Seek cake now",
-		"How can you ensure yourself that a hairdresser isn't a robot?",
-		"Accept a monkey",
-		"Reject humanity, return to monke",
+		"Seek cake now.",
+		"How can you ensure yourself that a hairdresser isn't a robot ?",
+		"Accept a monkey.",
+		"Reject humanity, return to monke.",
 		"Did you drink enough water today ?",
+		"Pigeons are our closest relatives.",
+		"Don't attempt to dryhump what appears to be undryhumpable.",
+		"Being an adult can be very similar to being a contract killer.",
 	}
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Intn(len(messages))
