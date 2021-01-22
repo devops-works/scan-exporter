@@ -232,8 +232,6 @@ func receiver(scanIsOver chan target, singleResult chan string, nt int) {
 	for {
 		select {
 		case t := <-scanIsOver:
-			log.Info().Msgf("%s (%s) open ports: %s", t.name, t.ip, openPorts[t.ip])
-
 			// Compare stored results with current results and get the delta
 			delta := common.CompareStringSlices(store.Get(t.ip), openPorts[t.ip])
 

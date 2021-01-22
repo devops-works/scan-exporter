@@ -7,6 +7,7 @@ import (
 	"github.com/devops-works/scan-exporter/common"
 	"github.com/devops-works/scan-exporter/handlers"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rs/zerolog/log"
 )
 
 // Server is the metrics server. It contains all the Prometheus metrics
@@ -105,6 +106,7 @@ func (s *Server) Updater(metChan chan NewMetrics) {
 		select {
 		case nm := <-metChan:
 			s.diffPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(nm.Diff))
+			log.Info().Msgf("%s (%s) open ports: %s", nm.Name, nm.IP, nm.Open)
 			s.openPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(nm.Open)))
 
 			// If the port is open but not expected
@@ -114,6 +116,10 @@ func (s *Server) Updater(metChan chan NewMetrics) {
 				}
 			}
 			s.unexpectedPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(unexpectedPorts)))
+			// Log only if there is something to log
+			if len(unexpectedPorts) != 0 {
+				log.Info().Msgf("%s (%s) unexpected open ports: %s", nm.Name, nm.IP, unexpectedPorts)
+			}
 			unexpectedPorts = nil
 
 			// If the port is expected but not open
@@ -123,6 +129,10 @@ func (s *Server) Updater(metChan chan NewMetrics) {
 				}
 			}
 			s.closedPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(closedPorts)))
+			// Log only if there is something to log
+			if len(closedPorts) != 0 {
+				log.Info().Msgf("%s (%s) unexpected closed ports: %s", nm.Name, nm.IP, closedPorts)
+			}
 			closedPorts = nil
 		}
 	}
