@@ -4,7 +4,6 @@ limit: 1024
 targets:
   - name: "app1"
     ip: "127.0.0.1"
-    workers: 1000
     tcp:
       period: "12h"
       range: "reserved"
