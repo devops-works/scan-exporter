@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -28,5 +30,18 @@ func notFoundPage(w http.ResponseWriter, r *http.Request) {
 func healthCheckPage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"alive": true}`)
+	fmt.Fprintf(w, `
+{
+	"alive": "true",
+	"motd","%s"
+}`, motd())
+}
+
+func motd() string {
+	messages := []string{
+		"Who the f*ck is Jeff, and why does he have nuclear weapons ?",
+	}
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(len(messages))
+	return messages[n]
 }
