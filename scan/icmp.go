@@ -88,7 +88,7 @@ func (t *target) ping(timeout time.Duration) {
 				rtt := time.Since(start)
 				log.Info().Str("rtt", rtt.String()).Msgf("%s (%s) responds to ICMP requests", t.name, t.ip)
 			} else {
-				log.Warn().Str("rtt", "0µs").Msgf("%s (%s) does not respond to ICMP requests", t.name, t.ip)
+				log.Warn().Str("rtt", "nil").Msgf("%s (%s) does not respond to ICMP requests", t.name, t.ip)
 			}
 		}
 	}

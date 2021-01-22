@@ -12,6 +12,7 @@ import (
 
 	"github.com/devops-works/scan-exporter/common"
 	"github.com/devops-works/scan-exporter/config"
+	"github.com/devops-works/scan-exporter/metrics"
 	"github.com/devops-works/scan-exporter/storage"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/semaphore"
@@ -121,7 +122,7 @@ func Start(c *config.Conf) error {
 	}
 
 	// Start the receiver
-	go receiver(scanIsOver, singleResult)
+	go receiver(scanIsOver, singleResult, len(targetList))
 
 	// Wait for triggers, build the scanner and run it
 	for {
@@ -208,7 +209,16 @@ func (t *target) scheduler(trigger chan string) {
 	}(trigger, ticker, t.ip)
 }
 
-func receiver(scanIsOver, singleResult chan string) {
+func receiver(scanIsOver, singleResult chan string, nt int) {
+
+	// Init and start the metrics server
+	mserver := metrics.Init()
+	go func(nt int) {
+		if err := mserver.StartServ(nt); err != nil {
+			log.Fatal().Err(err).Msg("metrics server failed critically")
+		}
+	}(nt)
+
 	// openPorts holds the ports that are open for each target
 	openPorts := make(map[string][]string)
 	// closedPorts holds the ports that are closed
@@ -216,6 +226,8 @@ func receiver(scanIsOver, singleResult chan string) {
 
 	// Create the store for the values
 	store := storage.Create()
+
+	// TODO: create channel to communicate between scans and metrics
 
 	for {
 		select {
