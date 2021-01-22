@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -67,8 +68,11 @@ func Start(c *config.Conf) error {
 		}
 
 		// If an ICMP period has been provided, it means that we want to ping the
-		// target
-		if target.icmpPeriod != "" {
+		// target. But before, we need to check if we have enough privileges
+		if os.Getenv("SUDO_USER") == "" {
+			log.Warn().Msg("not enough privileges, ping has been disabled")
+			target.doPing = false
+		} else if target.icmpPeriod != "" {
 			target.doPing = true
 		}
 
