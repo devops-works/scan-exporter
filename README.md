@@ -6,12 +6,6 @@ However, Kubernetes is not necessary and you can run it locally too (see [Run it
 
 To fully use this tool, you will need some tools (`helm`, `kubectl`, `minikube` or `kind`, `k9s`...). If you didn't installed them yet, we have [something for you](https://github.com/devops-works/binenv).
 
-## Technical decisions
-
-We have decided to go with Prometheus and Redis because those technologies fit our requirements. However, thanks to the `storage` and `metrics` interfaces, you are free to use whatever you want to replace them, as long as those interfaces are implemented.
-
-Obviously, PR to implement others datastores and metrics handlers are welcomed !
-
 ## Installation
 
 There is 2 ways to install scan-exporter.
@@ -29,7 +23,7 @@ $ cd scan-exporter/
 $ go build .
 ```
 
-Or you can get the binary in the releases. It is available for Linux, Mac and Windows.
+Or you can get the binary in [the releases](https://github.com/devops-works/scan-exporter/releases).
 
 ### Run it locally
 
@@ -48,24 +42,12 @@ OPTIONS:
     Path to config file.
     Default: config.yaml (in the current directory).
 
--log.level {info|warn|error}
-    Log level.
-    Default: info
-
 -pprof.addr <ip:port>
     pprof server address. pprof will expose it's metrics on this address.
     Default: 127.0.0.1:6060
-
--db.url <url>
-    Database URL.
-    Default: redis://127.0.0.1:6379/0
-
--procs <int>
-    Sets GOMAXPROCS
-    Default: 2
 ```
 
-**NOTE 1** Note that ICMP can fail if you don't have `root` permissions. However, it will not prevent other scans from being realised.
+**Note**: ICMP can fail if you don't have `root` permissions. However, it will not prevent other scans from being realised.
 
 ### Run it in Docker
 
@@ -81,7 +63,7 @@ To work properly, a Redis container in the same network and with the port 6379 l
 
 Best practice is to create a docker-compose, else you can run both locally and bind their ports to 127.0.0.1.
 
-**NOTE 1** The config file is copied inside the image while creating the docker image. It is not possible to change it once the image is built.
+**Note**: The config file is copied inside the image while creating the docker image. It is not possible to change it once the image is built.
 
 ### Run it in Kubernetes
 
@@ -143,9 +125,6 @@ To verify that everything is up in your cluster, try :
 ```
 $ kubectl get pods
 NAME                                                       READY   STATUS      RESTARTS   AGE
-<your release name>-redis-master-0                         1/1     Running     0          97s
-<your release name>-redis-slave-0                          1/1     Running     0          97s
-<your release name>-redis-slave-1                          1/1     Running     0          58s
 <your release name>-scan-exporter-chart-6c967b8847-vk5fq   1/1     Running     0          97s
 ```
 
@@ -164,6 +143,8 @@ $ mv config-sample.yaml config.yaml
 and then use this file to describe all the targets you want to scan. The config file sample provided contains everything you can configure about a target.
 
 You can give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)), both locally and or Docker.
+
+We recommend to keep `limit:1024`, as higher values can induce errors in scans.
 
 ### Kubernetes
 
