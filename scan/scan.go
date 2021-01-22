@@ -53,6 +53,12 @@ func Start(c *config.Conf) error {
 	var targetList []target
 
 	// Configure shared values
+	if c.Timeout == 0 {
+		log.Fatal().Msgf("no timeout provided in configuration file")
+	}
+	if c.Limit == 0 {
+		log.Fatal().Msgf("no limit provided in configuration file")
+	}
 	s.shared.timeout = time.Second * time.Duration(c.Timeout)
 	s.shared.lock = semaphore.NewWeighted(int64(c.Limit))
 
@@ -65,6 +71,12 @@ func Start(c *config.Conf) error {
 			icmpPeriod: t.ICMP.Period,
 			ports:      t.TCP.Range,
 			expected:   t.TCP.Expected,
+		}
+
+		// Inform that we can't parse the IP, and skip this target
+		if ok := net.ParseIP(target.ip); ok == nil {
+			log.Error().Msgf("cannot parse IP %s", target.ip)
+			continue
 		}
 
 		// If an ICMP period has been provided, it means that we want to ping the
