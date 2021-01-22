@@ -40,6 +40,7 @@ func healthCheckPage(w http.ResponseWriter, r *http.Request) {
 func motd() string {
 	messages := []string{
 		"Who the f*ck is Jeff, and why does he have nuclear weapons ?",
+		"Working as a dancing monkey doesn't make you an anarchist.",
 	}
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Intn(len(messages))
