@@ -8,7 +8,6 @@ scanexporter:
     container:
         image: devopsworks/scan-exporter:1.0.0
         port: 2112
-    secrets: regcred
     resources:
         requests:
             memory: "100Mi"
