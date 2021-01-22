@@ -144,7 +144,7 @@ and then use this file to describe all the targets you want to scan. The config 
 
 You can give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)), both locally and or Docker.
 
-We recommend to keep `limit:1024`, as higher values can induce errors in scans.
+We recommend to keep `limit: 1024`, as higher values can induce errors in scans.
 
 ### Kubernetes
 
