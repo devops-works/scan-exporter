@@ -33,7 +33,7 @@ func healthCheckPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `
 {
 	"alive": "true",
-	"motd","%s"
+	"motd": "%s"
 }`, motd())
 }
 
