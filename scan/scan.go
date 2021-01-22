@@ -126,8 +126,20 @@ func Start(c *config.Conf) error {
 		go t.scheduler(trigger)
 	}
 
+	// Create channel for communication with metrics server
+	mchan := make(chan metrics.NewMetrics, len(targetList)*2)
+
+	// Init and start the metrics server
+	mserver := metrics.Init()
+	go func(nt int) {
+		if err := mserver.StartServ(nt); err != nil {
+			log.Fatal().Err(err).Msg("metrics server failed critically")
+		}
+	}(len(targetList))
+	go mserver.Updater(mchan, pchan)
+
 	// Start the receiver
-	go receiver(scanIsOver, singleResult, len(targetList), pchan)
+	go receiver(scanIsOver, singleResult, pchan, mchan)
 
 	// Wait for triggers, build the scanner and run it
 	for {
@@ -210,20 +222,7 @@ func (t *target) scheduler(trigger chan string) {
 	}(trigger, ticker, t.ip)
 }
 
-func receiver(scanIsOver chan target, singleResult chan string, nt int, pchan chan metrics.PingInfo) {
-
-	// Init and start the metrics server
-	mserver := metrics.Init()
-	go func(nt int) {
-		if err := mserver.StartServ(nt); err != nil {
-			log.Fatal().Err(err).Msg("metrics server failed critically")
-		}
-	}(nt)
-
-	// Create channel for communication with metrics server
-	mchan := make(chan metrics.NewMetrics, nt*2)
-	go mserver.Updater(mchan, pchan)
-
+func receiver(scanIsOver chan target, singleResult chan string, pchan chan metrics.PingInfo, mchan chan metrics.NewMetrics) {
 	// openPorts holds the ports that are open for each target
 	openPorts := make(map[string][]string)
 	// closedPorts holds the ports that are closed
