@@ -33,13 +33,7 @@ type target struct {
 	doPing     bool
 	tcpPeriod  string
 	icmpPeriod string
-}
-
-type scanner struct {
-	name   string
-	ip     string
-	ports  string
-	shared sharedConf
+	shared     sharedConf
 }
 
 // sharedConf will not change during program execution
@@ -50,7 +44,6 @@ type sharedConf struct {
 
 // Start configure targets and launches scans.
 func Start(c *config.Conf) error {
-	var s scanner
 	var targetList []target
 
 	// Configure shared values
@@ -60,8 +53,6 @@ func Start(c *config.Conf) error {
 	if c.Limit == 0 {
 		log.Fatal().Msgf("no limit provided in configuration file")
 	}
-	s.shared.timeout = time.Second * time.Duration(c.Timeout)
-	s.shared.lock = semaphore.NewWeighted(int64(c.Limit))
 
 	// Configure local target objects
 	for _, t := range c.Targets {
@@ -74,6 +65,9 @@ func Start(c *config.Conf) error {
 			expected:   t.TCP.Expected,
 		}
 
+		target.shared.timeout = time.Second * time.Duration(c.Timeout)
+		target.shared.lock = semaphore.NewWeighted(int64(c.Limit))
+
 		// Inform that we can't parse the IP, and skip this target
 		if ok := net.ParseIP(target.ip); ok == nil {
 			log.Error().Msgf("cannot parse IP %s", target.ip)
@@ -83,7 +77,7 @@ func Start(c *config.Conf) error {
 		// If an ICMP period has been provided, it means that we want to ping the
 		// target. But before, we need to check if we have enough privileges
 		if os.Getenv("SUDO_USER") == "" {
-			log.Warn().Msg("not enough privileges, ping has been disabled")
+			log.Warn().Msgf("not enough privileges, ping has been disabled for %s (%s)", target.name, target.ip)
 			target.doPing = false
 		} else if target.icmpPeriod != "" {
 			target.doPing = true
@@ -109,7 +103,7 @@ func Start(c *config.Conf) error {
 
 	// scanIsOver is used by s.run() to notify the receiver that all the ports
 	// fave been scanned
-	scanIsOver := make(chan string, len(targetList))
+	scanIsOver := make(chan target, len(targetList))
 
 	// singleResult is used by s.scanPort() to send an open port to the receiver.
 	// The format is ip:port
@@ -130,11 +124,11 @@ func Start(c *config.Conf) error {
 		case triggeredIP := <-trigger:
 			for _, t := range targetList {
 				if t.ip == triggeredIP {
-					s.ip = t.ip
-					s.name = t.name
-					s.ports = t.ports
+					t.ip = t.ip
+					t.name = t.name
+					t.ports = t.ports
 
-					s.run(scanIsOver, singleResult)
+					t.run(scanIsOver, singleResult)
 				}
 			}
 		}
@@ -142,48 +136,48 @@ func Start(c *config.Conf) error {
 }
 
 // Run runs the portScanner.
-func (ps *scanner) run(scanIsOver, singleResult chan string) error {
+func (t *target) run(scanIsOver chan target, singleResult chan string) error {
 	wg := sync.WaitGroup{}
 
-	ports, err := readPortsRange(ps.ports)
+	ports, err := readPortsRange(t.ports)
 	if err != nil {
 		return err
 	}
 
 	for _, p := range ports {
 		wg.Add(1)
-		ps.shared.lock.Acquire(context.TODO(), 1)
+		t.shared.lock.Acquire(context.TODO(), 1)
 		go func(port int) {
-			defer ps.shared.lock.Release(1)
+			defer t.shared.lock.Release(1)
 			defer wg.Done()
-			ps.scanPort(port, singleResult)
+			t.scanPort(port, singleResult)
 		}(p)
 	}
 	wg.Wait()
 	// Inform the receiver that the scan for the target is over
-	scanIsOver <- ps.ip
+	scanIsOver <- *t
 	return nil
 }
 
 // scanPort scans a single port and sends the result through singleResult.
 // There is 2 formats: when a port is open, it sends `ip:port:OK`, and when it is
 // closed, it sends `ip:port:NOP`
-func (ps *scanner) scanPort(port int, singleResult chan string) {
-	target := fmt.Sprintf("%s:%d", ps.ip, port)
-	conn, err := net.DialTimeout("tcp", target, ps.shared.timeout)
+func (t *target) scanPort(port int, singleResult chan string) {
+	target := fmt.Sprintf("%s:%d", t.ip, port)
+	conn, err := net.DialTimeout("tcp", target, t.shared.timeout)
 	if err != nil {
 		if strings.Contains(err.Error(), "too many open files") {
-			time.Sleep(ps.shared.timeout)
-			ps.scanPort(port, singleResult)
+			time.Sleep(t.shared.timeout)
+			t.scanPort(port, singleResult)
 		}
 		// The result follows the format ip:port:NOP
-		singleResult <- ps.ip + ":" + strconv.Itoa(port) + ":NOP"
+		singleResult <- t.ip + ":" + strconv.Itoa(port) + ":NOP"
 		return
 	}
 
 	conn.Close()
 	// The result follows the format ip:port:OK
-	singleResult <- ps.ip + ":" + strconv.Itoa(port) + ":OK"
+	singleResult <- t.ip + ":" + strconv.Itoa(port) + ":OK"
 }
 
 // scheduler create tickers for each protocol given and when they tick,
@@ -209,7 +203,7 @@ func (t *target) scheduler(trigger chan string) {
 	}(trigger, ticker, t.ip)
 }
 
-func receiver(scanIsOver, singleResult chan string, nt int) {
+func receiver(scanIsOver chan target, singleResult chan string, nt int) {
 
 	// Init and start the metrics server
 	mserver := metrics.Init()
@@ -219,6 +213,10 @@ func receiver(scanIsOver, singleResult chan string, nt int) {
 		}
 	}(nt)
 
+	// Create channel for communication with metrics server
+	mchan := make(chan metrics.NewMetrics, nt*2)
+	go mserver.Updater(mchan)
+
 	// openPorts holds the ports that are open for each target
 	openPorts := make(map[string][]string)
 	// closedPorts holds the ports that are closed
@@ -227,23 +225,30 @@ func receiver(scanIsOver, singleResult chan string, nt int) {
 	// Create the store for the values
 	store := storage.Create()
 
-	// TODO: create channel to communicate between scans and metrics
-
 	for {
 		select {
-		case ipEnded := <-scanIsOver:
-			log.Info().Msgf("%s open ports: %s", ipEnded, openPorts[ipEnded])
+		case t := <-scanIsOver:
+			log.Info().Msgf("%s (%s) open ports: %s", t.name, t.ip, openPorts[t.ip])
 
 			// Compare stored results with current results and get the delta
-			delta := common.CompareStringSlices(store.Get(ipEnded), openPorts[ipEnded])
-			fmt.Println(ipEnded, delta) // debug
+			delta := common.CompareStringSlices(store.Get(t.ip), openPorts[t.ip])
+
+			// Update metrics
+			updatedMetrics := metrics.NewMetrics{
+				Name: t.name,
+				IP:   t.ip,
+				Diff: delta,
+			}
+
+			// Send new metrics
+			mchan <- updatedMetrics
 
 			// Update the store
-			store.Update(ipEnded, openPorts[ipEnded])
+			store.Update(t.ip, openPorts[t.ip])
 
 			// Clear slices
-			openPorts[ipEnded] = nil
-			closedPorts[ipEnded] = nil
+			openPorts[t.ip] = nil
+			closedPorts[t.ip] = nil
 		case res := <-singleResult:
 			split := strings.Split(res, ":")
 			// Useless allocations, but it's easier to read
