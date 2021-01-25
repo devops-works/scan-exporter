@@ -78,14 +78,16 @@ func Init() *Server {
 		}, []string{"name", "ip"}),
 	}
 
-	prometheus.MustRegister(s.numOfTargets)
-	prometheus.MustRegister(s.pendingScans)
-	prometheus.MustRegister(s.uptime)
-	prometheus.MustRegister(s.numOfDownTargets)
-	prometheus.MustRegister(s.unexpectedPorts)
-	prometheus.MustRegister(s.openPorts)
-	prometheus.MustRegister(s.closedPorts)
-	prometheus.MustRegister(s.diffPorts)
+	prometheus.MustRegister(
+		s.numOfTargets,
+		s.pendingScans,
+		s.uptime,
+		s.numOfDownTargets,
+		s.unexpectedPorts,
+		s.openPorts,
+		s.closedPorts,
+		s.diffPorts,
+	)
 
 	// Initialize the map
 	s.notRespondingList = make(map[string]bool)
