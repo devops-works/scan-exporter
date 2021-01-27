@@ -44,7 +44,6 @@ OPTIONS:
 
 -pprof.addr <ip:port>
     pprof server address. pprof will expose it's metrics on this address.
-    Default: 127.0.0.1:6060
 ```
 
 **Note**: ICMP can fail if you don't have `root` permissions. However, it will not prevent scans from being realised.
