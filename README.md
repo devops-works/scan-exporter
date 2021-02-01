@@ -62,10 +62,6 @@ or your can build it locally :
 $ docker build -t <image tag> .
 ```
 
-To work properly, a Redis container in the same network and with the port 6379 listening is needed.
-
-Best practice is to create a docker-compose, else you can run both locally and bind their ports to 127.0.0.1.
-
 **Note**: The config file is copied inside the image while creating the docker image. It is not possible to change it once the image is built.
 
 ### Run it in Kubernetes
@@ -173,7 +169,7 @@ The metrics exposed by Scan Exporter itself are the following:
 
 * `scanexporter_diff_ports_total`: Number of ports that are in a different state from previous scan, for each target.
 
-You can also fetch metrics from Go, promhttp etc...
+You can also fetch metrics from Go, promhttp etc.
 
 ## References
 
