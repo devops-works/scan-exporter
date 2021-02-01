@@ -98,12 +98,12 @@ func Init() *Server {
 	return &s
 }
 
-// StartServ starts the prometheus server.
+// StartServ starts the prometheus server
 func (s *Server) StartServ(nTargets int) error {
-	// Set the number of targets. This is done once.
+	// Set the number of targets. This is done once
 	s.numOfTargets.Set(float64(nTargets))
 
-	// Set the number of hosts that doesn't respond to ping to 0.
+	// Set the number of hosts that doesn't respond to ping to 0
 	s.numOfDownTargets.Set(0)
 
 	srv := &http.Server{
@@ -121,6 +121,8 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 	for {
 		select {
 		case nm := <-metChan:
+			// New metrics set has been receievd
+
 			s.diffPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(nm.Diff))
 			log.Info().Str("name", nm.Name).Str("ip", nm.IP).Msgf("%s (%s) open ports: %s", nm.Name, nm.IP, nm.Open)
 
@@ -156,6 +158,8 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 
 			closedPorts = nil
 		case pm := <-pingChan:
+			// New ping metric has been received
+
 			if pm.IsResponding {
 				log.Info().Str("name", pm.Name).Str("ip", pm.IP).Str("rtt", pm.RTT.String()).Msgf("%s (%s) responds to ICMP requests", pm.Name, pm.IP)
 			} else {
@@ -185,6 +189,8 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 			}
 			// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
 		case pending := <-pending:
+			// New pending metric has been received
+
 			s.pendingScans.Set(float64(pending))
 			log.Debug().Int("pending", pending).Msgf("%d pending scans", pending)
 		}

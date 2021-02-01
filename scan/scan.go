@@ -46,7 +46,7 @@ type sharedConf struct {
 func Start(c *config.Conf) error {
 	var targetList []target
 
-	// Configure shared values
+	// Check if shared values are set
 	if c.Timeout == 0 {
 		log.Fatal().Msgf("no timeout provided in configuration file")
 	}
@@ -55,10 +55,11 @@ func Start(c *config.Conf) error {
 	}
 
 	// If an ICMP period has been provided, it means that we want to ping the
-	// target. But before, we need to check if we have enough privileges
+	// target. But before, we need to check if we have enough privileges.
 	if os.Getenv("SUDO_USER") == "" {
 		log.Warn().Msgf("scan-exporter not launched as superuser, ICMP requests can fail")
 	}
+
 	// ping channel to send ICMP update to metrics
 	pchan := make(chan metrics.PingInfo, len(c.Targets)*2)
 
@@ -72,15 +73,18 @@ func Start(c *config.Conf) error {
 			ports:      t.TCP.Range,
 		}
 
+		// Read target's expected port range
 		exp, err := readPortsRange(t.TCP.Expected)
 		if err != nil {
 			return err
 		}
 
+		// Append them to the target
 		for _, port := range exp {
 			target.expected = append(target.expected, strconv.Itoa(port))
 		}
 
+		// Set shared configuration
 		target.shared.timeout = time.Second * time.Duration(c.Timeout)
 		target.shared.lock = semaphore.NewWeighted(int64(c.Limit))
 
@@ -113,12 +117,14 @@ func Start(c *config.Conf) error {
 	trigger := make(chan string, len(targetList)*2)
 
 	// scanIsOver is used by s.run() to notify the receiver that all the ports
-	// fave been scanned
+	// have been scanned
 	scanIsOver := make(chan target, len(targetList))
 
 	// singleResult is used by s.scanPort() to send an open port to the receiver.
 	// The format is ip:port
 	singleResult := make(chan string, c.Limit)
+
+	log.Debug().Msgf("%d targets will be scanned suing TCP", len(targetList))
 
 	// Start scheduler for each target
 	for _, t := range targetList {
@@ -199,6 +205,8 @@ func (t *target) scanPort(port int, singleResult chan string) {
 	target := fmt.Sprintf("%s:%d", t.ip, port)
 	conn, err := net.DialTimeout("tcp", target, t.shared.timeout)
 	if err != nil {
+		// If the error contains the message "too many open files", wait a little
+		// and retry
 		if strings.Contains(err.Error(), "too many open files") {
 			time.Sleep(t.shared.timeout)
 			t.scanPort(port, singleResult)
@@ -207,8 +215,8 @@ func (t *target) scanPort(port int, singleResult chan string) {
 		singleResult <- t.ip + ":" + strconv.Itoa(port) + ":NOP"
 		return
 	}
-
 	conn.Close()
+
 	// The result follows the format ip:port:OK
 	singleResult <- t.ip + ":" + strconv.Itoa(port) + ":OK"
 }
@@ -220,9 +228,10 @@ func (t *target) scheduler(trigger chan string) {
 	var ticker *time.Ticker
 	tcpFreq, err := getDuration(t.tcpPeriod)
 	if err != nil {
-		log.Error().Msgf("error getting TCP frequency in scheduler: %s", err)
+		log.Error().Msgf("error getting TCP frequency for %s scheduler: %s", t.name, err)
 	}
 	ticker = time.NewTicker(tcpFreq)
+
 	// starts its own ticker
 	go func(trigger chan string, ticker *time.Ticker, ip string) {
 		// Start scan at launch
