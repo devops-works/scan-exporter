@@ -44,6 +44,10 @@ OPTIONS:
 
 -pprof.addr <ip:port>
     pprof server address. pprof will expose it's metrics on this address.
+  
+-log.lvl {trace,debug,info,warn,error,fatal}
+    Log level.
+    Default: info
 ```
 
 **Note**: ICMP can fail if you don't have `root` permissions. However, it will not prevent scans from being realised.
