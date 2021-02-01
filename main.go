@@ -9,6 +9,7 @@ import (
 	"github.com/devops-works/scan-exporter/config"
 	"github.com/devops-works/scan-exporter/pprof"
 	"github.com/devops-works/scan-exporter/scan"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -27,9 +28,10 @@ func main() {
 }
 
 func run(args []string, stdout io.Writer) error {
-	var confFile, pprofAddr string
+	var confFile, pprofAddr, loglvl string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&pprofAddr, "pprof.addr", "", "pprof addr")
+	flag.StringVar(&loglvl, "loglvl", "info", "Log level. Can be {trace,debug,info,warn,error,fatal}")
 	flag.Parse()
 
 	fmt.Printf("scan-exporter version %s (built %s)\n", Version, BuildDate)
@@ -43,6 +45,25 @@ func run(args []string, stdout io.Writer) error {
 		log.Info().Msgf("pprof started on 'http://%s'", pprofServer.Addr)
 
 		go pprofServer.Run()
+	}
+
+	// Set global loglevel
+	switch loglvl {
+	case "trace":
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	case "debug":
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	case "info":
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	case "warn":
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	case "error":
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case "fatal":
+		zerolog.SetGlobalLevel(zerolog.FatalLevel)
+	default:
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+		log.Warn().Msgf("unknown log level: %s, using 'info'", loglvl)
 	}
 
 	// Parse configuration file
