@@ -122,7 +122,7 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 		select {
 		case nm := <-metChan:
 			s.diffPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(nm.Diff))
-			log.Info().Msgf("%s (%s) open ports: %s", nm.Name, nm.IP, nm.Open)
+			log.Info().Str("name", nm.Name).Str("ip", nm.IP).Msgf("%s (%s) open ports: %s", nm.Name, nm.IP, nm.Open)
 
 			s.openPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(nm.Open)))
 
@@ -134,9 +134,9 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 			}
 			s.unexpectedPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(unexpectedPorts)))
 			if len(unexpectedPorts) > 0 {
-				log.Warn().Msgf("%s (%s) unexpected open ports: %s", nm.Name, nm.IP, unexpectedPorts)
+				log.Warn().Str("name", nm.Name).Str("ip", nm.IP).Msgf("%s (%s) unexpected open ports: %s", nm.Name, nm.IP, unexpectedPorts)
 			} else {
-				log.Info().Msgf("%s (%s) unexpected open ports: %s", nm.Name, nm.IP, unexpectedPorts)
+				log.Info().Str("name", nm.Name).Str("ip", nm.IP).Msgf("%s (%s) unexpected open ports: %s", nm.Name, nm.IP, unexpectedPorts)
 			}
 
 			unexpectedPorts = nil
@@ -149,17 +149,17 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 			}
 			s.closedPorts.WithLabelValues(nm.Name, nm.IP).Set(float64(len(closedPorts)))
 			if len(closedPorts) > 0 {
-				log.Warn().Msgf("%s (%s) unexpected closed ports: %s", nm.Name, nm.IP, closedPorts)
+				log.Warn().Str("name", nm.Name).Str("ip", nm.IP).Msgf("%s (%s) unexpected closed ports: %s", nm.Name, nm.IP, closedPorts)
 			} else {
-				log.Info().Msgf("%s (%s) unexpected closed ports: %s", nm.Name, nm.IP, closedPorts)
+				log.Info().Str("name", nm.Name).Str("ip", nm.IP).Msgf("%s (%s) unexpected closed ports: %s", nm.Name, nm.IP, closedPorts)
 			}
 
 			closedPorts = nil
 		case pm := <-pingChan:
 			if pm.IsResponding {
-				log.Info().Str("rtt", pm.RTT.String()).Msgf("%s (%s) responds to ICMP requests", pm.Name, pm.IP)
+				log.Info().Str("name", pm.Name).Str("ip", pm.IP).Str("rtt", pm.RTT.String()).Msgf("%s (%s) responds to ICMP requests", pm.Name, pm.IP)
 			} else {
-				log.Warn().Str("rtt", "nil").Msgf("%s (%s) does not respond to ICMP requests", pm.Name, pm.IP)
+				log.Warn().Str("name", pm.Name).Str("ip", pm.IP).Str("rtt", "nil").Msgf("%s (%s) does not respond to ICMP requests", pm.Name, pm.IP)
 			}
 
 			// Check if the IP is already in the map.

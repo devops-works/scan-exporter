@@ -31,7 +31,7 @@ func run(args []string, stdout io.Writer) error {
 	var confFile, pprofAddr, loglvl string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&pprofAddr, "pprof.addr", "", "pprof addr")
-	flag.StringVar(&loglvl, "log.lvl", "info", "Log level. Can be {trace,debug,info,warn,error,fatal}")
+	flag.StringVar(&loglvl, "log.lvl", "info", "log level. Can be {trace,debug,info,warn,error,fatal}")
 	flag.Parse()
 
 	fmt.Printf("scan-exporter version %s (built %s)\n", Version, BuildDate)
