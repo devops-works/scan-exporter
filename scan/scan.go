@@ -123,6 +123,7 @@ func Start(c *config.Conf) error {
 	// Start scheduler for each target
 	for _, t := range targetList {
 		t := t
+		log.Debug().Msgf("start scheduler for %s", t.name)
 		go t.scheduler(trigger)
 	}
 
@@ -157,6 +158,7 @@ func Start(c *config.Conf) error {
 	for {
 		select {
 		case triggeredIP := <-trigger:
+			log.Debug().Msgf("received trigger for %s", triggeredIP)
 			for _, t := range targetList {
 				if t.ip == triggeredIP {
 					t.run(scanIsOver, singleResult)

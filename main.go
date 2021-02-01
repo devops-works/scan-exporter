@@ -36,17 +36,6 @@ func run(args []string, stdout io.Writer) error {
 
 	fmt.Printf("scan-exporter version %s (built %s)\n", Version, BuildDate)
 
-	// Start  pprof server is asked.
-	if pprofAddr != "" {
-		pprofServer, err := pprof.New(pprofAddr)
-		if err != nil {
-			log.Fatal().Err(err).Msg("unable to create pprof server")
-		}
-		log.Info().Msgf("pprof started on 'http://%s'", pprofServer.Addr)
-
-		go pprofServer.Run()
-	}
-
 	// Set global loglevel
 	switch loglvl {
 	case "trace":
@@ -64,6 +53,17 @@ func run(args []string, stdout io.Writer) error {
 	default:
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 		log.Warn().Msgf("unknown log level: %s, using 'info'", loglvl)
+	}
+
+	// Start  pprof server is asked.
+	if pprofAddr != "" {
+		pprofServer, err := pprof.New(pprofAddr)
+		if err != nil {
+			log.Fatal().Err(err).Msg("unable to create pprof server")
+		}
+		log.Info().Msgf("pprof started on 'http://%s'", pprofServer.Addr)
+
+		go pprofServer.Run()
 	}
 
 	// Parse configuration file

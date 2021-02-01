@@ -186,6 +186,7 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 			// Else, everything is good, do nothing or everything is as bad as it was, so do nothing too.
 		case pending := <-pending:
 			s.pendingScans.Set(float64(pending))
+			log.Debug().Int("pending", pending).Msgf("%d pending scans", pending)
 		}
 	}
 }

@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	// Import and mount pprof
 	_ "net/http/pprof"
 )
@@ -22,6 +24,8 @@ func New(addr string) (*Server, error) {
 }
 
 // Run an independent pprof server
-func (p *Server) Run() error {
-	return p.ListenAndServe()
+func (p *Server) Run() {
+	if err := p.ListenAndServe(); err != nil {
+		log.Fatal().Err(err).Msg("error running pprof server")
+	}
 }
