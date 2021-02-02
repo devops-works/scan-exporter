@@ -36,7 +36,30 @@ func run(args []string, stdout io.Writer) error {
 
 	fmt.Printf("scan-exporter version %s (built %s)\n", Version, BuildDate)
 
+	// Start  pprof server is asked.
+	if pprofAddr != "" {
+		pprofServer, err := pprof.New(pprofAddr)
+		if err != nil {
+			log.Fatal().Err(err).Msg("unable to create pprof server")
+		}
+		log.Info().Msgf("pprof started on 'http://%s'", pprofServer.Addr)
+
+		go pprofServer.Run()
+	}
+
+	// Parse configuration file
+	c, err := config.New(confFile)
+	if err != nil {
+		log.Fatal().Msgf("error reading %s: %s", confFile, err)
+	}
+
 	// Set global loglevel
+	// Overwrite the flag loglevel by the one given in configuration
+	if c.LogLevel != "" {
+		log.Info().Msgf("log level from configuration file found: %s", c.LogLevel)
+		loglvl = c.LogLevel
+	}
+
 	switch loglvl {
 	case "trace":
 		zerolog.SetGlobalLevel(zerolog.TraceLevel)
@@ -53,23 +76,6 @@ func run(args []string, stdout io.Writer) error {
 	default:
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 		log.Warn().Msgf("unknown log level: %s, using 'info'", loglvl)
-	}
-
-	// Start  pprof server is asked.
-	if pprofAddr != "" {
-		pprofServer, err := pprof.New(pprofAddr)
-		if err != nil {
-			log.Fatal().Err(err).Msg("unable to create pprof server")
-		}
-		log.Info().Msgf("pprof started on 'http://%s'", pprofServer.Addr)
-
-		go pprofServer.Run()
-	}
-
-	// Parse configuration file
-	c, err := config.New(confFile)
-	if err != nil {
-		log.Fatal().Msgf("error reading %s: %s", confFile, err)
 	}
 
 	log.Info().Msgf("%d target(s) found in %s", len(c.Targets), confFile)

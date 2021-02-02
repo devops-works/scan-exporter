@@ -24,9 +24,10 @@ type protocol struct {
 
 // Conf holds configuration
 type Conf struct {
-	Timeout int      `yaml:"timeout"`
-	Limit   int      `yaml:"limit"`
-	Targets []Target `yaml:"targets"`
+	Timeout  int      `yaml:"timeout"`
+	Limit    int      `yaml:"limit"`
+	LogLevel string   `yaml:"log_level"`
+	Targets  []Target `yaml:"targets"`
 }
 
 // New reads config from file and returns a config struct

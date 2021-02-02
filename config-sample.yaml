@@ -1,6 +1,7 @@
 ---
 timeout: 2
 limit: 1024
+log_level: "info"
 targets:
   - name: "app1"
     ip: "127.0.0.1"
