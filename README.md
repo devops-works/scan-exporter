@@ -1,41 +1,60 @@
 # Scan Exporter
 
-Scan Exporter is tool designed to scan TCP open ports and send ICMP requests to a targets list from a [Kubernetes](https://kubernetes.io) cluster and export the results to [Prometheus](https://prometheus.io/) for monitoring.
+Massive TCP/ICMP port scanning tool with exporter for Prometheus.
 
-However, Kubernetes is not necessary and you can run it locally too (see [Run it locally](#run-it-locally)) !
+<a href="https://github.com/MariaLetta/free-gophers-pack"><img align="center" src="./img/gobug.png" width="250" height="250"/></a>
 
-To fully use this tool, you will need some tools (`helm`, `kubectl`, `minikube` or `kind`, `k9s`...). If you didn't installed them yet, we have [something for you](https://github.com/devops-works/binenv).
+## Table of Contents
 
-## Installation
+- [Table of Contents](#table-of-contents)
+- [Getting started](#getting-started)
+  - [From the sources](#from-the-sources)
+  - [From the releases](#from-the-releases)
+  - [From `binenv`](#from-binenv)
+- [Usage](#usage)
+  - [CLI](#cli)
+  - [Kubernetes](#kubernetes)
+- [Configuration](#configuration)
+  - [Configuration file](#configuration-file)
+    - [`target_config`](#target_config)
+    - [`tcp_config`](#tcp_config)
+    - [`icmp_config`](#icmp_config)
+  - [Helm](#helm)
+- [Metrics](#metrics)
+- [License](#license)
+- [Swag zone](#swag-zone)
+  
+## Getting started
 
-There is 2 ways to install scan-exporter.
+There is multiple ways to get `scan-exporter`:
 
-You can clone this repo :
+### From the sources
 
 ```
 $ git clone https://github.com/devops-works/scan-exporter.git
-```
-
-and build the source file :
-
-```
-$ cd scan-exporter/
+$ cd scan-exporter
 $ go build .
 ```
 
-Or you can get the binary in [the releases](https://github.com/devops-works/scan-exporter/releases).
+### From the releases
 
-### Run it locally
+Download the latest build from [the official releases](https://github.com/devops-works/scan-exporter/releases)
 
-You should check [this section](#configure-targets) to learn how to configure your targets before continuing.
+### From `binenv`
 
-```
-$ ./scan-exporter [OPTIONS]
-```
-
-The differents options are :
+If you have `binenv` installed:
 
 ```
+$ binenv install scan-exporter
+```
+
+## Usage
+
+### CLI
+
+```
+USAGE: [sudo] ./scan-exporter [OPTIONS]
+
 OPTIONS:
 
 -config <path/to/config/file.yaml>
@@ -50,110 +69,123 @@ OPTIONS:
     Default: info
 ```
 
-**Note**: ICMP can fail if you don't have `root` permissions. However, it will not prevent scans from being realised.
-
-### Run it in Docker
-
-You can get the Docker image online : `devopsworks/scan-exporter`
-
-or your can build it locally :
-
-```
-$ docker build -t <image tag> .
-```
-
-**Note**: The config file is copied inside the image while creating the docker image. It is not possible to change it once the image is built.
-
-### Run it in Kubernetes
-
-Thanks to the Helm chart provided in the repo (deploy/helm), it is really easy to deploy the application inside a Kubernetes cluster. The following example will use Kind to create a cluster locally. If you don't have `helm`, `kubectl` or `kind`, you should try [binenv](https://github.com/devops-works/binenv) ;)
-
-**Note**: The always-up-to-date Helm charts are [in our Helm charts repo](https://github.com/devops-works/helm-charts).
-
-First, create the Kubernetes cluster (here, with `kind`):
-
-```
-$ kind create cluster
-```
-
-Next, use `helm` to install your chart. Before that, you have to make sure that you are using the right cluster :
-
-```
-$ kubectl config use-context kind-kind      # or whatever your context is called
-Switched to context "kind-kind".
-$ helm install <your release name> deploy/helm/
-```
-
-If everything went good, you should see something like this :
-
-```
-NAME: <your release name>
-LAST DEPLOYED: Wed Oct 21 14:51:52 2020
-NAMESPACE: default
-STATUS: deployed
-REVISION: 1
-TEST SUITE: None
-NOTES:
-You just installed...
-
-                    ▓▓▓▓▓▓
-                  ██░░░░░░██
-                ▒▒░░░░░░░░░░▓▓▓▓
-              ▓▓░░░░░░░░░░░░░░▒▒▓▓
-          ████▒▒░░░░░░░░░░░░░░░░▓▓
-    ▓▓▓▓▓▓░░░░░░▒▒░░░░░░░░░░░░▒▒▓▓▓▓▓▓
-  ▓▓▒▒░░░░░░░░░░░░▒▒░░░░░░░░▒▒░░░░░░▒▒▓▓
-  ██▒▒▒▒░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░▒▒██
-    ▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██
-      ██▓▓▓▓▓▓██▓▓▓▓▓▓████▓▓▓▓▓▓▓▓▓▓▓▓██
-
-          ==========================
-          |scan-exporter Helm chart|
-          ==========================
-
-Your current release is named `<your release name>`.
-
-To get more information about this release, try:
-
-    $ helm status <your release name>
-    $ helm get all <your release name>
-```
-
-To verify that everything is up in your cluster, try :
-
-```
-$ kubectl get pods
-NAME                                                       READY   STATUS      RESTARTS   AGE
-<your release name>-scan-exporter-chart-6d4d75dfcb-52zfp   1/1     Running     0          97s
-```
-
-## Configure targets
-
-With Scan Exporter, there is multiple ways to configure your targets depending on how you will use it.
-
-### Locally/Docker
-
-You can rename config-sample.yaml which is provided in this repo to config.yaml :
-
-```
-$ mv config-sample.yaml config.yaml
-```
-
-and then use this file to describe all the targets you want to scan. The config file sample provided contains everything you can configure about a target.
-
-You can give the path of the config file with the `-config` flag. (See [Run it locally](#run-it-locally)), both locally and or Docker.
-
-We recommend to keep `limit: 1024`, as higher values can induce errors in scans.
+:bulb: ICMP can fail if you don't start `scan-exporter` with `root` permissions. However, it will not prevent ports scans from being realised.
 
 ### Kubernetes
 
-If you plan to use Scan Exporter in Kubernetes, you must configure your targets in the `values.yaml` file in the Helm Chart, as `config.yaml` will be overwritten.
+Use the provided Helm charts to deploy the application into your application. 
 
-## Metrics exposed
+:warning: Those charts might not be up to date, please use [those ones](https://github.com/devops-works/helm-charts/tree/master/scan-exporter).
 
-The metrics exposed by Scan Exporter itself are the following:
+To deploy with charts that are, for example, under `scan-exporter/` in the current Kubernetes context:
 
-* `scanexporter_uptime_sec`: Scan Exporter uptime, in seconds. The minimal resolution is 5 seconds. 
+```
+$ helm install scanexporter scan-exporter/
+```
+
+## Configuration
+
+### Configuration file
+
+```yaml
+# Hold the timeout, in seconds, that will be used all over the program (i.e for scans).
+timeout: int
+
+# Hold the number of files that can be simultaneously opened on the host.
+# It will be the number of scan goroutines. We recommand 1024 or 2048, but it depends
+# on the `ulimit` of the host.
+limit: int
+
+# The log level that will be used all over the program. Supported values:
+# trace, debug, info, warn, error, fatal
+[log_level: <string> | default = "info"]
+
+# Configure targets.
+targets:
+  - [<target_config>]
+```
+
+#### `target_config`
+
+```yaml
+# Name of the target.
+# It can be whatever you want.
+name: <string>
+
+# IP address of the target.
+# Only IPv4 addresses are supported.
+ip: <string>
+
+# TCP scan parameters.
+[tcp: <tcp_config>]
+
+# ICMP scan parameters
+[icmp: <icmp_config>]
+```
+
+#### `tcp_config`
+
+```yaml
+# TCP scan frequency. Supported values:
+# {1..999}{s,m,h,d}
+# For example, all those values are working and reprensent a frenquecy of
+# one hour: 3600s, 60m, 1h.
+period: <string>
+
+# Range of ports to scan. Supported values:
+# all, reserved, 22, 100-1000, 11,12-14,15...
+range: <string>
+
+# Ports that are expected to be open. Supported values are the same than
+# for range.
+expected: <string>
+```
+
+#### `icmp_config`
+
+```yaml
+# Ping frequency. Supported values are the same than for TCP's period.
+period: <string>
+```
+
+Here is a working example:
+
+```yaml
+timeout: 2
+limit: 1024
+log_level: "warn"
+targets:
+  - name: "app1"
+    ip: "198.51.100.42"
+    tcp:
+      period: "12h"
+      range: "reserved"
+      expected: "22,80,443"
+    icmp:
+      period: "1m"
+  
+  - name: "app2"
+    ip: "198.51.100.69"
+    tcp:
+      period: "1d"
+      range: "all"
+      expected: ""
+```
+
+* `app1` will be scanned using TCP every 12 hours on all the reserved ports (1-1023), and we expect that ports 22, 80, 443 will be open, and all the others closed. It will also receive an ICMP ping every minute.
+* `app2` will be scanned using TCP every day on all its ports (1-65535), and none of its ports should be open.
+
+### Helm
+
+The structure of the configuration file is the same, except that is should be placed inside `values.yaml`.
+
+[See an example](https://github.com/devops-works/helm-charts/blob/master/scan-exporter/values.yaml) of `values.yaml` configuration.
+
+## Metrics
+
+The metrics exposed by `scan-exporter` itself are the following:
+
+* `scanexporter_uptime_sec`: Uptime, in seconds. The minimal resolution is 5 seconds. 
 
 * `scanexporter_targets_number_total`: Number of targets detected in configuration file.
 
@@ -171,18 +203,11 @@ The metrics exposed by Scan Exporter itself are the following:
 
 You can also fetch metrics from Go, promhttp etc.
 
-## References
-
-* [Prometheus](https://prometheus.io/)
-* [Docker](https://docs.docker.com/)
-* [Kubernetes](https://kubernetes.io)
-* [Helm](https://helm.sh)
-* [Kind](https://kind.sigs.k8s.io/)
-* [The last binary you'll ever install](https://github.com/devops-works/binenv)
-
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+Gopher from [Maria Letta](https://github.com/MariaLetta/free-gophers-pack)
 
 ## Swag zone
 
