@@ -7,7 +7,7 @@ spec:
     podMetricsEndpoints:
       - interval: 10s
         scrapeTimeout: 10s
-        port: "{{ .Values.scanexporter.container.port }}"
+        port: metrics
         path: {{ .Values.podMonitor.path }}
     selector:
       matchLabels:

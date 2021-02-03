@@ -31,8 +31,8 @@ spec:
                       initialDelaySeconds: {{ .Values.scanexporter.liveness.initialDelay }}
                       periodSeconds: {{ .Values.scanexporter.liveness.period }}
                   ports:
-                      - containerPort:
-                            {{ .Values.scanexporter.container.port }}
+                      - containerPort: {{ .Values.scanexporter.container.port }}
+                        name: "metrics"
             volumes:
               - name: config
                 configMap:
