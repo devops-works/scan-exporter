@@ -2,7 +2,6 @@ package scan
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"os"
 	"strconv"
@@ -120,7 +119,7 @@ func Start(c *config.Conf) error {
 
 	// scanIsOver is used by s.run() to notify the receiver that all the ports
 	// have been scanned
-	scanIsOver := make(chan target, len(targetList))
+	scanIsOver := make(chan *target, len(targetList))
 
 	// singleResult is used by s.scanPort() to send an open port to the receiver.
 	// The format is ip:port
@@ -177,7 +176,7 @@ func Start(c *config.Conf) error {
 }
 
 // Run runs the portScanner.
-func (t *target) run(scanIsOver chan target, singleResult chan string) error {
+func (t *target) run(scanIsOver chan *target, singleResult chan string) error {
 	wg := sync.WaitGroup{}
 
 	ports, err := readPortsRange(t.ports)
@@ -196,7 +195,7 @@ func (t *target) run(scanIsOver chan target, singleResult chan string) error {
 	}
 	wg.Wait()
 	// Inform the receiver that the scan for the target is over
-	scanIsOver <- *t
+	scanIsOver <- t
 	return nil
 }
 
@@ -204,7 +203,7 @@ func (t *target) run(scanIsOver chan target, singleResult chan string) error {
 // There is 2 formats: when a port is open, it sends `ip:port:OK`, and when it is
 // closed, it sends `ip:port:NOP`
 func (t *target) scanPort(port int, singleResult chan string) {
-	target := fmt.Sprintf("%s:%d", t.ip, port)
+	target := t.ip + ":" + strconv.Itoa(port)
 	conn, err := net.DialTimeout("tcp", target, t.shared.timeout)
 	if err != nil {
 		// If the error contains the message "too many open files", wait a little
@@ -247,7 +246,7 @@ func (t *target) scheduler(trigger chan string) {
 	}(trigger, ticker, t.ip)
 }
 
-func receiver(scanIsOver chan target, singleResult chan string, pchan chan metrics.PingInfo, mchan chan metrics.NewMetrics) {
+func receiver(scanIsOver chan *target, singleResult chan string, pchan chan metrics.PingInfo, mchan chan metrics.NewMetrics) {
 	// openPorts holds the ports that are open for each target
 	openPorts := make(map[string][]string)
 	// closedPorts holds the ports that are closed

@@ -8,3 +8,4 @@ docker-compose.yaml
 *.prof
 prod-*
 trace.out
+heap.out
