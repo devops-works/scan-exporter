@@ -60,25 +60,13 @@ func run(args []string, stdout io.Writer) error {
 		loglvl = c.LogLevel
 	}
 
-	switch loglvl {
-	case "trace":
-		zerolog.SetGlobalLevel(zerolog.TraceLevel)
-	case "debug":
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	case "info":
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	case "warn":
-		zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	case "error":
-		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
-	case "fatal":
-		zerolog.SetGlobalLevel(zerolog.FatalLevel)
-	default:
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-		log.Warn().Msgf("unknown log level: %s, using 'info'", loglvl)
+	lvl, err := zerolog.ParseLevel(loglvl)
+	if err != nil {
+		log.Error().Msgf("cannot parse level %s, using 'info'", loglvl)
+		lvl = zerolog.InfoLevel
 	}
+	zerolog.SetGlobalLevel(lvl)
 
-	log.Info().Msgf("%d target(s) found in %s", len(c.Targets), confFile)
 	if err := scan.Start(c); err != nil {
 		return err
 	}

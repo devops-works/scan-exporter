@@ -44,6 +44,8 @@ type sharedConf struct {
 
 // Start configure targets and launches scans.
 func Start(c *config.Conf) error {
+	log.Info().Msgf("found %d target(s) in configuration file", len(c.Targets))
+
 	var targetList []target
 
 	// Check if shared values are set
@@ -56,7 +58,7 @@ func Start(c *config.Conf) error {
 
 	// If an ICMP period has been provided, it means that we want to ping the
 	// target. But before, we need to check if we have enough privileges.
-	if os.Getenv("SUDO_USER") == "" {
+	if os.Geteuid() != 0 {
 		log.Warn().Msgf("scan-exporter not launched as superuser, ICMP requests can fail")
 	}
 
