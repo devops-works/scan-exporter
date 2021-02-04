@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/devops-works/scan-exporter/metrics"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
@@ -15,7 +16,7 @@ import (
 // ping does an ICMP echo request to the target. We do not want it to be blocking,
 // so every error is followed by a continue. This way, in the worst scanario, the
 // ping is skipped.
-func (t *target) ping(timeout time.Duration, pchan chan metrics.PingInfo) {
+func (t *target) ping(logger zerolog.Logger, timeout time.Duration, pchan chan metrics.PingInfo) {
 	p, err := getDuration(t.icmpPeriod)
 	if err != nil {
 		log.Fatal().Err(err).Msgf("cannot parse duration %s", t.icmpPeriod)

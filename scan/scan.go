@@ -2,6 +2,7 @@ package scan
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/devops-works/scan-exporter/config"
 	"github.com/devops-works/scan-exporter/metrics"
 	"github.com/devops-works/scan-exporter/storage"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/semaphore"
 )
@@ -32,33 +34,38 @@ type target struct {
 	doPing     bool
 	tcpPeriod  string
 	icmpPeriod string
-	shared     sharedConf
 }
 
-// sharedConf will not change during program execution
-type sharedConf struct {
+type scanner struct {
+	targets []target
 	timeout time.Duration
 	lock    *semaphore.Weighted
+	logger  zerolog.Logger
 }
 
 // Start configure targets and launches scans.
-func Start(c *config.Conf) error {
-	log.Info().Msgf("found %d target(s) in configuration file", len(c.Targets))
+func Start(c *config.Conf, logger zerolog.Logger) error {
+	// Scanner creation
+	scanner := scanner{
+		logger: logger,
+	}
 
-	var targetList []target
+	scanner.logger.Info().Msgf("%d target(s) found in configuration file", len(c.Targets))
 
 	// Check if shared values are set
 	if c.Timeout == 0 {
-		log.Fatal().Msgf("no timeout provided in configuration file")
+		scanner.logger.Fatal().Msgf("no timeout provided in configuration file")
 	}
 	if c.Limit == 0 {
-		log.Fatal().Msgf("no limit provided in configuration file")
+		scanner.logger.Fatal().Msgf("no limit provided in configuration file")
 	}
+	scanner.lock = semaphore.NewWeighted(int64(c.Limit))
+	scanner.timeout = time.Second * time.Duration(c.Timeout)
 
 	// If an ICMP period has been provided, it means that we want to ping the
 	// target. But before, we need to check if we have enough privileges.
 	if os.Geteuid() != 0 {
-		log.Warn().Msgf("scan-exporter not launched as superuser, ICMP requests can fail")
+		scanner.logger.Warn().Msgf("scan-exporter not launched as superuser, ICMP requests can fail")
 	}
 
 	// ping channel to send ICMP update to metrics
@@ -85,13 +92,9 @@ func Start(c *config.Conf) error {
 			target.expected = append(target.expected, strconv.Itoa(port))
 		}
 
-		// Set shared configuration
-		target.shared.timeout = time.Second * time.Duration(c.Timeout)
-		target.shared.lock = semaphore.NewWeighted(int64(c.Limit))
-
 		// Inform that we can't parse the IP, and skip this target
 		if ok := net.ParseIP(target.ip); ok == nil {
-			log.Error().Msgf("cannot parse IP %s", target.ip)
+			scanner.logger.Error().Msgf("cannot parse IP %s", target.ip)
 			continue
 		}
 
@@ -107,39 +110,39 @@ func Start(c *config.Conf) error {
 
 		// Launch target's ping goroutine. It embeds its own ticker
 		if target.doPing {
-			go target.ping(time.Duration(c.Timeout)*time.Second, pchan)
+			go target.ping(scanner.logger, time.Duration(c.Timeout)*time.Second, pchan)
 		}
 
 		if target.doTCP {
-			targetList = append(targetList, target)
+			scanner.targets = append(scanner.targets, target)
 		}
 	}
 
-	trigger := make(chan string, len(targetList)*2)
+	trigger := make(chan string, len(scanner.targets)*2)
 
 	// scanIsOver is used by s.run() to notify the receiver that all the ports
 	// have been scanned
-	scanIsOver := make(chan target, len(targetList))
+	scanIsOver := make(chan target, len(scanner.targets))
 
 	// singleResult is used by s.scanPort() to send an open port to the receiver.
 	// The format is ip:port
 	singleResult := make(chan string, c.Limit)
 
-	log.Debug().Msgf("%d targets will be scanned suing TCP", len(targetList))
+	scanner.logger.Debug().Msgf("%d targets will be scanned suing TCP", len(scanner.targets))
 
 	// Start scheduler for each target
-	for _, t := range targetList {
+	for _, t := range scanner.targets {
 		t := t
-		log.Debug().Msgf("start scheduler for %s", t.name)
-		go t.scheduler(trigger)
+		scanner.logger.Debug().Msgf("start scheduler for %s", t.name)
+		go t.scheduler(scanner.logger, trigger)
 	}
 
 	// Create channel for communication with metrics server
-	mchan := make(chan metrics.NewMetrics, len(targetList)*2)
+	mchan := make(chan metrics.NewMetrics, len(scanner.targets)*2)
 
 	// Channel that will hold the number of scans in the waiting line (len of
 	// the trigger chan)
-	pendingchan := make(chan int, len(targetList))
+	pendingchan := make(chan int, len(scanner.targets))
 
 	// Goroutine that will send to metrics the number of pendings scan
 	go func() {
@@ -153,9 +156,9 @@ func Start(c *config.Conf) error {
 	mserver := metrics.Init()
 	go func(nt int) {
 		if err := mserver.StartServ(nt); err != nil {
-			log.Fatal().Err(err).Msg("metrics server failed critically")
+			scanner.logger.Fatal().Err(err).Msg("metrics server failed critically")
 		}
-	}(len(targetList))
+	}(len(scanner.targets))
 	go mserver.Updater(mchan, pchan, pendingchan)
 
 	// Start the receiver
@@ -165,71 +168,76 @@ func Start(c *config.Conf) error {
 	for {
 		select {
 		case triggeredIP := <-trigger:
-			log.Debug().Msgf("received trigger for %s", triggeredIP)
-			for _, t := range targetList {
-				if t.ip == triggeredIP {
-					t.run(scanIsOver, singleResult)
-				}
+			scanner.logger.Debug().Msgf("received trigger for %s", triggeredIP)
+			if err := scanner.run(triggeredIP, scanIsOver, singleResult); err != nil {
+				scanner.logger.Error().Err(err).Msg("error running scan")
 			}
 		}
 	}
 }
 
-// Run runs the portScanner.
-func (t *target) run(scanIsOver chan target, singleResult chan string) error {
-	wg := sync.WaitGroup{}
+func (s *scanner) run(ip string, scanIsOver chan target, singleResult chan string) error {
+	for _, t := range s.targets {
+		// Find which target to scan
+		if t.ip == ip {
+			wg := sync.WaitGroup{}
 
-	ports, err := readPortsRange(t.ports)
-	if err != nil {
-		return err
-	}
+			ports, err := readPortsRange(t.ports)
+			if err != nil {
+				return err
+			}
 
-	for _, p := range ports {
-		wg.Add(1)
-		t.shared.lock.Acquire(context.TODO(), 1)
-		go func(port int) {
-			defer t.shared.lock.Release(1)
-			defer wg.Done()
-			t.scanPort(port, singleResult)
-		}(p)
+			for _, p := range ports {
+				wg.Add(1)
+				s.lock.Acquire(context.TODO(), 1)
+				go func(port int) {
+					defer s.lock.Release(1)
+					defer wg.Done()
+					s.scanPort(ip, port, singleResult)
+				}(p)
+			}
+			wg.Wait()
+
+			// Inform the receiver that the scan for the target is over
+			scanIsOver <- t
+			return nil
+		}
 	}
-	wg.Wait()
-	// Inform the receiver that the scan for the target is over
-	scanIsOver <- *t
-	return nil
+	return fmt.Errorf("IP to scan not found: %s", ip)
 }
 
 // scanPort scans a single port and sends the result through singleResult.
 // There is 2 formats: when a port is open, it sends `ip:port:OK`, and when it is
 // closed, it sends `ip:port:NOP`
-func (t *target) scanPort(port int, singleResult chan string) {
-	target := t.ip + ":" + strconv.Itoa(port)
-	conn, err := net.DialTimeout("tcp", target, t.shared.timeout)
+func (s *scanner) scanPort(ip string, port int, singleResult chan string) {
+	p := strconv.Itoa(port)
+	target := ip + ":" + p
+	conn, err := net.DialTimeout("tcp", target, s.timeout)
 	if err != nil {
 		// If the error contains the message "too many open files", wait a little
 		// and retry
 		if strings.Contains(err.Error(), "too many open files") {
-			time.Sleep(t.shared.timeout)
-			t.scanPort(port, singleResult)
+			time.Sleep(s.timeout)
+			s.scanPort(ip, port, singleResult)
 		}
 		// The result follows the format ip:port:NOP
-		singleResult <- t.ip + ":" + strconv.Itoa(port) + ":NOP"
+		singleResult <- ip + ":" + p + ":NOP"
 		return
 	}
 	conn.Close()
 
 	// The result follows the format ip:port:OK
-	singleResult <- t.ip + ":" + strconv.Itoa(port) + ":OK"
+	singleResult <- ip + ":" + p + ":OK"
 }
 
 // scheduler create tickers for each protocol given and when they tick,
 // it sends the protocol name in the trigger's channel in order to alert
 // feeder that a scan must be started.
-func (t *target) scheduler(trigger chan string) {
+func (t *target) scheduler(logger zerolog.Logger, trigger chan string) {
 	var ticker *time.Ticker
 	tcpFreq, err := getDuration(t.tcpPeriod)
 	if err != nil {
-		log.Error().Msgf("error getting TCP frequency for %s scheduler: %s", t.name, err)
+		logger.Error().Msgf("error getting TCP frequency for %s scheduler: %s", t.name, err)
 	}
 	ticker = time.NewTicker(tcpFreq)
 

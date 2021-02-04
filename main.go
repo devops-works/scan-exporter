@@ -7,9 +7,9 @@ import (
 	"os"
 
 	"github.com/devops-works/scan-exporter/config"
+	"github.com/devops-works/scan-exporter/logger"
 	"github.com/devops-works/scan-exporter/pprof"
 	"github.com/devops-works/scan-exporter/scan"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -60,14 +60,9 @@ func run(args []string, stdout io.Writer) error {
 		loglvl = c.LogLevel
 	}
 
-	lvl, err := zerolog.ParseLevel(loglvl)
-	if err != nil {
-		log.Error().Msgf("cannot parse level %s, using 'info'", loglvl)
-		lvl = zerolog.InfoLevel
-	}
-	zerolog.SetGlobalLevel(lvl)
+	logger := logger.New(loglvl)
 
-	if err := scan.Start(c); err != nil {
+	if err := scan.Start(c, logger); err != nil {
 		return err
 	}
 	return nil
