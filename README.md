@@ -127,7 +127,7 @@ ip: <string>
 
 ```yaml
 # TCP scan frequency. Supported values:
-# {1..999}{s,m,h,d}
+# {1..9999}{s,m,h,d}
 # For example, all those values are working and reprensent a frenquecy of
 # one hour: 3600s, 60m, 1h.
 period: <string>
