@@ -9,3 +9,4 @@ docker-compose.yaml
 prod-*
 *.out
 *.notes
+*.png
