@@ -1,6 +1,6 @@
 # Scan Exporter
 
-Massive TCP/ICMP port scanning tool with exporter for Prometheus.
+Massive TCP/ICMP port scanning tool with exporter for Prometheus and JSON-formatted logs.
 
 <a href="https://github.com/MariaLetta/free-gophers-pack"><img align="center" src="./img/gobug.png" width="250" height="250"/></a>
 
@@ -175,6 +175,8 @@ targets:
 * `app1` will be scanned using TCP every 12 hours on all the reserved ports (1-1023), and we expect that ports 22, 80, 443 will be open, and all the others closed. It will also receive an ICMP ping every minute.
 * `app2` will be scanned using TCP every day on all its ports (1-65535), and none of its ports should be open.
 
+In addition, only logs with "warn" level will be displayed.
+
 ### Helm
 
 The structure of the configuration file is the same, except that is should be placed inside `values.yaml`.
@@ -202,6 +204,16 @@ The metrics exposed by `scan-exporter` itself are the following:
 * `scanexporter_diff_ports_total`: Number of ports that are in a different state from previous scan, for each target.
 
 You can also fetch metrics from Go, promhttp etc.
+
+## Logs
+
+`scan-exporter` produce a lot of logs about scans results and ICMP requests formatted in JSON, in order for them to be exploitable by log aggregation systems such as Loki.
+
+## Performances
+
+In our production cluster, `scan-exporter` is able to scan all TCP ports (from 1 to 65535) of a target in less than 3 minutes.
+
+To work without problems, it requires approximately 100MiB of memory, but 50MiB should be sufficient, depending on the number of targets in your pool.
 
 ## License
 
