@@ -6,7 +6,6 @@ Massive TCP/ICMP port scanning tool with exporter for Prometheus and JSON-format
 
 ## Table of Contents
 
-- [Table of Contents](#table-of-contents)
 - [Getting started](#getting-started)
   - [From the sources](#from-the-sources)
   - [From the releases](#from-the-releases)
@@ -21,6 +20,8 @@ Massive TCP/ICMP port scanning tool with exporter for Prometheus and JSON-format
     - [`icmp_config`](#icmp_config)
   - [Helm](#helm)
 - [Metrics](#metrics)
+- [Logs](#logs)
+- [Performances](#performances)
 - [License](#license)
 - [Swag zone](#swag-zone)
   
