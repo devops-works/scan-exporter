@@ -7,5 +7,5 @@ docker-compose.yaml
 /deploy/helm/Chart.lock
 *.prof
 prod-*
-trace.out
-heap.out
+*.out
+*.notes
