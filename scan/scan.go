@@ -119,7 +119,7 @@ func Start(c *config.Conf) error {
 
 	// scanIsOver is used by s.run() to notify the receiver that all the ports
 	// have been scanned
-	scanIsOver := make(chan *target, len(targetList))
+	scanIsOver := make(chan target, len(targetList))
 
 	// singleResult is used by s.scanPort() to send an open port to the receiver.
 	// The format is ip:port
@@ -176,7 +176,7 @@ func Start(c *config.Conf) error {
 }
 
 // Run runs the portScanner.
-func (t *target) run(scanIsOver chan *target, singleResult chan string) error {
+func (t *target) run(scanIsOver chan target, singleResult chan string) error {
 	wg := sync.WaitGroup{}
 
 	ports, err := readPortsRange(t.ports)
@@ -195,7 +195,7 @@ func (t *target) run(scanIsOver chan *target, singleResult chan string) error {
 	}
 	wg.Wait()
 	// Inform the receiver that the scan for the target is over
-	scanIsOver <- t
+	scanIsOver <- *t
 	return nil
 }
 
@@ -246,7 +246,7 @@ func (t *target) scheduler(trigger chan string) {
 	}(trigger, ticker, t.ip)
 }
 
-func receiver(scanIsOver chan *target, singleResult chan string, pchan chan metrics.PingInfo, mchan chan metrics.NewMetrics) {
+func receiver(scanIsOver chan target, singleResult chan string, pchan chan metrics.PingInfo, mchan chan metrics.NewMetrics) {
 	// openPorts holds the ports that are open for each target
 	openPorts := make(map[string][]string)
 	// closedPorts holds the ports that are closed
