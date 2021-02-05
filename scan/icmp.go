@@ -2,30 +2,21 @@ package scan
 
 import (
 	"math/rand"
-	"net"
-	"os"
 	"time"
 
 	"github.com/devops-works/scan-exporter/metrics"
+	"github.com/go-ping/ping"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"golang.org/x/net/icmp"
-	"golang.org/x/net/ipv4"
 )
 
-// ping does an ICMP echo request to the target. We do not want it to be blocking,
-// so every error is followed by a continue. This way, in the worst scanario, the
-// ping is skipped.
+// ping realises an ICMP echo request to a specified target.
+// Each error is followed by a continue, which will not stop the goroutine.
 func (t *target) ping(logger zerolog.Logger, timeout time.Duration, pchan chan metrics.PingInfo) {
 	p, err := getDuration(t.icmpPeriod)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("cannot parse duration %s", t.icmpPeriod)
+		logger.Fatal().Err(err).Msgf("cannot parse duration %s", t.icmpPeriod)
 	}
 
-	ip, err := getIP()
-	if err != nil {
-		log.Fatal().Err(err)
-	}
 	// Randomize period to avoid listening override.
 	// The random time added will be between 1 and 1.5s
 	rand.Seed(time.Now().UnixNano())
@@ -37,69 +28,37 @@ func (t *target) ping(logger zerolog.Logger, timeout time.Duration, pchan chan m
 	for {
 		select {
 		case <-ticker.C:
-			// Create update variable
 			pinfo := metrics.PingInfo{
-				Name: t.name,
-				IP:   t.ip,
+				Name:         t.name,
+				IP:           t.ip,
+				IsResponding: false,
+				RTT:          0,
 			}
 
-			// Configure and send ICMP packet
-			destAddr := &net.IPAddr{IP: net.ParseIP(t.ip)}
-			c, err := icmp.ListenPacket("ip4:icmp", ip)
+			pinger, err := ping.NewPinger(t.ip)
 			if err != nil {
-				// If the address is busy, wait a little bit and retry
-				time.Sleep(timeout)
-				c, err = icmp.ListenPacket("ip4:icmp", ip)
-				if err != nil {
-					log.Error().Err(err).Msg("error sending ping request")
-					continue
+				logger.Error().Err(err).Msgf("error creating pinger for %s (%s)", t.name, t.ip)
+				continue
+			}
+
+			pinger.Timeout = timeout
+			pinger.SetPrivileged(true)
+
+			pinger.Count = 3
+
+			err = pinger.Run() // Blocks until finished.
+			if err != nil {
+				logger.Error().Err(err).Msgf("error running pinger for %s (%s)", t.name, t.ip)
+				continue
+			}
+
+			pinger.OnFinish = func(stats *ping.Statistics) {
+				pinfo.RTT = stats.AvgRtt
+				if stats.AvgRtt != 0 {
+					pinfo.IsResponding = true
+				} else {
+					pinfo.IsResponding = false
 				}
-			}
-			defer c.Close()
-
-			m := icmp.Message{
-				Type: ipv4.ICMPTypeEcho,
-				Code: 0,
-				Body: &icmp.Echo{
-					ID:   os.Getpid() & 0xffff,
-					Data: []byte(""),
-				},
-			}
-
-			data, err := m.Marshal(nil)
-			if err != nil {
-				log.Error().Err(err).Msg("error sending ping request")
-				continue
-			}
-
-			start := time.Now()
-			_, err = c.WriteTo(data, destAddr)
-			if err != nil {
-				log.Error().Err(err).Msg("error sending ping request")
-				continue
-			}
-
-			reply := make([]byte, 1500)
-			err = c.SetReadDeadline(time.Now().Add(timeout))
-			if err != nil {
-				log.Error().Err(err).Msg("error sending ping request")
-				continue
-			}
-			n, SourceIP, err := c.ReadFrom(reply)
-			// timeout
-			if err != nil {
-				pinfo.IsResponding = false
-				pchan <- pinfo
-				continue
-			}
-			// if anything is read from the connection it means that the host is alive
-			if destAddr.String() == SourceIP.String() && n > 0 {
-
-				pinfo.RTT = time.Since(start)
-				pinfo.IsResponding = true
-				pchan <- pinfo
-			} else {
-				pinfo.IsResponding = false
 				pchan <- pinfo
 			}
 		}
