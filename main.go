@@ -8,6 +8,7 @@ import (
 
 	"github.com/devops-works/scan-exporter/config"
 	"github.com/devops-works/scan-exporter/logger"
+	"github.com/devops-works/scan-exporter/metrics"
 	"github.com/devops-works/scan-exporter/pprof"
 	"github.com/devops-works/scan-exporter/scan"
 	"github.com/rs/zerolog/log"
@@ -60,9 +61,22 @@ func run(args []string, stdout io.Writer) error {
 		loglvl = c.LogLevel
 	}
 
-	logger := logger.New(loglvl)
+	// Create scanner
+	scanner := scan.Scanner{
+		Logger: logger.New(loglvl),
+	}
 
-	if err := scan.Start(c, logger); err != nil {
+	// Create metrics server
+	scanner.MetricsServ = *metrics.Init()
+
+	// Start metrics server
+	go func() {
+		if err := scanner.MetricsServ.Start(); err != nil {
+			scanner.Logger.Fatal().Err(err).Msg("metrics server failed critically")
+		}
+	}()
+
+	if err := scanner.Start(c); err != nil {
 		return err
 	}
 	return nil
