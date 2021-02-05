@@ -16,7 +16,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": 30,
-    "iteration": 1612453481906,
+    "iteration": 1612547027150,
     "links": [],
     "panels": [
         {
@@ -304,9 +304,6 @@
             },
             "id": 2,
             "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
                 "orientation": "auto",
                 "reduceOptions": {
                     "calcs": [
@@ -315,7 +312,8 @@
                     "fields": "",
                     "values": false
                 },
-                "textMode": "auto"
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
             },
             "pluginVersion": "7.3.5",
             "targets": [
@@ -329,7 +327,7 @@
             "timeFrom": null,
             "timeShift": null,
             "title": "Pending scans",
-            "type": "stat"
+            "type": "gauge"
         },
         {
             "datasource": "$datasource",
@@ -1252,8 +1250,8 @@
                 "allValue": null,
                 "current": {
                     "selected": true,
-                    "text": "lb2.prod.applux.devops.works",
-                    "value": "lb2.prod.applux.devops.works"
+                    "text": "lb1.prod.epartrade.devops.works",
+                    "value": "lb1.prod.epartrade.devops.works"
                 },
                 "datasource": "$datasource",
                 "definition": "label_values(scanexporter_open_ports_total, name)",
@@ -1451,5 +1449,5 @@
     "timezone": "",
     "title": "Scan-Exporter / Scans",
     "uid": "qMrJJwYGz",
-    "version": 15
+    "version": 19
 }
