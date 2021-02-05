@@ -50,6 +50,7 @@ type Scanner struct {
 func (s *Scanner) Start(c *config.Conf) error {
 
 	s.Logger.Info().Msgf("%d target(s) found in configuration file", len(c.Targets))
+	s.MetricsServ.NumOfTargets.Set(float64(len(c.Targets)))
 
 	// Check if shared values are set
 	if c.Timeout == 0 {
