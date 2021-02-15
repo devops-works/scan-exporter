@@ -1,1453 +1,1285 @@
 {
     "annotations": {
-        "list": [
-            {
-                "builtIn": 1,
-                "datasource": "-- Grafana --",
-                "enable": true,
-                "hide": true,
-                "iconColor": "rgba(0, 211, 255, 1)",
-                "name": "Annotations & Alerts",
-                "type": "dashboard"
-            }
-        ]
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
     },
     "editable": true,
     "gnetId": null,
     "graphTooltip": 0,
     "id": 30,
-    "iteration": 1612547027150,
+    "iteration": 1613378220920,
     "links": [],
     "panels": [
-        {
-            "datasource": null,
-            "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 0
-            },
-            "id": 10,
-            "title": "Summary",
-            "type": "row"
+      {
+        "datasource": null,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "super-light-purple",
-                                "value": null
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 6,
-                "x": 0,
-                "y": 1
-            },
-            "id": 6,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
+        "id": 10,
+        "title": "Summary",
+        "type": "row"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
                 {
-                    "expr": "scanexporter_targets_number_total",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
+                  "color": "super-light-purple",
+                  "value": null
                 }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Number of targets",
-            "type": "stat"
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Number of ports that are open for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 9,
-                "w": 9,
-                "x": 6,
-                "y": 1
-            },
-            "hiddenSeries": false,
-            "id": 18,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "scanexporter_open_ports_total >= 1",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Open ports",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "decimals": 0,
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": "0",
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
+              ]
             }
+          },
+          "overrides": []
         },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Number of ports that are open, and shouldn't be, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 9,
-                "w": 9,
-                "x": 15,
-                "y": 1
-            },
-            "hiddenSeries": false,
-            "id": 19,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "scanexporter_unexpected_open_ports_total >= 1",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Unexpected open ports",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "decimals": 0,
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": "0",
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
+        "gridPos": {
+          "h": 9,
+          "w": 6,
+          "x": 0,
+          "y": 1
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 3,
-                "x": 0,
-                "y": 10
-            },
-            "id": 2,
-            "options": {
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "scanexporter_pending_scans",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
+        "id": 6,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
             ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Pending scans",
-            "type": "gauge"
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "decimals": 0,
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "red",
-                                "value": 1
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 3,
-                "x": 3,
-                "y": 10
-            },
-            "id": 4,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "scanexporter_icmp_not_responding_total",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "ICMP not responding",
-            "type": "stat"
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "scanexporter_targets_number_total",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Number of targets",
+        "type": "stat"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "Number of ports that are open for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
         },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Number of ports that are closed, and shouldn't be, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 8,
-                "w": 9,
-                "x": 6,
-                "y": 10
-            },
-            "hiddenSeries": false,
-            "id": 17,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "scanexporter_unexpected_closed_ports_total >= 1",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Unexpected closed ports",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "decimals": 0,
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": "0",
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 9,
+          "w": 9,
+          "x": 6,
+          "y": 1
         },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Number of ports that are in a different state from previous scan, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 8,
-                "w": 9,
-                "x": 15,
-                "y": 10
-            },
-            "hiddenSeries": false,
-            "id": 20,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "scanexporter_diff_ports_total >= 1",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Evolution of ports states",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "decimals": 0,
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": "0",
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
+        "hiddenSeries": false,
+        "id": 18,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
         },
-        {
-            "collapsed": false,
-            "datasource": null,
-            "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 18
-            },
-            "id": 12,
-            "panels": [],
-            "title": "Target",
-            "type": "row"
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
         },
-        {
-            "datasource": "$datasource",
-            "description": "Number of ports that are open for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 11,
-                "w": 4,
-                "x": 0,
-                "y": 19
-            },
-            "id": 14,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "value_and_name"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "scanexporter_open_ports_total{name=\"$target\"}",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Open ports",
-            "type": "stat"
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "scanexporter_open_ports_total >= 1",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Open ports",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
         },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Number of ports that are open for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 11,
-                "w": 8,
-                "x": 4,
-                "y": 19
-            },
-            "hiddenSeries": false,
-            "id": 8,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "scanexporter_open_ports_total{name=\"$target\"}",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Open ports",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "decimals": 0,
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": "0",
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
         },
-        {
-            "datasource": "$datasource",
-            "description": "Number of ports that are open, and shouldn't be, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-red",
-                                "value": 1
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 11,
-                "w": 4,
-                "x": 12,
-                "y": 19
-            },
-            "id": 22,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "value_and_name"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "scanexporter_unexpected_open_ports_total{name=\"$target\"}",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Unexpected open ports",
-            "type": "stat"
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Number of ports that are open, and shouldn't be, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 11,
-                "w": 8,
-                "x": 16,
-                "y": 19
-            },
-            "hiddenSeries": false,
-            "id": 21,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "scanexporter_unexpected_open_ports_total{name=\"$target\"}",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Unexpected open ports",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "decimals": 0,
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": "0",
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "datasource": "$datasource",
-            "description": "Number of ports that are closed, and shouldn't be, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-red",
-                                "value": 1
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 11,
-                "w": 4,
-                "x": 0,
-                "y": 30
-            },
-            "id": 15,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "value_and_name"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "scanexporter_unexpected_closed_ports_total{name=\"$target\"}",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Unexpected closed ports",
-            "type": "stat"
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Number of ports that are closed, and shouldn't be, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 11,
-                "w": 8,
-                "x": 4,
-                "y": 30
-            },
-            "hiddenSeries": false,
-            "id": 13,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "scanexporter_unexpected_closed_ports_total{name=\"$target\"}",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [
-                {
-                    "colorMode": "critical",
-                    "fill": false,
-                    "line": false,
-                    "op": "gt",
-                    "value": 0,
-                    "yaxis": "left"
-                }
-            ],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Unexpected closed ports",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "decimals": 0,
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": "0",
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "datasource": "$datasource",
-            "description": "Number of ports that are in a different state from previous scan, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-orange",
-                                "value": 1
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 11,
-                "w": 4,
-                "x": 12,
-                "y": 30
-            },
-            "id": 23,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "value_and_name"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "scanexporter_diff_ports_total{name=\"$target\"}",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Evolution of ports states",
-            "type": "stat"
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Number of ports that are in a different state from previous scan, for each target.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 11,
-                "w": 8,
-                "x": 16,
-                "y": 30
-            },
-            "hiddenSeries": false,
-            "id": 24,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "expr": "scanexporter_diff_ports_total{name=\"$target\"}",
-                    "interval": "",
-                    "legendFormat": "{{name}} ({{ip}})",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Evolution of ports states",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "decimals": 0,
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": "0",
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
         }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "Number of ports that are open, and shouldn't be, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 9,
+          "w": 9,
+          "x": 15,
+          "y": 1
+        },
+        "hiddenSeries": false,
+        "id": 19,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "scanexporter_unexpected_open_ports_total >= 1",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Unexpected open ports",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 3,
+          "x": 0,
+          "y": 10
+        },
+        "id": 2,
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "scanexporter_pending_scans",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Pending scans",
+        "type": "gauge"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "decimals": 0,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 3,
+          "x": 3,
+          "y": 10
+        },
+        "id": 4,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "scanexporter_icmp_not_responding_total",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "ICMP not responding",
+        "type": "stat"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "Number of ports that are closed, and shouldn't be, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 9,
+          "x": 6,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 17,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "scanexporter_unexpected_closed_ports_total >= 1",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Unexpected closed ports",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "Number of ports that are in a different state from previous scan, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 9,
+          "x": 15,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 20,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "scanexporter_diff_ports_total >= 1",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Evolution of ports states",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "collapsed": false,
+        "datasource": null,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 18
+        },
+        "id": 12,
+        "panels": [],
+        "title": "Target",
+        "type": "row"
+      },
+      {
+        "datasource": "$datasource",
+        "description": "Number of ports that are open for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 11,
+          "w": 4,
+          "x": 0,
+          "y": 19
+        },
+        "id": 14,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "value_and_name"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "scanexporter_open_ports_total{name=\"$target\"}",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Open ports",
+        "type": "stat"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "Number of ports that are open for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 8,
+          "x": 4,
+          "y": 19
+        },
+        "hiddenSeries": false,
+        "id": 8,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "scanexporter_open_ports_total{name=\"$target\"}",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Open ports",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "datasource": "$datasource",
+        "description": "Number of ports that are open, and shouldn't be, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 11,
+          "w": 4,
+          "x": 12,
+          "y": 19
+        },
+        "id": 22,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "value_and_name"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "scanexporter_unexpected_open_ports_total{name=\"$target\"}",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Unexpected open ports",
+        "type": "stat"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "Number of ports that are open, and shouldn't be, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 8,
+          "x": 16,
+          "y": 19
+        },
+        "hiddenSeries": false,
+        "id": 21,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "scanexporter_unexpected_open_ports_total{name=\"$target\"}",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Unexpected open ports",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "datasource": "$datasource",
+        "description": "Number of ports that are closed, and shouldn't be, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 11,
+          "w": 4,
+          "x": 0,
+          "y": 30
+        },
+        "id": 15,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "value_and_name"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "scanexporter_unexpected_closed_ports_total{name=\"$target\"}",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Unexpected closed ports",
+        "type": "stat"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "Number of ports that are closed, and shouldn't be, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 8,
+          "x": 4,
+          "y": 30
+        },
+        "hiddenSeries": false,
+        "id": 13,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "scanexporter_unexpected_closed_ports_total{name=\"$target\"}",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [
+          {
+            "colorMode": "critical",
+            "fill": false,
+            "line": false,
+            "op": "gt",
+            "value": 0,
+            "yaxis": "left"
+          }
+        ],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Unexpected closed ports",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "datasource": "$datasource",
+        "description": "Number of ports that are in a different state from previous scan, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-orange",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 11,
+          "w": 4,
+          "x": 12,
+          "y": 30
+        },
+        "id": 23,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "center",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "value_and_name"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "scanexporter_diff_ports_total{name=\"$target\"}",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Evolution of ports states",
+        "type": "stat"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "description": "Number of ports that are in a different state from previous scan, for each target.",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 11,
+          "w": 8,
+          "x": 16,
+          "y": 30
+        },
+        "hiddenSeries": false,
+        "id": 24,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "scanexporter_diff_ports_total{name=\"$target\"}",
+            "interval": "",
+            "legendFormat": "{{name}} ({{ip}})",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Evolution of ports states",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      }
     ],
     "refresh": "10s",
     "schemaVersion": 26,
     "style": "dark",
     "tags": [],
     "templating": {
-        "list": [
-            {
-                "current": {
-                    "selected": false,
-                    "text": "Prometheus",
-                    "value": "Prometheus"
-                },
-                "error": null,
-                "hide": 0,
-                "includeAll": false,
-                "label": "Datasource",
-                "multi": false,
-                "name": "datasource",
-                "options": [],
-                "query": "prometheus",
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "type": "datasource"
-            },
-            {
-                "allValue": null,
-                "current": {
-                    "selected": true,
-                    "text": "lb1.prod.epartrade.devops.works",
-                    "value": "lb1.prod.epartrade.devops.works"
-                },
-                "datasource": "$datasource",
-                "definition": "label_values(scanexporter_open_ports_total, name)",
-                "error": null,
-                "hide": 0,
-                "includeAll": false,
-                "label": "Target",
-                "multi": false,
-                "name": "target",
-                "options": [
-                    {
-                        "selected": false,
-                        "text": "app1.prod.apogees.devops.works",
-                        "value": "app1.prod.apogees.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "app1.prod.applux.devops.works",
-                        "value": "app1.prod.applux.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "app1.prod.cic.devops.works",
-                        "value": "app1.prod.cic.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "app1.prod.epartrade.devops.works",
-                        "value": "app1.prod.epartrade.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "app1.stage.apogees.devops.works",
-                        "value": "app1.stage.apogees.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "app2.prod.applux.devops.works",
-                        "value": "app2.prod.applux.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "app2.prod.epartrade.devops.works",
-                        "value": "app2.prod.epartrade.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "app3.prod.epartrade.devops.works",
-                        "value": "app3.prod.epartrade.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db1.prod.applux.devops.works",
-                        "value": "db1.prod.applux.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db1.prod.epartrade.devops.works",
-                        "value": "db1.prod.epartrade.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db1.prod.taskl.devops.works",
-                        "value": "db1.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db2.prod.applux.devops.works",
-                        "value": "db2.prod.applux.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db2.prod.epartrade.devops.works",
-                        "value": "db2.prod.epartrade.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db2.prod.taskl.devops.works",
-                        "value": "db2.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db3.prod.applux.devops.works",
-                        "value": "db3.prod.applux.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db3.prod.epartrade.devops.works",
-                        "value": "db3.prod.epartrade.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "db3.prod.taskl.devops.works",
-                        "value": "db3.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "dbmaster.prod.cic.devops.works",
-                        "value": "dbmaster.prod.cic.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "dbslave.prod.cic.devops.works",
-                        "value": "dbslave.prod.cic.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "lb.prod.cic.devops.works",
-                        "value": "lb.prod.cic.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "lb1.prod.applux.devops.works",
-                        "value": "lb1.prod.applux.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "lb1.prod.epartrade.devops.works",
-                        "value": "lb1.prod.epartrade.devops.works"
-                    },
-                    {
-                        "selected": true,
-                        "text": "lb2.prod.applux.devops.works",
-                        "value": "lb2.prod.applux.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "lb2.prod.epartrade.devops.works",
-                        "value": "lb2.prod.epartrade.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "nodeprod1.prod.taskl.devops.works",
-                        "value": "nodeprod1.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "nodeprod2.prod.taskl.devops.works",
-                        "value": "nodeprod2.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "nodeprod3.prod.taskl.devops.works",
-                        "value": "nodeprod3.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "nodestaging1.prod.taskl.devops.works",
-                        "value": "nodestaging1.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "nodestaging2.prod.taskl.devops.works",
-                        "value": "nodestaging2.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "nodestaging3.prod.taskl.devops.works",
-                        "value": "nodestaging3.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "prod.fegl.mnemotix.devops.works",
-                        "value": "prod.fegl.mnemotix.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "rancher1.prod.taskl.devops.works",
-                        "value": "rancher1.prod.taskl.devops.works"
-                    },
-                    {
-                        "selected": false,
-                        "text": "rancher2.prod.taskl.devops.works",
-                        "value": "rancher2.prod.taskl.devops.works"
-                    }
-                ],
-                "query": "label_values(scanexporter_open_ports_total, name)",
-                "refresh": 0,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "tagValuesQuery": "",
-                "tags": [],
-                "tagsQuery": "",
-                "type": "query",
-                "useTags": false
-            }
-        ]
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "Prometheus",
+            "value": "Prometheus"
+          },
+          "error": null,
+          "hide": 0,
+          "includeAll": false,
+          "label": "Datasource",
+          "multi": false,
+          "name": "datasource",
+          "options": [],
+          "query": "prometheus",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "type": "datasource"
+        },
+        {
+          "allValue": null,
+          "current": {
+          },
+          "datasource": "$datasource",
+          "definition": "label_values(scanexporter_open_ports_total, name)",
+          "error": null,
+          "hide": 0,
+          "includeAll": false,
+          "label": "Target",
+          "multi": false,
+          "name": "target",
+          "options": [
+          ],
+          "query": "label_values(scanexporter_open_ports_total, name)",
+          "refresh": 0,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        }
+      ]
     },
     "time": {
-        "from": "now-1h",
-        "to": "now"
+      "from": "now-1h",
+      "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Scan-Exporter / Scans",
     "uid": "qMrJJwYGz",
-    "version": 19
-}
+    "version": 20
+  }

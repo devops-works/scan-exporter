@@ -1,984 +1,984 @@
 {
     "annotations": {
-        "list": [
-            {
-                "builtIn": 1,
-                "datasource": "-- Grafana --",
-                "enable": true,
-                "hide": true,
-                "iconColor": "rgba(0, 211, 255, 1)",
-                "name": "Annotations & Alerts",
-                "type": "dashboard"
-            }
-        ]
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
     },
     "editable": true,
     "gnetId": null,
     "graphTooltip": 0,
     "id": 29,
-    "iteration": 1612546986297,
+    "iteration": 1613378175328,
     "links": [],
     "panels": [
-        {
-            "collapsed": false,
-            "datasource": null,
-            "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 0
-            },
-            "id": 4,
-            "panels": [],
-            "title": "Memory",
-            "type": "row"
+      {
+        "collapsed": false,
+        "datasource": null,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
         },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "red",
-                                "value": 80
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 12,
-                "w": 12,
-                "x": 0,
-                "y": 1
-            },
-            "hiddenSeries": false,
-            "id": 10,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.3.5",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
+        "id": 4,
+        "panels": [],
+        "title": "Memory",
+        "type": "row"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
                 {
-                    "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "Heap allocations",
-                    "refId": "A"
+                  "color": "green",
+                  "value": null
                 },
                 {
-                    "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "Heap inuse",
-                    "refId": "B"
-                },
-                {
-                    "expr": "go_memstats_heap_idle_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "Heap idle",
-                    "refId": "D"
-                },
-                {
-                    "expr": "go_memstats_stack_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "Stack inuse",
-                    "refId": "C"
+                  "color": "red",
+                  "value": 80
                 }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Heap / Stack",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "bytes",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
+              ]
             }
+          },
+          "overrides": []
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "max": 160000000,
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-orange",
-                                "value": 100000000
-                            },
-                            {
-                                "color": "semi-dark-red",
-                                "value": 150000000
-                            }
-                        ]
-                    },
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 12,
-                "w": 4,
-                "x": 12,
-                "y": 1
-            },
-            "id": 12,
-            "options": {
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "Heap allocated",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Heap allocated",
-            "type": "gauge"
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 12,
+          "w": 12,
+          "x": 0,
+          "y": 1
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "max": 160000000,
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-orange",
-                                "value": 100000000
-                            },
-                            {
-                                "color": "red",
-                                "value": 150000000
-                            }
-                        ]
-                    },
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 12,
-                "w": 4,
-                "x": 16,
-                "y": 1
-            },
-            "id": 14,
-            "options": {
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Heap in use",
-            "type": "gauge"
+        "hiddenSeries": false,
+        "id": 10,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "#EAB839",
-                                "value": 100000000
-                            },
-                            {
-                                "color": "red",
-                                "value": 150000000
-                            }
-                        ]
-                    },
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 12,
-                "w": 4,
-                "x": 20,
-                "y": 1
-            },
-            "id": 16,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_memstats_stack_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Stack in use",
-            "type": "stat"
+        "lines": true,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "max": 160000000,
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-orange",
-                                "value": 100000000
-                            },
-                            {
-                                "color": "red",
-                                "value": 150000000
-                            }
-                        ]
-                    },
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 6,
-                "x": 0,
-                "y": 13
-            },
-            "id": 30,
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "max"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Max allocated heap",
-            "type": "gauge"
+        "percentage": false,
+        "pluginVersion": "7.3.5",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "Heap allocations",
+            "refId": "A"
+          },
+          {
+            "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "Heap inuse",
+            "refId": "B"
+          },
+          {
+            "expr": "go_memstats_heap_idle_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "Heap idle",
+            "refId": "D"
+          },
+          {
+            "expr": "go_memstats_stack_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "Stack inuse",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Heap / Stack",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "max": 160000000,
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-orange",
-                                "value": 100000000
-                            },
-                            {
-                                "color": "red",
-                                "value": 150000000
-                            }
-                        ]
-                    },
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 6,
-                "x": 6,
-                "y": 13
-            },
-            "id": 31,
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "max"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Max inuse heap",
-            "type": "gauge"
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
         },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "max": 160000000,
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-orange",
-                                "value": 100000000
-                            },
-                            {
-                                "color": "red",
-                                "value": 150000000
-                            }
-                        ]
-                    },
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 6,
-                "x": 12,
-                "y": 13
-            },
-            "id": 33,
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "mean"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Mean allocated heap",
-            "type": "gauge"
-        },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "max": 160000000,
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "semi-dark-orange",
-                                "value": 100000000
-                            },
-                            {
-                                "color": "red",
-                                "value": 150000000
-                            }
-                        ]
-                    },
-                    "unit": "bytes"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 6,
-                "x": 18,
-                "y": 13
-            },
-            "id": 32,
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "mean"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Mean inuse heap",
-            "type": "gauge"
-        },
-        {
-            "collapsed": false,
-            "datasource": null,
-            "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 22
-            },
-            "id": 6,
-            "panels": [],
-            "title": "Go",
-            "type": "row"
-        },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 10,
-                "w": 4,
-                "x": 6,
-                "y": 23
-            },
-            "id": 18,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_goroutines{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Goroutines",
-            "type": "stat"
-        },
-        {
-            "datasource": null,
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unit": "s"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 10,
-                "w": 4,
-                "x": 10,
-                "y": 23
-            },
-            "id": 28,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "scanexporter_uptime_sec",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Uptime",
-            "type": "stat"
-        },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "red",
-                                "value": 80
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 10,
-                "w": 4,
-                "x": 14,
-                "y": 23
-            },
-            "id": 20,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "last"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "go_threads{job=\"apps/scanexporter-scan-exporter-chart\"}",
-                    "interval": "",
-                    "legendFormat": "",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "Threads",
-            "type": "stat"
-        },
-        {
-            "collapsed": false,
-            "datasource": null,
-            "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 33
-            },
-            "id": 8,
-            "panels": [],
-            "title": "Promhttp",
-            "type": "row"
-        },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 8,
-                "x": 0,
-                "y": 34
-            },
-            "id": 22,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "mean"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"200\"}",
-                    "interval": "",
-                    "legendFormat": "HTTP 200",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "HTTP 200",
-            "type": "stat"
-        },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "red",
-                                "value": 1
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 8,
-                "x": 8,
-                "y": 34
-            },
-            "id": 24,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "mean"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"500\"}",
-                    "interval": "",
-                    "legendFormat": "HTTP 500",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "HTTP 500",
-            "type": "stat"
-        },
-        {
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {},
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "red",
-                                "value": 1
-                            }
-                        ]
-                    }
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 8,
-                "x": 16,
-                "y": 34
-            },
-            "id": 26,
-            "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "calcs": [
-                        "mean"
-                    ],
-                    "fields": "",
-                    "values": false
-                },
-                "textMode": "auto"
-            },
-            "pluginVersion": "7.3.5",
-            "targets": [
-                {
-                    "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"503\"}",
-                    "interval": "",
-                    "legendFormat": "HTTP 503",
-                    "refId": "A"
-                }
-            ],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "HTTP 503",
-            "type": "stat"
+        "yaxes": [
+          {
+            "format": "bytes",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
         }
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "max": 160000000,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-orange",
+                  "value": 100000000
+                },
+                {
+                  "color": "semi-dark-red",
+                  "value": 150000000
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 12,
+          "w": 4,
+          "x": 12,
+          "y": 1
+        },
+        "id": 12,
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "Heap allocated",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Heap allocated",
+        "type": "gauge"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "max": 160000000,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-orange",
+                  "value": 100000000
+                },
+                {
+                  "color": "red",
+                  "value": 150000000
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 12,
+          "w": 4,
+          "x": 16,
+          "y": 1
+        },
+        "id": 14,
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Heap in use",
+        "type": "gauge"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 100000000
+                },
+                {
+                  "color": "red",
+                  "value": 150000000
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 12,
+          "w": 4,
+          "x": 20,
+          "y": 1
+        },
+        "id": 16,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_memstats_stack_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Stack in use",
+        "type": "stat"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "max": 160000000,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-orange",
+                  "value": 100000000
+                },
+                {
+                  "color": "red",
+                  "value": 150000000
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 6,
+          "x": 0,
+          "y": 13
+        },
+        "id": 30,
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "max"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Max allocated heap",
+        "type": "gauge"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "max": 160000000,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-orange",
+                  "value": 100000000
+                },
+                {
+                  "color": "red",
+                  "value": 150000000
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 6,
+          "x": 6,
+          "y": 13
+        },
+        "id": 31,
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "max"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Max inuse heap",
+        "type": "gauge"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "max": 160000000,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-orange",
+                  "value": 100000000
+                },
+                {
+                  "color": "red",
+                  "value": 150000000
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 6,
+          "x": 12,
+          "y": 13
+        },
+        "id": 33,
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Mean allocated heap",
+        "type": "gauge"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "max": 160000000,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-orange",
+                  "value": 100000000
+                },
+                {
+                  "color": "red",
+                  "value": 150000000
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 6,
+          "x": 18,
+          "y": 13
+        },
+        "id": 32,
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Mean inuse heap",
+        "type": "gauge"
+      },
+      {
+        "collapsed": false,
+        "datasource": null,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 22
+        },
+        "id": 6,
+        "panels": [],
+        "title": "Go",
+        "type": "row"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 4,
+          "x": 6,
+          "y": 23
+        },
+        "id": 18,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_goroutines{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Goroutines",
+        "type": "stat"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 4,
+          "x": 10,
+          "y": 23
+        },
+        "id": 28,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "scanexporter_uptime_sec",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Uptime",
+        "type": "stat"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 4,
+          "x": 14,
+          "y": 23
+        },
+        "id": 20,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "go_threads{job=\"apps/scanexporter-scan-exporter-chart\"}",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Threads",
+        "type": "stat"
+      },
+      {
+        "collapsed": false,
+        "datasource": null,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 33
+        },
+        "id": 8,
+        "panels": [],
+        "title": "Promhttp",
+        "type": "row"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 8,
+          "x": 0,
+          "y": 34
+        },
+        "id": 22,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"200\"}",
+            "interval": "",
+            "legendFormat": "HTTP 200",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "HTTP 200",
+        "type": "stat"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 8,
+          "x": 8,
+          "y": 34
+        },
+        "id": 24,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"500\"}",
+            "interval": "",
+            "legendFormat": "HTTP 500",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "HTTP 500",
+        "type": "stat"
+      },
+      {
+        "datasource": "$datasource",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 8,
+          "x": 16,
+          "y": 34
+        },
+        "id": 26,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.3.5",
+        "targets": [
+          {
+            "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"503\"}",
+            "interval": "",
+            "legendFormat": "HTTP 503",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "HTTP 503",
+        "type": "stat"
+      }
     ],
     "refresh": "5s",
     "schemaVersion": 26,
     "style": "dark",
     "tags": [],
     "templating": {
-        "list": [
-            {
-                "current": {
-                    "selected": false,
-                    "text": "Prometheus",
-                    "value": "Prometheus"
-                },
-                "error": null,
-                "hide": 0,
-                "includeAll": false,
-                "label": "datasource",
-                "multi": false,
-                "name": "datasource",
-                "options": [],
-                "query": "prometheus",
-                "queryValue": "",
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "type": "datasource"
-            }
-        ]
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "Prometheus",
+            "value": "Prometheus"
+          },
+          "error": null,
+          "hide": 0,
+          "includeAll": false,
+          "label": "datasource",
+          "multi": false,
+          "name": "datasource",
+          "options": [],
+          "query": "prometheus",
+          "queryValue": "",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "type": "datasource"
+        }
+      ]
     },
     "time": {
-        "from": "now-1h",
-        "to": "now"
+      "from": "now-3h",
+      "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "Scan-Exporter / Internals",
     "uid": "FqShpwYMk",
-    "version": 25
-}
+    "version": 29
+  }
