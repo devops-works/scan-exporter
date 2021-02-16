@@ -5,5 +5,5 @@ data:
     
 metadata:
     labels:
-        app: scan-exporter # utiliser nom templatisé (helper)
+        app: {{ include "scanexporter.fullname" . }}
     name: scan-exporter-config
