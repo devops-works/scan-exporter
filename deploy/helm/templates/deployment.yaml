@@ -18,7 +18,7 @@ spec:
                 - name: {{ include "scanexporter.fullname" . }}
                   image: {{ .Values.scanexporter.container.image }}
                   args: ["-config", "/etc/scan-exporter/config.yaml"]
-                  imagePullPolicy: Always
+                  imagePullPolicy: {{ .Values.scanexporter.container.imagePullPolicy }}
                   volumeMounts:
                     - name: config
                       mountPath: "/etc/scan-exporter"
