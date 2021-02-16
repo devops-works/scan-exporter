@@ -4,6 +4,9 @@ kind: PodMonitor
 metadata:
   name: {{ include "scanexporter.fullname" . }}
 spec:
+    namespaceSelector:
+      matchNames:
+      - apps
     podMetricsEndpoints:
       - interval: 10s
         scrapeTimeout: 10s
