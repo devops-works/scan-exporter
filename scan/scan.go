@@ -128,7 +128,7 @@ func (s *Scanner) Start(c *config.Conf) error {
 	// The format is ip:port
 	singleResult := make(chan string, c.Limit)
 
-	s.Logger.Debug().Msgf("%d targets will be scanned suing TCP", len(s.Targets))
+	s.Logger.Debug().Msgf("%d targets will be scanned using TCP", len(s.Targets))
 
 	// Start scheduler for each target
 	for _, t := range s.Targets {

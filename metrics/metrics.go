@@ -12,10 +12,10 @@ import (
 
 // Server is the metrics server. It contains all the Prometheus metrics
 type Server struct {
-	Addr                                                 string
-	NotRespondingList                                    map[string]bool
-	NumOfTargets, PendingScans, NumOfDownTargets, Uptime prometheus.Gauge
-	UnexpectedPorts, OpenPorts, ClosedPorts, DiffPorts   *prometheus.GaugeVec
+	Addr                                                    string
+	NotRespondingList                                       map[string]bool
+	NumOfTargets, PendingScans, NumOfDownTargets, Uptime    prometheus.Gauge
+	UnexpectedPorts, OpenPorts, ClosedPorts, DiffPorts, Rtt *prometheus.GaugeVec
 }
 
 // NewMetrics is the type that will transit between scan and metrics. It carries
@@ -77,6 +77,11 @@ func Init() *Server {
 			Name: "scanexporter_diff_ports_total",
 			Help: "Number of ports that are different from previous scan.",
 		}, []string{"name", "ip"}),
+
+		Rtt: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "scanexporter_rtt_total",
+			Help: "Response time of the target.",
+		}, []string{"name", "ip"}),
 	}
 
 	prometheus.MustRegister(
@@ -88,6 +93,7 @@ func Init() *Server {
 		s.OpenPorts,
 		s.ClosedPorts,
 		s.DiffPorts,
+		s.Rtt,
 	)
 
 	// Initialize the map
@@ -153,13 +159,17 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 
 			closedPorts = nil
 		case pm := <-pingChan:
-			// New ping metric has been received
+			log.Debug().Str("name", pm.Name).Str("ip", pm.IP).Msg("received new ping result")
 
+			// New ping metric has been received
 			if pm.IsResponding {
 				log.Info().Str("name", pm.Name).Str("ip", pm.IP).Str("rtt", pm.RTT.String()).Msgf("%s (%s) responds to ICMP requests", pm.Name, pm.IP)
 			} else {
 				log.Warn().Str("name", pm.Name).Str("ip", pm.IP).Str("rtt", "nil").Msgf("%s (%s) does not respond to ICMP requests", pm.Name, pm.IP)
 			}
+
+			// Update target's RTT metric
+			s.Rtt.WithLabelValues(pm.Name, pm.IP).Set(float64(pm.RTT))
 
 			// Check if the IP is already in the map.
 			_, ok := s.NotRespondingList[pm.IP]
@@ -187,7 +197,7 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 			// New pending metric has been received
 
 			s.PendingScans.Set(float64(pending))
-			log.Debug().Int("pending", pending).Msgf("%d pending scans", pending)
+			log.Trace().Int("pending", pending).Msgf("%d pending scans", pending)
 		}
 	}
 }
