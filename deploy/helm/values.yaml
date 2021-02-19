@@ -6,7 +6,7 @@ scanexporter:
         period: 3
         path: /health
     container:
-        image: devopsworks/scan-exporter:2.0.0
+        image: devopsworks/scan-exporter:2.0.1
         imagePullPolicy: Always
         port: 2112
     resources:
