@@ -43,16 +43,10 @@ func (t *target) ping(logger zerolog.Logger, timeout time.Duration, pchan chan m
 
 			pinger.Timeout = timeout
 			pinger.SetPrivileged(true)
-
 			pinger.Count = 3
 
-			err = pinger.Run() // Blocks until finished.
-			if err != nil {
-				logger.Error().Err(err).Msgf("error running pinger for %s (%s)", t.name, t.ip)
-				continue
-			}
-
 			pinger.OnFinish = func(stats *ping.Statistics) {
+				logger.Debug().Str("name", t.name).Str("ip", t.ip).Msgf("ping ended")
 				pinfo.RTT = stats.AvgRtt
 				if stats.AvgRtt != 0 {
 					pinfo.IsResponding = true
@@ -60,6 +54,17 @@ func (t *target) ping(logger zerolog.Logger, timeout time.Duration, pchan chan m
 					pinfo.IsResponding = false
 				}
 				pchan <- pinfo
+			}
+
+			pinger.OnRecv = func(p *ping.Packet) {
+				logger.Debug().Str("name", t.name).Str("ip", t.ip).Msgf("received one ICMP reply")
+			}
+
+			logger.Debug().Str("name", t.name).Str("ip", t.ip).Msgf("running a new ping")
+			err = pinger.Run()
+			if err != nil {
+				logger.Error().Err(err).Msgf("error running pinger for %s (%s)", t.name, t.ip)
+				continue
 			}
 		}
 	}
