@@ -38,5 +38,3 @@ spec:
               - name: config
                 configMap:
                     name: scan-exporter-config
-            imagePullSecrets:
-                - name: {{ .Values.scanexporter.secrets }}

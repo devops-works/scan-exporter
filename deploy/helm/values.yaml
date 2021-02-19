@@ -24,6 +24,29 @@ podMonitor:
     enabled: false
     path: /metrics
 
+alertRules:
+    enabled: false
+    namespace: metro
+    rules:
+      - name: ICMPNotResponding
+        expr: scanexporter_icmp_not_responding_total > 0
+        severity: high
+        annotations:
+          summary: "Target {{ $labels.name }} does not respond."
+          description: "{{ $labels.name }} of job {{ $labels.job }} triggered {{ .name }}."
+      - name: TooManyOpenPorts
+        expr: scanexporter_unexpected_open_ports_total > 0
+        severity: high
+        annotations:
+          summary: "Target {{ $labels.name }} has too many open ports."
+          description: "{{ $labels.name }} of job {{ $labels.job }} has {{ $value }} ports that should not be open."
+      - name: TooManyClosedPorts
+        expr: scanexporter_unexpected_closed_ports_total > 0
+        severity: critical
+        annotations:
+          summary: "Target {{ $labels.name }} has too many closed ports."
+          description: "{{ $labels.name }} of job {{ $labels.job }} has {{ $value }} ports that should not be closed."
+
 targets: |-
          timeout: 2
          limit: 1024
