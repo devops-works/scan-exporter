@@ -19,12 +19,6 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-type pinger struct {
-	ip     string
-	name   string
-	period string
-}
-
 type target struct {
 	ip         string
 	name       string
@@ -162,7 +156,7 @@ func (s *Scanner) Start(c *config.Conf) error {
 	for {
 		select {
 		case triggeredIP := <-trigger:
-			s.Logger.Debug().Msgf("received trigger for %s", triggeredIP)
+			s.Logger.Debug().Msgf("starting new scan for %s", triggeredIP)
 			if err := s.run(triggeredIP, scanIsOver, singleResult); err != nil {
 				s.Logger.Error().Err(err).Msg("error running scan")
 			}
