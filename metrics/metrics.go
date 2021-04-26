@@ -163,7 +163,7 @@ func (s *Server) Updater(metChan chan NewMetrics, pingChan chan PingInfo, pendin
 
 			// New ping metric has been received
 			if pm.IsResponding {
-				log.Info().Str("name", pm.Name).Str("ip", pm.IP).Str("rtt", pm.RTT.String()).Msgf("%s (%s) responds to ICMP requests", pm.Name, pm.IP)
+				log.Debug().Str("name", pm.Name).Str("ip", pm.IP).Str("rtt", pm.RTT.String()).Msgf("%s (%s) responds to ICMP requests", pm.Name, pm.IP)
 			} else {
 				log.Warn().Str("name", pm.Name).Str("ip", pm.IP).Str("rtt", "nil").Msgf("%s (%s) does not respond to ICMP requests", pm.Name, pm.IP)
 			}
