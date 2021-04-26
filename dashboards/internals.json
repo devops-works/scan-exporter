@@ -15,13 +15,12 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 29,
-  "iteration": 1613378175328,
+  "iteration": 1619450818553,
   "links": [],
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": "Prometheus",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -38,25 +37,9 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
+        "defaults": {},
         "overrides": []
       },
       "fill": 1,
@@ -85,7 +68,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -95,19 +78,22 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_alloc_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "Heap allocations",
           "refId": "A"
         },
         {
-          "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_inuse_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "Heap inuse",
           "refId": "B"
         },
         {
-          "expr": "go_memstats_heap_idle_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_idle_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "Heap idle",
           "refId": "D"
@@ -161,10 +147,9 @@
       }
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "max": 160000000,
           "thresholds": {
@@ -205,12 +190,14 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_alloc_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "Heap allocated",
           "refId": "A"
@@ -222,10 +209,9 @@
       "type": "gauge"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "max": 160000000,
           "thresholds": {
@@ -266,12 +252,14 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_inuse_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -283,10 +271,9 @@
       "type": "gauge"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -328,12 +315,14 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_memstats_stack_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_stack_inuse_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -345,10 +334,9 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "max": 160000000,
           "thresholds": {
@@ -388,12 +376,14 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_alloc_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -405,10 +395,9 @@
       "type": "gauge"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "max": 160000000,
           "thresholds": {
@@ -448,12 +437,14 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_inuse_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -465,10 +456,9 @@
       "type": "gauge"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "max": 160000000,
           "thresholds": {
@@ -508,12 +498,14 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_memstats_heap_alloc_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_alloc_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -525,10 +517,9 @@
       "type": "gauge"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "max": 160000000,
           "thresholds": {
@@ -568,12 +559,14 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_memstats_heap_inuse_bytes{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_memstats_heap_inuse_bytes{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -586,7 +579,7 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": "Prometheus",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -599,10 +592,9 @@
       "type": "row"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -635,12 +627,14 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_goroutines{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_goroutines{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -652,10 +646,9 @@
       "type": "stat"
     },
     {
-      "datasource": null,
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -689,9 +682,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "scanexporter_uptime_sec",
@@ -706,10 +700,9 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -746,12 +739,14 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "go_threads{job=\"apps/scanexporter-scan-exporter-chart\"}",
+          "exemplar": true,
+          "expr": "go_threads{job=\"metro/scanexporter-scan-exporter-chart\"}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -764,7 +759,7 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": "Prometheus",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -777,10 +772,9 @@
       "type": "row"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -813,12 +807,14 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"200\"}",
+          "exemplar": true,
+          "expr": "promhttp_metric_handler_requests_total{job=\"metro/scanexporter-scan-exporter-chart\", code=\"200\"}",
           "interval": "",
           "legendFormat": "HTTP 200",
           "refId": "A"
@@ -830,10 +826,9 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -870,12 +865,14 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"500\"}",
+          "exemplar": true,
+          "expr": "promhttp_metric_handler_requests_total{job=\"metro/scanexporter-scan-exporter-chart\", code=\"500\"}",
           "interval": "",
           "legendFormat": "HTTP 500",
           "refId": "A"
@@ -887,10 +884,9 @@
       "type": "stat"
     },
     {
-      "datasource": "$datasource",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -927,12 +923,14 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.5",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "promhttp_metric_handler_requests_total{job=\"apps/scanexporter-scan-exporter-chart\", code=\"503\"}",
+          "exemplar": true,
+          "expr": "promhttp_metric_handler_requests_total{job=\"metro/scanexporter-scan-exporter-chart\", code=\"503\"}",
           "interval": "",
           "legendFormat": "HTTP 503",
           "refId": "A"
@@ -945,7 +943,7 @@
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 26,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -956,6 +954,7 @@
           "text": "Prometheus",
           "value": "Prometheus"
         },
+        "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
@@ -980,5 +979,5 @@
   "timezone": "",
   "title": "Scan-Exporter / Internals",
   "uid": "FqShpwYMk",
-  "version": 29
+  "version": 1
 }

@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1619450025673,
+  "iteration": 1619451076110,
   "links": [],
   "panels": [
     {
@@ -31,7 +31,7 @@
       "type": "row"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -88,7 +88,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are open for each target.",
       "fieldConfig": {
         "defaults": {},
@@ -183,7 +183,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are open, and shouldn't be, for each target.",
       "fieldConfig": {
         "defaults": {},
@@ -274,7 +274,7 @@
       }
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -325,7 +325,7 @@
       "type": "gauge"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "decimals": 0,
@@ -387,7 +387,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are closed, and shouldn't be, for each target.",
       "fieldConfig": {
         "defaults": {},
@@ -482,7 +482,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are in a different state from previous scan, for each target.",
       "fieldConfig": {
         "defaults": {},
@@ -587,7 +587,7 @@
       "type": "row"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are open for each target.",
       "fieldConfig": {
         "defaults": {
@@ -645,7 +645,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are open for each target.",
       "fieldConfig": {
         "defaults": {},
@@ -736,7 +736,7 @@
       }
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are open, and shouldn't be, for each target.",
       "fieldConfig": {
         "defaults": {
@@ -798,7 +798,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are open, and shouldn't be, for each target.",
       "fieldConfig": {
         "defaults": {},
@@ -889,7 +889,7 @@
       }
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are closed, and shouldn't be, for each target.",
       "fieldConfig": {
         "defaults": {
@@ -951,7 +951,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are closed, and shouldn't be, for each target.",
       "fieldConfig": {
         "defaults": {},
@@ -1051,7 +1051,7 @@
       }
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are in a different state from previous scan, for each target.",
       "fieldConfig": {
         "defaults": {
@@ -1113,7 +1113,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${datasource}",
       "description": "Number of ports that are in a different state from previous scan, for each target.",
       "fieldConfig": {
         "defaults": {},
