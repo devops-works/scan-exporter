@@ -1,37 +1,28 @@
-FROM devopsworks/golang-upx:1.16 AS builder
+# Get last release from GitHub
+FROM alpine:latest AS fetcher
 
-ENV GO111MODULE=on \
-    CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64
+RUN apk add curl
 
 WORKDIR /build
 
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
+RUN curl -s https://api.github.com/repos/devops-works/scan-exporter/releases/latest \
+    | grep "browser_download_url.*linux_amd64" \
+    | cut -d : -f 2,3 \
+    | tr -d \" > release
 
-COPY . .
+RUN wget $(cat release) && \
+    chmod +x scan-exporter_linux_amd64
 
-# RUN go build -o scan-exporter . && \
-#     strip scan-exporter && \
-#     /usr/local/bin/upx -9 scan-exporter
+RUN curl -O https://raw.githubusercontent.com/devops-works/scan-exporter/master/config-sample.yaml
 
-RUN go build \
-    -ldflags "-X main.Version=${version} -X main.BuildDate=${builddate}" \
-    -o scan-exporter . && \
-    strip scan-exporter && \
-    /usr/local/bin/upx -9 scan-exporter
-
-RUN setcap cap_net_raw+ep scan-exporter
-
+# Run the app
 FROM gcr.io/distroless/base-debian10
 
 WORKDIR /app
 
-COPY --from=builder /build/scan-exporter .
+COPY --from=fetcher /build/scan-exporter_linux_amd64 scan-exporter
 
-COPY --from=builder /build/config-sample.yaml config.yaml
+COPY --from=fetcher /build/config-sample.yaml config.yaml
 
 EXPOSE 2112
 
