@@ -101,6 +101,11 @@ limit: int
 # trace, debug, info, warn, error, fatal
 [log_level: <string> | default = "info"]
 
+# This field is used to rate limit the queries for all the targets. If it is not 
+# set, no rate limiting will occur. It will also be overwritten by the 
+# target-specific value.
+[queries_per_sec: <int>]
+
 # Configure targets.
 targets:
   - [<target_config>]
@@ -116,6 +121,10 @@ name: <string>
 # IP address of the target.
 # Only IPv4 addresses are supported.
 ip: <string>
+
+# Apply a rate limit for a specific target. This value will overwrite the one set
+# globally if it exists.
+[queries_per_sec: <int>]
 
 # TCP scan parameters.
 [tcp: <tcp_config>]
