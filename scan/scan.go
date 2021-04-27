@@ -182,7 +182,7 @@ func (s *Scanner) run(ip string, scanIsOver chan target, singleResult chan strin
 
 			// Configure sleeping time for rate limiting
 			var sleepingTime time.Duration
-			if t.qps > 1000000 || t.qps == 0 {
+			if t.qps > 1000000 || t.qps <= 0 {
 				// We want to wait less than a microsecond between each port scanning
 				// so, we do not wait at all.
 				// From time.Sleep documentation:
