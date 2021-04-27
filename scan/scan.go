@@ -28,6 +28,7 @@ type target struct {
 	doPing     bool
 	tcpPeriod  string
 	icmpPeriod string
+	qps        int
 }
 
 // Scanner holds the targets list, global settings such as timeout and lock size,
@@ -73,8 +74,12 @@ func (s *Scanner) Start(c *config.Conf) error {
 			tcpPeriod:  t.TCP.Period,
 			icmpPeriod: t.ICMP.Period,
 			ports:      t.TCP.Range,
+			qps:        t.QueriesPerSecond,
 		}
-
+		if target.qps == 0 {
+			target.qps = c.QueriesPerSecond
+		}
+		fmt.Printf("Global QPS: %d // Local QPS: %d\n", c.QueriesPerSecond, t.QueriesPerSecond)
 		// Read target's expected port range
 		exp, err := readPortsRange(t.TCP.Expected)
 		if err != nil {
@@ -175,6 +180,19 @@ func (s *Scanner) run(ip string, scanIsOver chan target, singleResult chan strin
 				return err
 			}
 
+			// Configure sleeping time for rate limiting
+			var sleepingTime time.Duration
+			if t.qps > 1000000 || t.qps == 0 {
+				// We want to wait less than a microsecond between each port scanning
+				// so, we do not wait at all.
+				// From time.Sleep documentation:
+				// A negative or zero duration causes Sleep to return immediately
+				sleepingTime = -1
+				t.qps = 0
+			} else {
+				sleepingTime = time.Second / time.Duration(t.qps)
+			}
+			fmt.Printf("QPS used: %d\n", t.qps)
 			for _, p := range ports {
 				wg.Add(1)
 				s.Lock.Acquire(context.TODO(), 1)
@@ -183,6 +201,7 @@ func (s *Scanner) run(ip string, scanIsOver chan target, singleResult chan strin
 					defer wg.Done()
 					s.scanPort(ip, port, singleResult)
 				}(p)
+				time.Sleep(sleepingTime)
 			}
 			wg.Wait()
 

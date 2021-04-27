@@ -9,11 +9,12 @@ import (
 
 // Target holds an IP and a range of ports to scan
 type Target struct {
-	IP    string   `yaml:"ip"`
-	Name  string   `yaml:"name"`
-	Range string   `yaml:"range"`
-	TCP   protocol `yaml:"tcp"`
-	ICMP  protocol `yaml:"icmp"`
+	IP               string   `yaml:"ip"`
+	Name             string   `yaml:"name"`
+	Range            string   `yaml:"range"`
+	QueriesPerSecond int      `yaml:"queries_per_sec"`
+	TCP              protocol `yaml:"tcp"`
+	ICMP             protocol `yaml:"icmp"`
 }
 
 type protocol struct {
@@ -24,10 +25,11 @@ type protocol struct {
 
 // Conf holds configuration
 type Conf struct {
-	Timeout  int      `yaml:"timeout"`
-	Limit    int      `yaml:"limit"`
-	LogLevel string   `yaml:"log_level"`
-	Targets  []Target `yaml:"targets"`
+	Timeout          int      `yaml:"timeout"`
+	Limit            int      `yaml:"limit"`
+	LogLevel         string   `yaml:"log_level"`
+	QueriesPerSecond int      `yaml:"queries_per_sec"`
+	Targets          []Target `yaml:"targets"`
 }
 
 // New reads config from file and returns a config struct
