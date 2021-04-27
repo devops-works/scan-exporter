@@ -13,7 +13,13 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o scan-exporter . && \
+# RUN go build -o scan-exporter . && \
+#     strip scan-exporter && \
+#     /usr/local/bin/upx -9 scan-exporter
+
+RUN go build \
+    -ldflags "-X main.Version=${version} -X main.BuildDate=${builddate}" \
+    -o scan-exporter . && \
     strip scan-exporter && \
     /usr/local/bin/upx -9 scan-exporter
 
