@@ -79,7 +79,7 @@ func (s *Scanner) Start(c *config.Conf) error {
 		if target.qps == 0 {
 			target.qps = c.QueriesPerSecond
 		}
-		fmt.Printf("Global QPS: %d // Local QPS: %d\n", c.QueriesPerSecond, t.QueriesPerSecond)
+
 		// Read target's expected port range
 		exp, err := readPortsRange(t.TCP.Expected)
 		if err != nil {
@@ -192,7 +192,7 @@ func (s *Scanner) run(ip string, scanIsOver chan target, singleResult chan strin
 			} else {
 				sleepingTime = time.Second / time.Duration(t.qps)
 			}
-			fmt.Printf("QPS used: %d\n", t.qps)
+
 			for _, p := range ports {
 				wg.Add(1)
 				s.Lock.Acquire(context.TODO(), 1)

@@ -2,9 +2,11 @@
 timeout: 2
 limit: 1024
 log_level: "info"
+queries_per_sec: 2000
 targets:
   - name: "app1"
     ip: "127.0.0.1"
+    queries_per_sec: 1000
     tcp:
       period: "12h"
       range: "reserved"
