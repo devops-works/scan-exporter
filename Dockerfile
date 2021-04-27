@@ -5,6 +5,9 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64
 
+ARG VERSION="n/a"
+ARG BUILD_DATE="n/a"
+
 WORKDIR /build
 
 COPY go.mod .
@@ -12,6 +15,10 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
+
+RUN go build \
+    -ldflags "-X main.Version=${VERSION} -X main.BuildDate=${BUILD_DATE}" \
+    -o /src/body-replacer/cmd/body-replacer-svc/body-replacer ./body-replacer/cmd/body-replacer-svc/
 
 RUN go build -o scan-exporter . && \
     strip scan-exporter && \
