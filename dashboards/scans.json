@@ -590,12 +590,12 @@
         "showLabels": false,
         "showTime": false,
         "sortOrder": "Descending",
-        "wrapLogMessage": false
+        "wrapLogMessage": true
       },
       "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "{app=\"scanexporter-scan-exporter-chart\"} | json | level=\"warn\"",
+          "expr": "{app=\"scanexporter-scan-exporter-chart\"} | json | level=\"warn\" | line_format \" {{.time}} - [{{.level}}] {{.message}}\"",
           "refId": "A"
         }
       ],
@@ -618,14 +618,14 @@
       "options": {
         "dedupStrategy": "none",
         "showLabels": false,
-        "showTime": false,
+        "showTime": true,
         "sortOrder": "Descending",
-        "wrapLogMessage": false
+        "wrapLogMessage": true
       },
       "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "{app=\"scanexporter-scan-exporter-chart\"} | json | level=\"error\"",
+          "expr": "{app=\"scanexporter-scan-exporter-chart\"} | json | level=\"error\" | line_format \" {{.time}} - [{{.level}}] {{.message}}\"",
           "refId": "A"
         }
       ],
