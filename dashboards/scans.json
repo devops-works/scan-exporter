@@ -1294,11 +1294,7 @@
       },
       {
         "allValue": null,
-        "current": {
-          "selected": false,
-          "text": "app1.prod.apogees.devops.works",
-          "value": "app1.prod.apogees.devops.works"
-        },
+        "current": {},
         "datasource": "Prometheus",
         "definition": "label_values(scanexporter_open_ports_total, name)",
         "description": null,
