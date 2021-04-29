@@ -581,7 +581,7 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 6,
+        "x": 0,
         "y": 18
       },
       "id": 26,
@@ -600,6 +600,36 @@
         }
       ],
       "title": "Warnings from logs",
+      "type": "logs"
+    },
+    {
+      "datasource": "loki",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 28,
+      "options": {
+        "dedupStrategy": "none",
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "{app=\"scanexporter-scan-exporter-chart\"} | json | level=\"error\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Errors from logs",
       "type": "logs"
     },
     {
