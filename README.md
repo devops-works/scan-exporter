@@ -106,6 +106,14 @@ limit: int
 # target-specific value.
 [queries_per_sec: <int>]
 
+# Hold the global TCP period value. It will be the default if none has been set
+# inside the target-specific configuration.
+[tcp_period: <string>]
+
+# Hold the global ICMP period value. It will be the default if none has been set
+# inside the target-specific configuration.
+[icmp_period: <string>]
+
 # Configure targets.
 targets:
   - [<target_config>]
@@ -165,6 +173,9 @@ timeout: 2
 limit: 1024
 log_level: "warn"
 queries_per_sec: 1000
+tcp_period: 6h
+icmp_period: 30s
+
 targets:
   - name: "app1"
     ip: "198.51.100.42"
