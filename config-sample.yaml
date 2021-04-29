@@ -3,6 +3,9 @@ timeout: 2
 limit: 1024
 log_level: "info"
 queries_per_sec: 2000
+tcp_period: 6h
+icmp_period: 30s
+
 targets:
   - name: "app1"
     ip: "127.0.0.1"
