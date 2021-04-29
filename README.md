@@ -101,6 +101,11 @@ limit: int
 # trace, debug, info, warn, error, fatal
 [log_level: <string> | default = "info"]
 
+# This field is used to rate limit the queries for all the targets. If it is not 
+# set, no rate limiting will occur. It will also be overwritten by the 
+# target-specific value.
+[queries_per_sec: <int>]
+
 # Configure targets.
 targets:
   - [<target_config>]
@@ -116,6 +121,10 @@ name: <string>
 # IP address of the target.
 # Only IPv4 addresses are supported.
 ip: <string>
+
+# Apply a rate limit for a specific target. This value will overwrite the one set
+# globally if it exists.
+[queries_per_sec: <int>]
 
 # TCP scan parameters.
 [tcp: <tcp_config>]
@@ -155,9 +164,11 @@ Here is a working example:
 timeout: 2
 limit: 1024
 log_level: "warn"
+queries_per_sec: 1000
 targets:
   - name: "app1"
     ip: "198.51.100.42"
+    queries_per_sec: 500
     tcp:
       period: "12h"
       range: "reserved"
@@ -173,8 +184,8 @@ targets:
       expected: ""
 ```
 
-* `app1` will be scanned using TCP every 12 hours on all the reserved ports (1-1023), and we expect that ports 22, 80, 443 will be open, and all the others closed. It will also receive an ICMP ping every minute.
-* `app2` will be scanned using TCP every day on all its ports (1-65535), and none of its ports should be open.
+* `app1` will be scanned using TCP every 12 hours on all the reserved ports (1-1023), and we expect that ports 22, 80, 443 will be open, and all the others closed. It will also receive an ICMP ping every minute. It will send 500 queries per second.
+* `app2` will be scanned using TCP every day on all its ports (1-65535), and none of its ports should be open. It will send 1000 queries per second.
 
 In addition, only logs with "warn" level will be displayed.
 

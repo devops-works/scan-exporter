@@ -16,11 +16,13 @@ RUN go mod download
 
 COPY . .
 
-RUN go build \
-    -ldflags "-X main.Version=${VERSION} -X main.BuildDate=${BUILD_DATE}" \
-    -o /src/body-replacer/cmd/body-replacer-svc/body-replacer ./body-replacer/cmd/body-replacer-svc/
+# RUN go build -o scan-exporter . && \
+#     strip scan-exporter && \
+#     /usr/local/bin/upx -9 scan-exporter
 
-RUN go build -o scan-exporter . && \
+RUN go build \
+    -ldflags "-X main.Version=${version} -X main.BuildDate=${builddate}" \
+    -o scan-exporter . && \
     strip scan-exporter && \
     /usr/local/bin/upx -9 scan-exporter
 

@@ -29,6 +29,8 @@ type Conf struct {
 	Limit            int      `yaml:"limit"`
 	LogLevel         string   `yaml:"log_level"`
 	QueriesPerSecond int      `yaml:"queries_per_sec"`
+	TcpPeriod        string   `yaml:"tcp_period"`
+	IcmpPeriod       string   `yaml:"icmp_period"`
 	Targets          []Target `yaml:"targets"`
 }
 

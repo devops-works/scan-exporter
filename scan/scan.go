@@ -76,8 +76,16 @@ func (s *Scanner) Start(c *config.Conf) error {
 			ports:      t.TCP.Range,
 			qps:        t.QueriesPerSecond,
 		}
+
+		// Set to global values if specific values are not set
 		if target.qps == 0 {
 			target.qps = c.QueriesPerSecond
+		}
+		if target.tcpPeriod == "" {
+			target.tcpPeriod = c.TcpPeriod
+		}
+		if target.icmpPeriod == "" {
+			target.icmpPeriod = c.IcmpPeriod
 		}
 
 		// Read target's expected port range
