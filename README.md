@@ -74,14 +74,12 @@ OPTIONS:
 
 ### Kubernetes
 
-Use the provided Helm charts to deploy the application into your application. 
+Use the charts located [here](https://github.com/devops-works/helm-charts/tree/master/scan-exporter).
 
-:warning: Those charts might not be up to date, please use [those ones](https://github.com/devops-works/helm-charts/tree/master/scan-exporter).
-
-To deploy with charts that are, for example, under `scan-exporter/` in the current Kubernetes context:
+To deploy with charts that are, for example, under `helm-charts/scan-exporter/` in the current Kubernetes context:
 
 ```
-$ helm install scanexporter scan-exporter/
+$ helm install scanexporter helm-charts/scan-exporter/
 ```
 
 ## Configuration
