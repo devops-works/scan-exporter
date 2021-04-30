@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-data:
-    config.yaml: {{ toYaml .Values.targets | indent 8}}
-    
-metadata:
-    labels:
-        app: {{ include "scanexporter.fullname" . }}
-    name: scan-exporter-config
