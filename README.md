@@ -224,6 +224,8 @@ The metrics exposed by `scan-exporter` itself are the following:
 
 * `scanexporter_diff_ports_total`: Number of ports that are in a different state from previous scan, for each target.
 
+* `scanexporter_rtt_total`: Respond time for each target.
+
 You can also fetch metrics from Go, promhttp etc.
 
 ## Logs
