@@ -160,7 +160,8 @@ expected: <string>
 #### `icmp_config`
 
 ```yaml
-# Ping frequency. Supported values are the same than for TCP's period.
+# Ping frequency. Supported values are the same than for TCP's period. To 
+# disable ICMP requests for a specific target, use 0.
 period: <string>
 ```
 

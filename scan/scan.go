@@ -88,6 +88,23 @@ func (s *Scanner) Start(c *config.Conf) error {
 			target.icmpPeriod = c.IcmpPeriod
 		}
 
+		// Truth table for icmpPeriod value
+		//
+		// | global | target | doPing | period |
+		// | ------ | ------ | ------ | :----: |
+		// | ""     | ""     | false  |   -    |
+		// | ""     | "0"    | false  |   -    |
+		// | ""     | "y"    | true   |   y    |
+		// | "0"    | ""     | false  |   -    |
+		// | "0"    | "0"    | false  |   -    |
+		// | "0"    | "y"    | true   |   y    |
+		// | "x"    | ""     | true   |   x    |
+		// | "x"    | "0"    | false  |   -    |
+		// | "x"    | "y"    | true   |   y    |
+		if target.icmpPeriod != "" && target.icmpPeriod != "0" {
+			target.doPing = true
+		}
+
 		// Read target's expected port range
 		exp, err := readPortsRange(t.TCP.Expected)
 		if err != nil {
