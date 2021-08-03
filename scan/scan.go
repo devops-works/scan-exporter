@@ -101,8 +101,24 @@ func (s *Scanner) Start(c *config.Conf) error {
 		// | "x"    | ""     | true   |   x    |
 		// | "x"    | "0"    | false  |   -    |
 		// | "x"    | "y"    | true   |   y    |
-		if target.icmpPeriod != "" && target.icmpPeriod != "0" {
-			target.doPing = true
+		switch c.IcmpPeriod {
+		case "", "0":
+			if target.icmpPeriod != "" && target.icmpPeriod != "0" {
+				target.doPing = true
+			}
+		default:
+			if target.icmpPeriod != "0" {
+				target.doPing = true
+				if target.icmpPeriod == "" {
+					target.icmpPeriod = c.IcmpPeriod
+				}
+			}
+		}
+		// Inform that ping is disabled
+		if !target.doPing {
+			s.Logger.Warn().Msgf("ping explicitly disabled for %s (%s) in configuration",
+				target.name,
+				target.ip)
 		}
 
 		// Read target's expected port range
@@ -120,10 +136,6 @@ func (s *Scanner) Start(c *config.Conf) error {
 		if ok := net.ParseIP(target.ip); ok == nil {
 			s.Logger.Error().Msgf("cannot parse IP %s", target.ip)
 			continue
-		}
-
-		if target.icmpPeriod != "" {
-			target.doPing = true
 		}
 
 		// If TCP period or ports range has been provided, it means that we want
