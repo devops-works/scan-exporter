@@ -65,6 +65,10 @@ OPTIONS:
 -pprof.addr <ip:port>
     pprof server address. pprof will expose it's metrics on this address.
   
+-metric.addr <ip:port>
+    metric server address. prometheus metrics will be exposed on this address.
+    Default: *:2112
+
 -log.lvl {trace,debug,info,warn,error,fatal}
     Log level.
     Default: info

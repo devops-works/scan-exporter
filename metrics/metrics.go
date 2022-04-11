@@ -38,7 +38,7 @@ type PingInfo struct {
 }
 
 // Init initialize the metrics
-func Init() *Server {
+func Init(addr string) *Server {
 	s := Server{
 		NumOfTargets: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "scanexporter_targets_number_total",
@@ -96,6 +96,8 @@ func Init() *Server {
 		s.Rtt,
 	)
 
+	s.Addr = addr
+
 	// Initialize the map
 	s.NotRespondingList = make(map[string]bool)
 
@@ -108,7 +110,7 @@ func Init() *Server {
 // Start starts the prometheus server
 func (s *Server) Start() error {
 	srv := &http.Server{
-		Addr:         ":2112",
+		Addr:         s.Addr,
 		Handler:      handlers.HandleFunc(),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,

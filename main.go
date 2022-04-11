@@ -29,9 +29,10 @@ func main() {
 }
 
 func run(args []string, stdout io.Writer) error {
-	var confFile, pprofAddr, loglvl string
+	var confFile, pprofAddr, metricAddr, loglvl string
 	flag.StringVar(&confFile, "config", "config.yaml", "path to config file")
 	flag.StringVar(&pprofAddr, "pprof.addr", "", "pprof addr")
+	flag.StringVar(&metricAddr, "metric.addr", ":2112", "metric server addr")
 	flag.StringVar(&loglvl, "log.lvl", "debug", "log level. Can be {trace,debug,info,warn,error,fatal}")
 	flag.Parse()
 
@@ -67,7 +68,7 @@ func run(args []string, stdout io.Writer) error {
 	}
 
 	// Create metrics server
-	scanner.MetricsServ = *metrics.Init()
+	scanner.MetricsServ = *metrics.Init(metricAddr)
 
 	// Start metrics server
 	go func() {
