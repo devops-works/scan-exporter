@@ -18,6 +18,7 @@ builds:
     ignore:
       - goos: darwin
         goarch: 386
+      - goos: windows
 
 archives:
   - format: binary
