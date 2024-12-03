@@ -51,6 +51,8 @@ func readPortsRange(ranges string) ([]int, error) {
 			for port := 1; port < 1024; port++ {
 				ports = append(ports, port)
 			}
+		case "top1000":
+			ports = append(ports, top1000Ports...)
 		default:
 			var decomposedRange []string
 
