@@ -1,4 +1,6 @@
-FROM devopsworks/golang-upx:1.16 AS builder
+FROM devopsworks/golang-upx:1.23 AS builder
+
+RUN apt-get update && apt-get install -y libcap2-bin
 
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
@@ -28,7 +30,7 @@ RUN go build \
 
 RUN setcap cap_net_raw+ep scan-exporter
 
-FROM gcr.io/distroless/base-debian10
+FROM gcr.io/distroless/base-debian12
 
 WORKDIR /app
 
