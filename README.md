@@ -153,7 +153,7 @@ ip: <string>
 period: <string>
 
 # Range of ports to scan. Supported values:
-# all, reserved, 22, 100-1000, 11,12-14,15...
+# all, reserved, top1000, 22, 100-1000, 11,12-14,15...
 range: <string>
 
 # Ports that are expected to be open. Supported values are the same than
@@ -196,10 +196,18 @@ targets:
       period: "1d"
       range: "all"
       expected: ""
+
+  - name: "app3"
+    ip: "198.51.100.85"
+    tcp:
+      period: "3h"
+      range: "top1000"
+      expected: "80,443"
 ```
 
-* `app1` will be scanned using TCP every 12 hours on all the reserved ports (1-1023), and we expect that ports 22, 80, 443 will be open, and all the others closed. It will also receive an ICMP ping every minute. It will send 500 queries per second.
-* `app2` will be scanned using TCP every day on all its ports (1-65535), and none of its ports should be open. It will send 1000 queries per second.
+- `app1` will be scanned using TCP every 12 hours on all the reserved ports (1-1023), and we expect that ports 22, 80, 443 will be open, and all the others closed. It will also receive an ICMP ping every minute. It will send 500 queries per second.
+- `app2` will be scanned using TCP every day on all its ports (1-65535), and none of its ports should be open. It will send 1000 queries per second.
+- `app3` will be scanned using TCP every 3 hours on the top 1000 ports (as determined by running the `nmap -sT --top-ports 1000 -v -oG -` command), and we expect that ports 80, 443 will be open, and all the others closed.
 
 In addition, only logs with "warn" level will be displayed.
 
