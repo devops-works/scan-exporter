@@ -195,15 +195,14 @@ func (s *Scanner) Start(c *config.Conf) error {
 	go receiver(scanIsOver, singleResult, pchan, mchan)
 
 	// Wait for triggers, build the scanner and run it
-	for {
-		select {
-		case triggeredIP := <-trigger:
-			s.Logger.Debug().Msgf("starting new scan for %s", triggeredIP)
-			if err := s.run(triggeredIP, scanIsOver, singleResult); err != nil {
-				s.Logger.Error().Err(err).Msg("error running scan")
-			}
+	for triggeredIP := range trigger {
+		s.Logger.Debug().Msgf("starting new scan for %s", triggeredIP)
+		if err := s.run(triggeredIP, scanIsOver, singleResult); err != nil {
+			s.Logger.Error().Err(err).Msg("error running scan")
 		}
 	}
+	s.Logger.Debug().Msg("trigger channel closed, exiting the scan loop.")
+	return nil
 }
 
 func (s *Scanner) run(ip string, scanIsOver chan target, singleResult chan string) error {
@@ -289,11 +288,8 @@ func (t *target) scheduler(logger zerolog.Logger, trigger chan string) {
 	go func(trigger chan string, ticker *time.Ticker, ip string) {
 		// Start scan at launch
 		trigger <- t.ip
-		for {
-			select {
-			case <-ticker.C:
-				trigger <- t.ip
-			}
+		for range ticker.C {
+			trigger <- t.ip
 		}
 	}(trigger, ticker, t.ip)
 }
