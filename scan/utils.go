@@ -2,6 +2,7 @@ package scan
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -28,17 +29,17 @@ func getDuration(period string) (time.Duration, error) {
 	return t, nil
 }
 
-// readPortsRange transforms a range of ports given in conf to an array of
-// effective ports
+// readPortsRange transforms a comma-separated string of ports into a unique,
+// sorted slice of integers.
 func readPortsRange(ranges string) ([]int, error) {
 	ports := []int{}
 
 	// Remove spaces
-	ranges = strings.Replace(ranges, " ", "", -1)
+	ranges = strings.ReplaceAll(ranges, " ", "")
 
-	parts := strings.Split(ranges, ",")
+	parts := strings.SplitSeq(ranges, ",")
 
-	for _, spec := range parts {
+	for spec := range parts {
 		if spec == "" {
 			continue
 		}
@@ -54,34 +55,49 @@ func readPortsRange(ranges string) ([]int, error) {
 		case "top1000":
 			ports = append(ports, top1000Ports...)
 		default:
-			var decomposedRange []string
+			if strings.Contains(spec, "-") {
+				decomposedRange := strings.Split(spec, "-")
+				if len(decomposedRange) != 2 || decomposedRange[0] == "" || decomposedRange[1] == "" {
+					return nil, fmt.Errorf("invalid port range format: %q", spec)
+				}
 
-			if !strings.Contains(spec, "-") {
-				decomposedRange = []string{spec, spec}
+				min, err := strconv.Atoi(decomposedRange[0])
+				if err != nil {
+					return nil, fmt.Errorf("invalid start port in range %q: %w", spec, err)
+				}
+				max, err := strconv.Atoi(decomposedRange[1])
+				if err != nil {
+					return nil, fmt.Errorf("invalid end port in range %q: %w", spec, err)
+				}
+
+				if min > max {
+					return nil, fmt.Errorf("start port %d is higher than end port %d in range %q", min, max, spec)
+				}
+
+				if min < 1 || max > 65535 {
+					return nil, fmt.Errorf("port range %q is out of the valid range (1-65535)", spec)
+				}
+
+				for i := min; i <= max; i++ {
+					ports = append(ports, i)
+				}
 			} else {
-				decomposedRange = strings.Split(spec, "-")
-			}
+				port, err := strconv.Atoi(spec)
+				if err != nil {
+					return nil, fmt.Errorf("invalid port specification %q: %w", spec, err)
+				}
 
-			min, err := strconv.Atoi(decomposedRange[0])
-			if err != nil {
-				return nil, err
-			}
-			max, err := strconv.Atoi(decomposedRange[len(decomposedRange)-1])
-			if err != nil {
-				return nil, err
-			}
+				if port < 1 || port > 65535 {
+					return nil, fmt.Errorf("port %d is out of the valid range (1-65535)", port)
+				}
 
-			if min > max {
-				return nil, fmt.Errorf("lower port %d is higher than high port %d", min, max)
-			}
-			if max > 65535 {
-				return nil, fmt.Errorf("port %d is higher than max port", max)
-			}
-			for i := min; i <= max; i++ {
-				ports = append(ports, i)
+				ports = append(ports, port)
 			}
 		}
 	}
 
-	return ports, nil
+	slices.Sort(ports)
+	uniquePorts := slices.Compact(ports)
+
+	return uniquePorts, nil
 }
