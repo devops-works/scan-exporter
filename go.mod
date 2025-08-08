@@ -1,6 +1,6 @@
 module github.com/devops-works/scan-exporter
 
-go 1.24.5
+go 1.24.6
 
 require (
 	github.com/go-ping/ping v1.2.0
