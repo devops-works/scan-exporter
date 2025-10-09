@@ -1,0 +1,105 @@
+name: Check for new Golang upx releases
+
+on:
+  schedule:
+    # Run every 24 hours
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-golang-version:
+    runs-on: ubuntu-latest
+    outputs:
+      new-version: ${{ steps.check.outputs.new-version }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for new Golang upx version
+        id: check
+        run: |
+          # Get the latest golang upx release
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/devops-works/docker-golang-upx/releases/latest | sed 's/v//')
+          echo "Latest Golang upx release: $LATEST_VERSION"
+
+          # Get current version from Dockerfile
+          CURRENT_VERSION=$(grep -oP 'FROM devopsworks\/golang-upx:\K[0-9]+\.[0-9]+\.[0-9]+' Dockerfile)
+          echo "Current Dockerfile version: $CURRENT_VERSION"
+
+          # Compare versions
+          if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
+            echo "New version detected: $LATEST_VERSION"
+            echo "new-version=true" >> $GITHUB_OUTPUT
+            echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "No new version"
+            echo "new-version=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create issue for new version
+        if: steps.check.outputs.new-version == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.check.outputs.version }}';
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'golang-update'
+            });
+
+            // Check if issue already exists
+            const existingIssue = issues.data.find(issue =>
+              issue.title.includes(version)
+            );
+
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `New Golang upx version ${version} available`,
+                body: `A new Golang upx version **${version}** has been released.\n\nWorkflow will automatically build and push the new Docker image.`,
+                labels: ['golang-update', 'automation']
+              });
+            }
+
+  commit:
+    needs: check-golang-version
+    if: needs.check-golang-version.outputs.new-version == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Dockerfile
+        run: |
+          NEW_VERSION="${{ needs.check-golang-version.outputs.version }}"
+          sed -i "s/FROM devopsworks\/golang-upx:[0-9]\+\.[0-9]\+\.[0-9]\+/FROM devopsworks\/golang-upx:${NEW_VERSION}/" Dockerfile
+          echo "Updated Dockerfile to Go version ${NEW_VERSION}"
+
+      - name: Update go.mod
+        run: |
+          NEW_VERSION="${{ needs.check-golang-version.outputs.version }}"
+          sed -i "s/go [0-9]\+\.[0-9]\+\.[0-9]\+/go ${NEW_VERSION}/" go.mod
+          echo "Updated go.mod to Go version ${NEW_VERSION}"
+
+      - name: Update release_build workflow
+        run: |
+          NEW_VERSION="${{ needs.check-golang-version.outputs.version }}"
+          sed -i "s/go-version: '[0-9]\+\.[0-9]\+\.[0-9]'/go-version: '${NEW_VERSION}'/" .github/workflows/release_build.yml
+          echo "Updated release_build.yml Go version ${NEW_VERSION}"
+
+      - name: Commit updated files
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add Dockerfile go.mod .github/workflows/release_build.yml
+          git commit -m "chore: update Golang upx to version ${{ needs.check-golang-version.outputs.version }}" || echo "No changes to commit"
+          git push || echo "No changes to push"
