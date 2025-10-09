@@ -20,7 +20,7 @@ jobs:
         id: check
         run: |
           # Get the latest golang upx release
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/devops-works/docker-golang-upx/releases/latest | sed 's/v//')
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/devops-works/docker-golang-upx/releases/latest | jq -r '.tag_name' | sed 's/v//')
           echo "Latest Golang upx release: $LATEST_VERSION"
 
           # Get current version from Dockerfile
