@@ -21,7 +21,12 @@ jobs:
         run: |
           # Get the latest golang upx release
           LATEST_VERSION=$(curl -s https://api.github.com/repos/devops-works/docker-golang-upx/releases/latest | jq -r '.tag_name' | sed 's/v//')
-          echo "Latest Golang upx release: $LATEST_VERSION"
+          if [ -z "$LATEST_VERSION" ]; then
+            echo "Latest Golang upx release: $LATEST_VERSION"
+          else
+            echo "Failure in retrieving Latest Golang upx release."
+            exit 1
+          fi
 
           # Get current version from Dockerfile
           CURRENT_VERSION=$(grep -oP 'FROM devopsworks\/golang-upx:\K[0-9]+\.[0-9]+\.[0-9]+' Dockerfile)
