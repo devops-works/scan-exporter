@@ -114,7 +114,6 @@ jobs:
           PR_NUMBER=$(gh pr list --head golangupx_new_release --json number --jq '.[0].number')
           if [ ! -n "${PR_NUMBER}" ]; then
               gh pr create --fill
-              gh pr list --head golangupx_new_release --json number --jq '.[0].number'
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
