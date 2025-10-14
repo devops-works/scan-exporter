@@ -102,7 +102,6 @@ jobs:
           echo "Updated release_build.yml Go version ${NEW_VERSION}"
 
       - name: Create Pull Request
-        if: github.event_name != 'pull_request'
         run: |
           set -x
           git branch golangupx_new_release
