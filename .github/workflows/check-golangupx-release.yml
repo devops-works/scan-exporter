@@ -103,15 +103,15 @@ jobs:
       - name: Create Pull Request
         run: |
           set -x
-          git branch golangupx_${{ needs.check-golang-version.outputs.version }}
-          git switch golangupx_${{ needs.check-golang-version.outputs.version }}
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add Dockerfile go.mod .github/workflows/release_build.yml
-          git commit -m "chore: update Golang upx to version ${{ needs.check-golang-version.outputs.version }}"
-          git push --force -u origin golangupx_${{ needs.check-golang-version.outputs.version }}
-          PR_NUMBER=$(gh pr list --head golangupx_${{ needs.check-golang-version.outputs.version }} --json number --jq '.[0].number')
-          if [ ! -n "${PR_NUMBER}" ]; then
+          REMOTE_BRANCH=$(git ls-remote --heads origin refs/heads/golangupx_${{ needs.check-golang-version.outputs.version }})
+          if [ ! -n "${REMOTE_BRANCH}" ]; then
+              git branch golangupx_${{ needs.check-golang-version.outputs.version }}
+              git switch golangupx_${{ needs.check-golang-version.outputs.version }}
+              git config --local user.email "github-actions[bot]@users.noreply.github.com"
+              git config --local user.name "github-actions[bot]"
+              git add Dockerfile go.mod .github/workflows/release_build.yml
+              git commit -m "chore: update Golang upx to version ${{ needs.check-golang-version.outputs.version }}"
+              git push -u origin golangupx_${{ needs.check-golang-version.outputs.version }}
               gh pr create --fill
           fi
         env:
