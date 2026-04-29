@@ -256,7 +256,12 @@ func (s *Scanner) run(ip string, scanIsOver chan target, singleResult chan strin
 func (s *Scanner) scanPort(ip string, port int, singleResult chan string) {
 	p := strconv.Itoa(port)
 	target := ip + ":" + p
-	conn, err := net.DialTimeout("tcp", target, s.Timeout)
+	proto := "tcp"
+	if strings.Contains(ip, ":") {
+		target = "[" + ip + "]" + ":" + p
+		proto = "tcp6"
+	}
+	conn, err := net.DialTimeout(proto, target, s.Timeout)	
 	if err != nil {
 		// If the error contains the message "too many open files", wait a little
 		// and retry
@@ -265,13 +270,13 @@ func (s *Scanner) scanPort(ip string, port int, singleResult chan string) {
 			s.scanPort(ip, port, singleResult)
 		}
 		// The result follows the format ip:port:NOP
-		singleResult <- ip + ":" + p + ":NOP"
+		singleResult <- ip + ";" + p + ";NOP"
 		return
 	}
 	conn.Close()
 
 	// The result follows the format ip:port:OK
-	singleResult <- ip + ":" + p + ":OK"
+	singleResult <- ip + ";" + p + ";OK"
 }
 
 // scheduler create tickers for each protocol given and when they tick,
@@ -333,7 +338,7 @@ func receiver(scanIsOver chan target, singleResult chan string, pchan chan metri
 			openPorts[t.ip] = nil
 			closedPorts[t.ip] = nil
 		case res := <-singleResult:
-			split := strings.Split(res, ":")
+			split := strings.Split(res, ";")
 			// Useless allocations, but it's easier to read
 			ip := string(split[0])
 			port := string(split[1])
