@@ -255,8 +255,13 @@ func (s *Scanner) run(ip string, scanIsOver chan target, singleResult chan strin
 // closed, it sends `ip:port:NOP`
 func (s *Scanner) scanPort(ip string, port int, singleResult chan string) {
 	p := strconv.Itoa(port)
+	proto := "tcp"
+	if strings.Contains(ip, ":") {
+		ip = "[" + ip + "]"
+		proto = "tcp6"
+	}
 	target := ip + ":" + p
-	conn, err := net.DialTimeout("tcp", target, s.Timeout)
+	conn, err := net.DialTimeout(proto, target, s.Timeout)
 	if err != nil {
 		// If the error contains the message "too many open files", wait a little
 		// and retry
@@ -333,11 +338,26 @@ func receiver(scanIsOver chan target, singleResult chan string, pchan chan metri
 			openPorts[t.ip] = nil
 			closedPorts[t.ip] = nil
 		case res := <-singleResult:
-			split := strings.Split(res, ":")
 			// Useless allocations, but it's easier to read
-			ip := string(split[0])
-			port := string(split[1])
-			status := string(split[2])
+			ip := ""
+			port := ""
+			status := ""
+			split := strings.Split(res, "]")
+			// Is IPv6 ?
+			if len(split) > 1 {
+				ip = strings.ReplaceAll(split[0], "[", "")
+				res = split[1]
+			}
+			split = strings.Split(res, ":")
+			// Is IPv4 ?
+			if len(ip) == 0 {
+				ip = split[0]
+				port = split[len(split)-2]
+				status = split[len(split)-1]
+			} else {
+				port = split[1]
+				status = split[2]
+			}
 
 			if status == "OK" {
 				openPorts[ip] = append(openPorts[ip], port)
